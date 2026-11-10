@@ -69,6 +69,10 @@ create table if not exists records (
 );
 create index if not exists records_collection_idx on records (collection);
 
+-- Profile pictures (small square thumbnails saved as text).
+alter table profiles add column if not exists photo text not null default '';
+alter table students add column if not exists photo text not null default '';
+
 ------------------------------------------------------------------------
 -- 2. Helper functions (they look up the signed-in user's role)
 ------------------------------------------------------------------------
