@@ -436,7 +436,7 @@ function feed(){
 const isRead=id=>!!(S.reads[S.user.id]||{})[id];
 const unread=()=>feed().filter(x=>!isRead(x.id)).length;
 function ev(to,title,text,type){DB.events.unshift({id:'ev'+uid(),ts:TODAY+'T'+nowHM(),title,text,type:type||'event',to});}
-const audLabel=a=>a.kind==='all'?'Everyone':a.kind==='teachers'?'Teachers only':a.kind==='parents'?'Parents only':a.cids.map(c=>cls(c).name).join(', ')+((a.sids&&a.sids.length)?' (selected students)':'');
+const audLabel=a=>a.kind==='all'?'Everyone':a.kind==='teachers'?'Teachers only':a.kind==='parents'?'Parents only':a.cids.map(c=>(cls(c)||{name:'Removed class'}).name).join(', ')+((a.sids&&a.sids.length)?' (selected students)':'');
 const TYPEL={holiday:'Holiday',notice:'Notice',ptm:'PTM',event:'Event',urgent:'Urgent',test:'Test',reminder:'Reminder',leave:'Leave',homework:'Homework'};
 const TYPEC={holiday:'warn',notice:'info',ptm:'gold',event:'ok',urgent:'bad',test:'warn',reminder:'info',leave:'warn',homework:'ok'};
 
@@ -617,12 +617,12 @@ VIEWS.parent.leave=()=>{
   return head('Leave','Apply for leave and track the decision.')+kidSwitch()
   +`<div class="two"><div class="card"><h3>Apply for leave for ${h(k.name.split(' ')[0])}</h3>
   <label for="lv_type">Type of leave</label><select id="lv_type" data-c="ltype"><option value="full">Full day</option><option value="half1">Half day, first half (lectures 1 to 3)</option><option value="half2">Half day, second half (lectures 4 and 5)</option><option value="lectures">Specific lectures</option><option value="multi">Multiple days</option></select>
-  <div class="g2"><div><label for="lv_from">From date</label><input type="date" id="lv_from" value="${TODAY}" min="${TODAY}"></div><div id="lv_tow" style="display:none"><label for="lv_to">To date</label><input type="date" id="lv_to" value="${addDays(TODAY,1)}" min="${TODAY}"></div></div>
+  <div class="g2"><div><label for="lv_from">From date</label><input type="date" id="lv_from" value="${nextSchool(TODAY)}" min="${TODAY}"></div><div id="lv_tow" style="display:none"><label for="lv_to">To date</label><input type="date" id="lv_to" value="${addDays(nextSchool(TODAY),1)}" min="${TODAY}"></div></div>
   <div id="lv_lec" style="display:none"><label>Lectures</label><div class="chks cols">${[1,2,3,4,5].map(p=>`<label class="chk"><input type="checkbox" name="lv_p" value="${p}"> Lecture ${p} <small>${PT[p-1]}</small></label>`).join('')}</div></div>
   <label for="lv_reason">Reason</label><textarea id="lv_reason" placeholder="Please explain why your child needs leave"></textarea>
   <label for="lv_file">Attachment (optional, for example a medical note)</label><input type="file" id="lv_file">
   <div class="err" id="lv_err"></div><button class="btn block" data-a="leaveSubmit">Send to class teacher</button>
-  <p class="mut" style="margin-top:10px;font-size:13px">Your request goes to ${h(byName(cls(k.cid).ct))}, the class teacher. Approved leave shows as “Leave” in attendance.</p></div>
+  <p class="mut" style="margin-top:10px;font-size:13px">${DB.teachers.some(x=>x.id===cls(k.cid).ct&&x.active)?`Your request goes to ${h(byName(cls(k.cid).ct))}, the class teacher.`:'<b>This class has no active class teacher right now. Please contact the school office.</b>'} Approved leave shows as “Leave” in attendance.</p></div>
   <div class="card"><h3>Leave history</h3>${hist.length?hist.map(l=>`<div class="item"><div class="row sp"><b>${leaveLabel(l)}</b>${leaveChip(l.status)}</div><div class="meta">${leaveDates(l)}</div><p>${h(l.reason)}</p>${l.attach?`<div class="meta">Attachment: ${h(l.attach)}</div>`:''}${l.remark?`<div class="meta"><b>Teacher’s remark:</b> ${h(l.remark)}</div>`:''}${l.status==='pending'?`<div><button class="btn sm sec" data-a="leaveCancel" data-id="${l.id}">Cancel request</button></div>`:''}</div>`).join(''):empty('No leave requests yet')}</div></div>`;
 };
 VIEWS.parent.res=()=>{
@@ -744,7 +744,7 @@ VIEWS.teacher.parents=()=>{
   const t=S.user,cids=tClasses(t);if(!cids.length)return head('Parents')+noAsg();
   const cid=cids.includes(F('tpc',cids[0]))?F('tpc',cids[0]):cids[0];
   return head('Parents','Parents of the students in your classes. Only the Admin can add or remove them.')+`<div style="max-width:320px;margin-bottom:14px">${fsel('tpc',cids.map(c=>[c,cls(c).name]),cid,'Class')}</div>`
-  +DB.students.filter(s=>s.cid===cid&&s.active).map(s=>{const ps=parentsOf(s.id);return `<div class="item"><div class="row sp"><h4 class="who">${av(s)}${s.roll}. ${h(s.name)}</h4></div>${ps.length?ps.map(p=>`<div class="row sp"><span>${h(p.name)} <small>${h(p.rel)}, ${h(p.phone)}</small></span></div>`).join(''):'<div class="meta">No parent linked yet</div>'}</div>`;}).join('');
+  +DB.students.filter(s=>s.cid===cid&&s.active).map(s=>{const ps=parentsOf(s.id);return `<div class="item"><div class="row sp"><h4 class="who">${av(s)}${s.roll}. ${h(s.name)}</h4></div>${ps.length?ps.map(p=>`<div class="row sp"><span>${h(p.name)} <small>${h(p.rel)}, ${h(p.phone)}</small></span></div>`).join(''):'<div class="meta">No parent linked yet. Ask the Admin to link a parent.</div>'}</div>`;}).join('');
 };
 
 VIEWS.teacher.me=()=>{
@@ -756,7 +756,7 @@ VIEWS.teacher.me=()=>{
   +`<div class="two"><div class="stack"><div class="card"><h3>Today</h3><div class="row sp"><div>${own==='P'?`<b>Checked in at ${h(rec.in)}</b><div class="mut">${rec.out?'Checked out at '+h(rec.out):'Not checked out yet'}</div>`:own==='L'?'<b>On approved leave</b>':'<b>Not checked in yet</b>'}</div><div class="row">${own==='P'?(rec.out?chip('Day complete','ok'):`<button class="btn" data-a="checkout">Check out</button>`):own==='L'?'':`<button class="btn ok" data-a="checkin">Check in</button>`}</div></div></div>
   <div class="card"><div class="row sp" style="margin-bottom:10px"><h3>Monthly record</h3><select style="width:auto" data-c="f" data-k="tmonth" aria-label="Month">${monthOpts(month)}</select></div><div class="row" style="margin-bottom:10px">${chip('Present '+cn.P,'ok')}${chip('Absent '+cn.A,'bad')}${chip('Leave '+cn.L,'warn')}</div><div class="tw" style="max-height:340px;overflow:auto"><table><thead><tr><th>Date</th><th>Status</th><th>In</th><th>Out</th></tr></thead><tbody>${days.slice().reverse().map(d=>{const x=tStatus(t.id,d),r=DB.tatt[t.id+'|'+d]||{};return `<tr><td>${fd(d)}</td><td>${stChip(x)}</td><td>${h(r.in||'')}</td><td>${h(r.out||'')}</td></tr>`;}).join('')}</tbody></table></div></div></div>
   <div class="stack"><div class="card"><h3>Apply for leave</h3><label for="tl_type">Type</label><select id="tl_type"><option>Casual</option><option>Medical</option><option>Official duty</option><option>Half day</option></select>
-  <div class="g2"><div><label for="tl_from">From</label><input type="date" id="tl_from" value="${addDays(TODAY,1)}" min="${TODAY}"></div><div><label for="tl_to">To</label><input type="date" id="tl_to" value="${addDays(TODAY,1)}" min="${TODAY}"></div></div>
+  <div class="g2"><div><label for="tl_from">From</label><input type="date" id="tl_from" value="${nextSchool(addDays(TODAY,1))}" min="${TODAY}"></div><div><label for="tl_to">To</label><input type="date" id="tl_to" value="${nextSchool(addDays(TODAY,1))}" min="${TODAY}"></div></div>
   <label for="tl_reason">Reason</label><textarea id="tl_reason" placeholder="Reason for leave"></textarea><div class="err" id="tl_err"></div><button class="btn block" data-a="tlSubmit">Send to principal</button></div>
   <div class="card"><h3>My leave history</h3>${hist.length?hist.map(l=>`<div class="item"><div class="row sp"><b>${h(l.type)}</b>${leaveChip(l.status)}</div><div class="meta">${leaveDates(l)}</div><p>${h(l.reason)}</p>${l.remark?`<div class="meta"><b>Principal’s remark:</b> ${h(l.remark)}</div>`:''}</div>`).join(''):empty('No leave yet')}</div></div></div>`;
 };
@@ -870,14 +870,14 @@ VIEWS.admin.teachers=()=>admScreen('teachers');
 VIEWS.admin.principals=()=>admScreen('principals');
 VIEWS.admin.dash=()=>{
   const act=DB.students.filter(s=>s.active),noPar=act.filter(s=>!parentsOf(s.id).length);
-  const noCt=CLASSES.filter(c=>!DB.teachers.some(t=>t.id===c.ct));
-  const gaps=[];CLASSES.forEach(c=>c.subjects.forEach(sb=>{if(!teacherFor(c.id,sb).id)gaps.push(c.name+', '+subName(sb));}));
+  const noCt=CLASSES.filter(c=>!DB.teachers.some(t=>t.id===c.ct&&t.active));
+  const gaps=[];CLASSES.forEach(c=>c.subjects.forEach(sb=>{{const tf=teacherFor(c.id,sb);if(!tf.id)gaps.push(c.name+', '+subName(sb));else if(!tf.active)gaps.push(c.name+', '+subName(sb)+' ('+tf.name+' is inactive)');}}));
   const kpi=(l,v,s)=>`<div class="kpi"><div class="l">${h(l)}</div><div class="v">${v}</div><div class="s">${h(s)}</div></div>`;
   const steps=[['classes','1. Add subjects and classes',CLASSES.length>0],['teachers','2. Add teachers and give them classes',DB.teachers.length>0],['students','3. Add students',DB.students.length>0],['parents','4. Add parents and link them to students',DB.parents.length>0]];
   const list=(arr,max)=>arr.slice(0,max).map(x=>`<li>${h(x)}</li>`).join('')+(arr.length>max?`<li>and ${arr.length-max} more</li>`:'');
   const issues=(noPar.length?`<div class="item"><div class="row sp"><b>Students with no parent linked</b>${chip(String(noPar.length),'warn')}</div><ul class="mut" style="padding-left:18px">${list(noPar.map(s=>s.name+' ('+cls(s.cid).name+')'),6)}</ul><div class="row"><button class="btn sm sec" data-a="nav" data-v="parents">Open Parents</button></div></div>`:'')
-   +(noCt.length?`<div class="item"><div class="row sp"><b>Classes with no class teacher</b>${chip(String(noCt.length),'warn')}</div><ul class="mut" style="padding-left:18px">${list(noCt.map(c=>c.name),6)}</ul><div class="row"><button class="btn sm sec" data-a="nav" data-v="classes">Open Classes</button></div></div>`:'')
-   +(gaps.length?`<div class="item"><div class="row sp"><b>Subjects with no teacher</b>${chip(String(gaps.length),'warn')}</div><ul class="mut" style="padding-left:18px">${list(gaps,6)}</ul><div class="row"><button class="btn sm sec" data-a="nav" data-v="teachers">Open Teachers</button></div></div>`:'');
+   +(noCt.length?`<div class="item"><div class="row sp"><b>Classes with no active class teacher</b>${chip(String(noCt.length),'warn')}</div><ul class="mut" style="padding-left:18px">${list(noCt.map(c=>c.name),6)}</ul><div class="row"><button class="btn sm sec" data-a="nav" data-v="classes">Open Classes</button></div></div>`:'')
+   +(gaps.length?`<div class="item"><div class="row sp"><b>Subjects with no active teacher</b>${chip(String(gaps.length),'warn')}</div><ul class="mut" style="padding-left:18px">${list(gaps,6)}</ul><div class="row"><button class="btn sm sec" data-a="nav" data-v="teachers">Open Teachers</button></div></div>`:'');
   return head('Admin overview',(DEMO?'Demo with sample data. ':'')+'FG Public School and College')
   +`<div class="g4" style="margin-bottom:14px">${kpi('Students',act.length,CLASSES.length+(CLASSES.length===1?' class':' classes'))}${kpi('Parents',DB.parents.length,'With a login')}${kpi('Teachers',DB.teachers.length,DB.teachers.filter(t=>t.active).length+' active')}${kpi('Principals',DB.principals.length,DB.principals.filter(t=>t.active).length+' active')}</div>`
   +(steps.some(x=>!x[2])?`<div class="card" style="margin-bottom:14px"><h3>Get started</h3><p class="mut" style="margin-bottom:10px">Set up your school in this order.</p><div class="stack">${steps.map(x=>`<div class="row sp"><span>${x[2]?chip('Done','ok')+' ':''}${h(x[1])}</span><button class="btn sm ${x[2]?'sec':''}" data-a="nav" data-v="${x[0]}">Open</button></div>`).join('')}</div></div>`:'')
@@ -945,10 +945,12 @@ A.leaveSubmit=()=>{
   if(type==='multi'&&(!to||to<=from))return er('The last date must be after the first date.');
   if(type==='lectures'&&!lec.length)return er('Select at least one lecture.');
   if(reason.length<10)return er('Please write the reason in at least 10 characters.');
+  const ctT=DB.teachers.find(x=>x.id===cls(k.cid).ct&&x.active);
+  if(!ctT)return er('This class has no active class teacher right now, so the request cannot be sent. Please contact the school office.');
   const f=$('lv_file').files&&$('lv_file').files[0];
   DB.leaves.unshift({id:'l'+uid(),sid:k.id,type,from,to,lectures:lec,reason,attach:f?f.name:'',status:'pending',remark:'',ts:TODAY+'T'+nowHM()});
-  ev({role:'teacher',id:cls(k.cid).ct},'New leave request',k.name+' ('+cls(k.cid).name+') requested leave for '+fd(from)+'.','leave');
-  render();toast('Leave request sent to '+byName(cls(k.cid).ct)+'.');
+  ev({role:'teacher',id:ctT.id},'New leave request',k.name+' ('+cls(k.cid).name+') requested leave for '+fd(from)+'.','leave');
+  render();toast('Leave request sent to '+ctT.name+'.');
 };
 A.leaveCancel=el=>{const l=DB.leaves.find(x=>x.id===el.dataset.id);if(l)l.status='cancelled';render();toast('Leave request cancelled.');};
 
@@ -1012,8 +1014,10 @@ A.ntSend=()=>{
   if(title.length<3)return er('Write a short title.');
   if(body.length<5)return er('Write the message for parents.');
   if(aud==='sel'&&!sids.length)return er('Select at least one student.');
+  const tgt=DB.students.filter(s=>s.cid===cid&&s.active&&(aud!=='sel'||sids.includes(s.id))),noP=tgt.filter(s=>!parentsOf(s.id).length);
+  if(tgt.length&&noP.length===tgt.length)return er('No parent is linked to '+(tgt.length>1?'these students':'this student')+' yet, so nobody would receive it. Ask the Admin to link parents.');
   DB.anns.unshift({id:'a'+uid(),kind:'announcement',type:val('nt_type'),title,body,aud:{kind:'classes',cids:[cid],sids},by:t.id,ts:TODAY+'T'+nowHM(),publish:TODAY});
-  S.f.ntt='';S.f.ntb='';render();toast('Notification sent to '+(sids.length?sids.length+' selected student'+(sids.length>1?'s':'')+'’ parents':'parents of '+cls(cid).name)+'.');
+  S.f.ntt='';S.f.ntb='';render();toast((noP.length?noP.length+' of '+tgt.length+' student'+(tgt.length>1?'s have':' has')+' no parent linked yet. ':'')+'Notification sent to '+(sids.length?sids.length+' selected student'+(sids.length>1?'s':'')+'’ parents':'parents of '+cls(cid).name)+'.');
 };
 A.dsDel=el=>{DB.datesheet=DB.datesheet.filter(d=>d.id!==el.dataset.id);render();toast('Paper removed.');};
 
@@ -1380,7 +1384,7 @@ const allUsers=()=>DB.teachers.concat(DB.parents,DB.principals,DB.admins||[]);
 /* ---------- admin: screens and actions ---------- */
 const slug=(s,sep,max)=>String(s).toLowerCase().replace(/[^a-z0-9]+/g,sep).replace(new RegExp('^'+(sep==='.'?'\\.':sep)+'+|'+(sep==='.'?'\\.':sep)+'+$','g'),'').slice(0,max);
 function suggestUser(name){
-  const base=slug(name,'.',24)||'user';let u=base,i=2;
+  let base=slug(name,'.',24)||'user';if(base.length<3)base+='.user';let u=base,i=2;
   while(allUsers().some(x=>x.user===u))u=base+(i++);
   return u;
 }
@@ -1527,11 +1531,21 @@ A.clsSave=async el=>{
   catch(e){el.disabled=false;return merr(e.message||'Something went wrong.');}
   closeModal();render();toast(id?'Class updated.':'Class added.');
 };
+function cleanClass(cid){
+  if(DB.tt)delete DB.tt[cid];
+  DB.datesheet=DB.datesheet.filter(d=>d.cid!==cid);
+  DB.hw=DB.hw.filter(w=>{if(w.cid!==cid)return true;delete DB.hwSub[w.id];return false;});
+  ['att','res','pub'].forEach(k=>Object.keys(DB[k]).forEach(key=>{if(key.split('|')[1]===cid)delete DB[k][key];}));
+  DB.events=DB.events.filter(e=>!(e.to&&e.to.cids&&e.to.cids.length===1&&e.to.cids[0]===cid));
+  DB.anns.forEach(a=>{if(a.aud&&a.aud.kind==='classes')a.aud.cids=a.aud.cids.filter(x=>x!==cid);});
+  DB.anns=DB.anns.filter(a=>!(a.aud&&a.aud.kind==='classes'&&!a.aud.cids.length));
+}
 A.clsRemove=el=>{
   if(!adminOnly())return;
   const c=cls(el.dataset.id);if(!c)return;
-  ask('Remove '+c.name+'? Its teacher assignments are removed too. This cannot be undone.','Remove',async()=>{
+  ask('Remove '+c.name+'? Its teacher assignments, timetable, homework, date sheet and attendance are removed too. This cannot be undone.','Remove',async()=>{
     try{await store.removeClass(c.id);}catch(e){return toast(e.message||'Something went wrong.');}
+    cleanClass(c.id);scheduleSync();
     render();toast(c.name+' removed.');
   });
 };
@@ -1606,6 +1620,7 @@ async function init(){
 
 /* Weekly timetable. DB.tt[classId] = {days:[[sub x5] x5]} (Monday to Friday, lectures 1 to 5). */
 const TTD=[0,1,2,3,4];
+const nextSchool=d=>{let x=d;for(let i=0;i<8&&!isSchool(x);i++)x=addDays(x,1);return x;};
 const ttDays=cid=>TTD.map(i=>[1,2,3,4,5].map(p=>ttCell(cid,i,p)));
 const ttNote=(cid,title)=>{
   const c=cls(cid);if(!c)return;
@@ -1628,9 +1643,21 @@ VIEWS.admin.tt=()=>{
 A.ttSave=el=>{
   const cid=el.dataset.id,c=cls(cid);if(!c)return;
   const days=TTD.map(i=>[1,2,3,4,5].map(p=>{const s=$('tt_'+i+'_'+p);return s&&c.subjects.includes(s.value)?s.value:c.subjects[(p-1+i)%5];}));
-  DB.tt[cid]={days};
-  ttNote(cid,'Timetable updated');
-  render();toast('Timetable saved for '+c.name+'. Teachers and parents can see it now.');
+  const clashes=[];
+  TTD.forEach(i=>[1,2,3,4,5].forEach(p=>{
+    const t=teacherFor(cid,days[i][p-1]);if(!t.id)return;
+    CLASSES.forEach(o=>{if(o.id===cid||!(DB.tt&&DB.tt[o.id]))return;const s2=ttCell(o.id,i,p);if(teacherFor(o.id,s2).id===t.id)clashes.push(t.name+' is also in '+o.name+' on '+DAYN[i]+', lecture '+p);});
+  }));
+  const save=()=>{
+    DB.tt[cid]={days};
+    ttNote(cid,'Timetable updated');
+    render();toast('Timetable saved for '+c.name+'. Teachers and parents can see it now.');
+  };
+  if(clashes.length){
+    const more=clashes.length>3?' and '+(clashes.length-3)+' more':'';
+    return ask('Teacher clash: '+clashes.slice(0,3).join('; ')+more+'. Save anyway?','Save anyway',()=>{closeModal();save();});
+  }
+  save();
 };
 A.ttReset=el=>{
   const cid=el.dataset.id,c=cls(cid);
