@@ -510,6 +510,20 @@ function loginView(){
   const logo=`<div class="logo"><div class="crest">FG</div><div><b>FG Campus</b><small>School and college management</small><small class="urdu">ایف جی کیمپس</small></div></div>`;
   if(S.booting)return `<div class="login"><div class="lbox">${logo}<p class="mut" role="status">Loading your account…</p></div></div>`;
   if(CFG_SET&&!LIVE)return `<div class="login"><div class="lbox">${logo}<div class="err" style="display:block">The database library could not load. Check your internet connection and reload the page.</div></div></div>`;
+  if(LIVE&&S.demoUsers&&!S.pwMode){
+    const list=S.demoUsers.filter(x=>x.role===r);
+    const body=r==='admin'?`<p class="mut" style="margin:12px 0">Demo mode: the Admin signs in with one click.</p>`
+      :list.length?`<label for="du">Choose a ${r}</label><select id="du">${list.map(x=>`<option value="${h(x.username)}">${h(x.name)} (${h(x.username)})</option>`).join('')}</select>`
+      :`<p class="mut" style="margin:12px 0">No ${r} accounts yet. The Admin adds them first.</p>`;
+    return `<div class="login"><div class="lbox">${logo}
+  <div class="rtabs" role="group" aria-label="Choose login type">${roles.map(x=>`<button data-a="lrole" data-v="${x}" aria-pressed="${r===x}">${cap(x)}</button>`).join('')}</div>
+  ${body}
+  <div class="err" id="lerr"></div>
+  ${r==='admin'||list.length?`<button class="btn block" data-a="demoLogin">Sign in as ${cap(r)}</button>`:''}
+  <p class="mut" style="margin-top:14px;font-size:12.5px">Demo mode, no password needed.</p>
+  <button class="btn sm sec" type="button" data-a="pwMode">Sign in with a password instead</button>
+  </div></div>`;
+  }
   const demo=DEMO?{admin:[['admin','admin123','School Admin. Adds and removes students, parents, teachers and principals.']],principal:[['principal','prin123','Dr. Farhan Ahmed, Principal']],teacher:[['imran','teach123','Imran Qureshi, class teacher of 9-A'],['sana','teach123','Sana Javed, class teacher of 10-A']],parent:[['parent1','parent123','Mr. Tariq Khan. Children: Ayesha (Class 9-A) and Hamna (FSc Part 1)']]}[r]:null;
   return `<div class="login"><div class="lbox">
   ${logo}
@@ -518,6 +532,7 @@ function loginView(){
   <label for="lp">Password</label><input type="password" id="lp" autocomplete="current-password">
   <div class="err" id="lerr"></div>
   <button class="btn block" data-a="login">Sign in as ${cap(r)}</button>
+  ${LIVE&&S.demoUsers?`<button class="btn sm sec" type="button" style="margin-top:10px" data-a="pwMode">Back to demo sign in</button>`:''}
   ${DEMO?`<div class="demo"><b>Demo ${r} login</b>${demo.map(d=>`<div class="row sp" style="margin-top:8px"><span>${h(d[2])}<br>User <code>${d[0]}</code> Password <code>${d[1]}</code></span><button class="btn sm sec" data-a="fill" data-u="${d[0]}" data-p="${d[1]}">Fill in</button></div>`).join('')}${r==='teacher'?'<div class="mut" style="margin-top:8px">Other teachers: nadeem, rubina, khalid, ayesha. Same password.</div>':''}</div>
   <p class="mut" style="margin-top:14px;font-size:12.5px">Demo with sample data for Class 9-A, Class 10-A and FSc Part 1. Nothing is saved or sent.</p>`:`<p class="mut" style="margin-top:14px;font-size:12.5px">Use the username and password given to you by the school office.</p>`}
   </div></div>`;
@@ -1598,6 +1613,21 @@ A.login=async()=>{
   }catch(e){console.error(e);err('Could not reach the server. Check your internet and try again.');}
   finally{const b=document.querySelector('[data-a="login"]');if(b)b.disabled=false;}
 };
+A.pwMode=()=>{S.pwMode=!S.pwMode;render();};
+A.demoLogin=async()=>{
+  const r=S.lrole,u=r==='admin'?'':val('du'),err=m=>{const e=$('lerr');if(e)e.textContent=m;};
+  const btn=document.querySelector('[data-a="demoLogin"]');if(btn)btn.disabled=true;
+  try{
+    const res=await fetch('/api/demo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'login',role:r,username:u})});
+    const j=await res.json();
+    if(!j.ok||!j.token_hash)return err(j.error||'Could not sign in.');
+    const vo=await sb.auth.verifyOtp({token_hash:j.token_hash,type:'magiclink'});
+    if(vo.error)return err('Could not sign in. Please try again.');
+    const out=await enterApp(r);
+    if(out!==true){await sb.auth.signOut();resetData();err(out);}
+  }catch(e){console.error(e);err('Could not reach the server. Check your internet and try again.');}
+  finally{const b=document.querySelector('[data-a="demoLogin"]');if(b)b.disabled=false;}
+};
 A.logout=async()=>{
   closeModal();S.bell=false;S.more=false;
   if(LIVE){stopPolling();try{await flushSync();}catch(e){}try{await sb.auth.signOut();}catch(e){}resetData();}
@@ -1606,6 +1636,10 @@ A.logout=async()=>{
 async function init(){
   if(LIVE){
     S.booting=true;render();
+    try{
+      const dr=await fetch('/api/demo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'list'})});
+      const dj=await dr.json();S.demoUsers=dj&&dj.ok&&dj.enabled?dj.users:null;
+    }catch(e){S.demoUsers=null;}
     try{
       const ss=await sb.auth.getSession();
       if(ss.data&&ss.data.session){const r=await enterApp();if(r!==true){await sb.auth.signOut();resetData();}}
