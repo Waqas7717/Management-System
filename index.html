@@ -276,12 +276,13 @@ DB.parents.push({id:'par1',name:'Tariq Khan',phone:'0300-5550123',rel:'Father',u
 /* ---------- lookups ---------- */
 const stu=id=>DB.students.find(s=>s.id===id);
 const tch=id=>DB.teachers.find(t=>t.id===id)||{id:id,name:'Former teacher',phone:'',user:'',active:false,assign:[]};
-const subjAt=(cid,d,p)=>isSchool(d)?cls(cid).subjects[(p-1+dow(d))%5]:null;
+const ttCell=(cid,i,p)=>{const c=cls(cid);if(!c)return null;const t=DB.tt&&DB.tt[cid],v=t&&t.days&&t.days[i]&&t.days[i][p-1];return v&&c.subjects.indexOf(v)>-1?v:c.subjects[(p-1+i)%5];};
+const subjAt=(cid,d,p)=>isSchool(d)?ttCell(cid,dow(d),p):null;
 const teacherFor=(cid,sub)=>DB.teachers.find(t=>t.assign.some(a=>a[0]===cid&&a[1]===sub))||{id:'',name:'Unassigned'};
 const kidsOf=p=>DB.students.filter(s=>p.kids.includes(s.id)&&s.active);
 const tClasses=t=>t.assign.map(a=>a[0]).filter((v,i,a)=>a.indexOf(v)===i);
 const parentsOf=sid=>DB.parents.filter(p=>p.kids.includes(sid));
-const byName=id=>id==='p0'?'Principal':(tch(id)?tch(id).name:'School office');
+const byName=id=>id==='p0'?'Principal':(DB.admins&&DB.admins.some(x=>x.id===id)?'School Admin':(tch(id)?tch(id).name:'School office'));
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 
 /* ---------- attendance seed ---------- */
@@ -323,6 +324,7 @@ const effStatus=(sid,d,p)=>{
 
 /* ---------- teacher attendance seed ---------- */
 DB.tatt={};
+DB.tt={};
 if(DEMO)HIST.concat([TODAY]).forEach(d=>DB.teachers.forEach(t=>{
   if(d===TODAY&&(t.id==='t1'||t.id==='t6'))return;
   if(d!==TODAY&&R()<0.04)return;
@@ -413,7 +415,7 @@ const S={booting:false,me:null,user:null,role:null,view:null,child:null,f:{},bel
 const F=(k,d)=>S.f[k]===undefined?d:S.f[k];
 function annVisible(a){
   const u=S.user,r=S.role;
-  if(r==='principal')return true;
+  if(r==='principal'||r==='admin')return true;
   if(a.publish>TODAY)return false;
   const au=a.aud;
   if(r==='teacher'){if(a.by===u.id)return true;if(au.kind==='all'||au.kind==='teachers')return true;if(au.kind==='classes')return tClasses(u).some(c=>au.cids.includes(c));return false;}
@@ -427,7 +429,7 @@ function evVisible(e){
 }
 function feed(){
   const o=[];
-  DB.anns.forEach(a=>{if(S.role==='principal'||a.by===S.user.id)return;if(annVisible(a))o.push({id:'a'+a.id,ts:a.ts,title:a.title,text:a.body,type:a.type,by:a.by});});
+  DB.anns.forEach(a=>{if(S.role==='principal'||S.role==='admin'||a.by===S.user.id)return;if(annVisible(a))o.push({id:'a'+a.id,ts:a.ts,title:a.title,text:a.body,type:a.type,by:a.by});});
   DB.events.forEach(e=>{if(evVisible(e))o.push({id:'e'+e.id,ts:e.ts,title:e.title,text:e.text,type:e.type||'event',by:''});});
   return o.sort((a,b)=>a.ts<b.ts?1:-1);
 }
@@ -435,8 +437,8 @@ const isRead=id=>!!(S.reads[S.user.id]||{})[id];
 const unread=()=>feed().filter(x=>!isRead(x.id)).length;
 function ev(to,title,text,type){DB.events.unshift({id:'ev'+uid(),ts:TODAY+'T'+nowHM(),title,text,type:type||'event',to});}
 const audLabel=a=>a.kind==='all'?'Everyone':a.kind==='teachers'?'Teachers only':a.kind==='parents'?'Parents only':a.cids.map(c=>cls(c).name).join(', ')+((a.sids&&a.sids.length)?' (selected students)':'');
-const TYPEL={notice:'Notice',ptm:'PTM',event:'Event',urgent:'Urgent',test:'Test',reminder:'Reminder',leave:'Leave',homework:'Homework'};
-const TYPEC={notice:'info',ptm:'gold',event:'ok',urgent:'bad',test:'warn',reminder:'info',leave:'warn',homework:'ok'};
+const TYPEL={holiday:'Holiday',notice:'Notice',ptm:'PTM',event:'Event',urgent:'Urgent',test:'Test',reminder:'Reminder',leave:'Leave',homework:'Homework'};
+const TYPEC={holiday:'warn',notice:'info',ptm:'gold',event:'ok',urgent:'bad',test:'warn',reminder:'info',leave:'warn',homework:'ok'};
 
 /* ---------- ui helpers ---------- */
 const IC={
@@ -523,10 +525,10 @@ function loginView(){
 
 /* ---------- shell ---------- */
 const NAVS={
- admin:{items:[['dash','Overview','chart'],['students','Students','users'],['parents','Parents','users'],['teachers','Teachers','book'],['principals','Principals','award'],['classes','Classes and subjects','cal']],bottom:['dash','students','parents','teachers']},
+ admin:{items:[['dash','Overview','chart'],['students','Students','users'],['parents','Parents','users'],['teachers','Teachers','book'],['principals','Principals','award'],['classes','Classes and subjects','cal'],['tt','Timetable','clock'],['ds','Date sheet','file'],['ann','Announcements','mega'],['notice','Notices','file'],['evt','Events and holidays','mega']],bottom:['dash','students','tt','ann']},
  principal:{items:[['dash','Dashboard','chart'],['att','Attendance','check'],['ann','Announcements','mega'],['notice','Notices','file'],['users','Users','users'],['res','Results','award'],['leave','Teacher leaves','cal']],bottom:['dash','att','ann','res']},
- teacher:{items:[['home','Home','home'],['att','Attendance','check'],['hw','Homework','book'],['res','Results','award'],['leave','Leave requests','cal'],['notify','Notify and date sheet','mega'],['parents','Parents','users'],['me','My attendance','clock']],bottom:['home','att','hw','leave']},
- parent:{items:[['home','Home','home'],['att','Attendance','check'],['hw','Homework','book'],['leave','Leave','cal'],['res','Results','award'],['notices','Notices','mega'],['sheet','Date sheet','file']],bottom:['home','att','hw','leave']}
+ teacher:{items:[['home','Home','home'],['att','Attendance','check'],['hw','Homework','book'],['res','Results','award'],['leave','Leave requests','cal'],['tt','Timetable','clock'],['notify','Notify and date sheet','mega'],['parents','Parents','users'],['me','My attendance','clock']],bottom:['home','att','hw','leave']},
+ parent:{items:[['home','Home','home'],['att','Attendance','check'],['hw','Homework','book'],['leave','Leave','cal'],['res','Results','award'],['notices','Notices','mega'],['tt','Timetable','clock'],['sheet','Date sheet','file']],bottom:['home','att','hw','leave']}
 };
 const VIEWS={admin:{},principal:{},teacher:{},parent:{}};
 function shell(){
@@ -719,7 +721,7 @@ VIEWS.teacher.leave=()=>{
 
 VIEWS.teacher.notify=()=>{
   const t=S.user,tab=F('ntab','send');
-  const head0=head('Notify and date sheet','Send class notifications and upload paper dates.')+segBtns('ntab',[['send','Send notification'],['sheet','Date sheets']],tab)+'<div style="margin-top:14px"></div>';
+  const head0=head('Notify and date sheet','Send class notifications. The Admin posts the date sheet.')+segBtns('ntab',[['send','Send notification'],['sheet','Date sheets']],tab)+'<div style="margin-top:14px"></div>';
   if(!t.assign.length)return head0+noAsg();
   if(tab==='send'){
     const cids=tClasses(t),cid=cids.includes(F('ntc',cids[0]))?F('ntc',cids[0]):cids[0];
@@ -734,14 +736,8 @@ VIEWS.teacher.notify=()=>{
     <div class="err" id="nt_err"></div><button class="btn block" data-a="ntSend">Send notification</button></div>
     <div class="card"><h3>Sent by you</h3>${mine.length?mine.map(a=>`<div class="item"><div class="row">${chip(TYPEL[a.type]||'Notice',TYPEC[a.type])}<small>${fd(a.ts.slice(0,10))}</small></div><h4>${h(a.title)}</h4><p class="mut">${h(a.body)}</p><div class="meta">To ${h(audLabel(a.aud))}</div></div>`).join(''):empty('Nothing sent yet')}</div></div>`;
   }
-  const mine=DB.datesheet.filter(d=>d.by===t.id).sort((a,b)=>a.date<b.date?-1:1);
-  return head0+`<div class="two"><div class="card"><h3>Add a paper date</h3><label for="ds_a">Class and subject</label><select id="ds_a">${asgOpts(0)}</select>
-  <label for="ds_e">Exam</label><select id="ds_e"><option>Monthly Test (November)</option><option>First Term (December)</option></select>
-  <div class="g2"><div><label for="ds_d">Date</label><input type="date" id="ds_d" value="${addDays(TODAY,7)}" min="${TODAY}"></div><div><label for="ds_t">Time</label><input type="text" id="ds_t" value="9:00 am"></div></div>
-  <label for="ds_r">Room</label><input type="text" id="ds_r" value="Room 12">
-  <div class="err" id="ds_err"></div><button class="btn block" data-a="dsAdd">Add to date sheet</button>
-  <label for="ds_csv">Or upload a CSV (subject,date,time,room)</label><input type="file" id="ds_csv" accept=".csv,.txt" data-c="dscsv"></div>
-  <div class="card"><h3>Your papers</h3>${mine.length?`<div class="tw"><table><thead><tr><th>Class</th><th>Subject</th><th>Date</th><th>Time</th><th></th></tr></thead><tbody>${mine.map(d=>`<tr><td>${h(cls(d.cid).name)}</td><td>${h(subName(d.sub))}</td><td>${fd(d.date)}</td><td>${h(d.time)}</td><td><button class="btn sm bad" data-a="dsDel" data-id="${d.id}">Remove</button></td></tr>`).join('')}</tbody></table></div>`:empty('No papers yet')}</div></div>`;
+  const mine=DB.datesheet.filter(d=>cls(d.cid)&&t.assign.some(a=>a[0]===d.cid)).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  return head0+`<div class="card"><h3>Date sheet for your classes</h3>${mine.length?`<div class="tw"><table><thead><tr><th>Class</th><th>Exam</th><th>Subject</th><th>Date</th><th>Time</th><th>Room</th></tr></thead><tbody>${mine.map(d=>`<tr><td>${h(cls(d.cid).name)}</td><td>${h(d.exam||'')}</td><td>${h(subName(d.sub))}</td><td>${fd(d.date)}</td><td>${h(d.time||'')}</td><td>${h(d.room||'')}</td></tr>`).join('')}</tbody></table></div>`:empty('No papers yet','The Admin posts the date sheet.')}</div>`;
 };
 
 VIEWS.teacher.parents=()=>{
@@ -826,7 +822,7 @@ VIEWS.principal.att=()=>{
 function annScreen(kind){
   const list=DB.anns.filter(a=>a.kind===kind).sort((a,b)=>a.ts<b.ts?1:-1),ttl=kind==='notice'?'Notices':'Announcements';
   return head(ttl,kind==='notice'?'Official notices such as holidays, fee dates and rules.':'Messages for the whole school or for chosen classes.',`<button class="btn" data-a="annNew" data-id="${kind}">New ${kind==='notice'?'notice':'announcement'}</button>`)
-  +(list.length?list.map(a=>`<div class="item"><div class="row sp"><span class="row">${chip(TYPEL[a.type]||'Notice',TYPEC[a.type])}${a.publish>TODAY?chip('Scheduled for '+fs(a.publish),'info'):''}</span><small>${fd(a.publish)}</small></div><h4>${h(a.title)}</h4><p>${h(a.body)}</p><div class="meta"><span>To ${h(audLabel(a.aud))}</span><span>From ${h(byName(a.by))}</span></div><div class="row">${a.by==='p0'?`<button class="btn sm sec" data-a="annEdit" data-id="${a.id}">Edit</button>`:''}<button class="btn sm bad" data-a="annDel" data-id="${a.id}">Delete</button></div></div>`).join(''):empty('Nothing here yet','Use the button above to create one.'));
+  +(list.length?list.map(a=>`<div class="item"><div class="row sp"><span class="row">${chip(TYPEL[a.type]||'Notice',TYPEC[a.type])}${a.publish>TODAY?chip('Scheduled for '+fs(a.publish),'info'):''}</span><small>${fd(a.publish)}</small></div><h4>${h(a.title)}</h4><p>${h(a.body)}</p><div class="meta"><span>To ${h(audLabel(a.aud))}</span><span>From ${h(byName(a.by))}</span></div><div class="row">${(S.role==='admin'?a.by===S.user.id:a.by==='p0')?`<button class="btn sm sec" data-a="annEdit" data-id="${a.id}">Edit</button>`:''}<button class="btn sm bad" data-a="annDel" data-id="${a.id}">Delete</button></div></div>`).join(''):empty('Nothing here yet','Use the button above to create one.'));
 }
 VIEWS.principal.ann=()=>annScreen('announcement');
 VIEWS.principal.notice=()=>annScreen('notice');
@@ -1019,20 +1015,6 @@ A.ntSend=()=>{
   DB.anns.unshift({id:'a'+uid(),kind:'announcement',type:val('nt_type'),title,body,aud:{kind:'classes',cids:[cid],sids},by:t.id,ts:TODAY+'T'+nowHM(),publish:TODAY});
   S.f.ntt='';S.f.ntb='';render();toast('Notification sent to '+(sids.length?sids.length+' selected student'+(sids.length>1?'s':'')+'’ parents':'parents of '+cls(cid).name)+'.');
 };
-A.dsAdd=()=>{
-  const t=S.user,a=t.assign[+val('ds_a')],d=val('ds_d'),er=m=>{$('ds_err').textContent=m;};
-  if(!d)return er('Choose the date of the paper.');if(!isSchool(d))return er('The paper date must be a weekday.');
-  if(!val('ds_t'))return er('Enter the time.');if(!val('ds_r'))return er('Enter the room.');
-  DB.datesheet.push({id:'d'+uid(),cid:a[0],exam:val('ds_e'),sub:a[1],date:d,time:val('ds_t'),room:val('ds_r'),by:t.id});
-  ev({role:'parent',cids:[a[0]]},'Date sheet updated',subName(a[1])+' paper on '+fd(d)+', '+val('ds_t')+'.','event');
-  render();toast('Added to the date sheet.');
-};
-C.dscsv=el=>{
-  const f=el.files[0];if(!f)return;const r=new FileReader();
-  r.onload=()=>{const t=S.user;let n=0;String(r.result).split(/\r?\n/).forEach(line=>{const p=line.split(',').map(x=>x.trim());if(p.length<4)return;const a=t.assign.find(x=>subName(x[1]).toLowerCase()===p[0].toLowerCase()||x[1]===p[0].toLowerCase());if(!a||!/^\d{4}-\d{2}-\d{2}$/.test(p[1]))return;DB.datesheet.push({id:'d'+uid(),cid:a[0],exam:'Monthly Test (November)',sub:a[1],date:p[1],time:p[2],room:p[3],by:t.id});n++;});
-    render();toast(n?n+' papers added from the file.':'No valid rows. Use subject,date,time,room with dates like 2026-11-18.');};
-  r.readAsText(f);
-};
 A.dsDel=el=>{DB.datesheet=DB.datesheet.filter(d=>d.id!==el.dataset.id);render();toast('Paper removed.');};
 
 /* teacher: own attendance and leave */
@@ -1068,14 +1050,14 @@ A.annSave=el=>{
   if(t.length<3)return merr('Write a title.');if(b.length<5)return merr('Write the message.');if(ak==='classes'&&!cids.length)return merr('Select at least one class.');if(!pub)return merr('Choose a publish date.');
   const aud={kind:ak,cids:ak==='classes'?cids:[],sids:[]};
   if(id){const a=DB.anns.find(x=>x.id===id);a.title=t;a.body=b;a.type=val('an_type');a.aud=aud;a.publish=pub;}
-  else DB.anns.unshift({id:'a'+uid(),kind,type:val('an_type'),title:t,body:b,aud,by:'p0',ts:TODAY+'T'+nowHM(),publish:pub});
+  else DB.anns.unshift({id:'a'+uid(),kind,type:val('an_type'),title:t,body:b,aud,by:S.role==='admin'?S.user.id:'p0',ts:TODAY+'T'+nowHM(),publish:pub});
   closeModal();render();toast(pub>TODAY?'Saved. It will appear on '+fs(pub)+'.':'Published. '+audLabel(aud)+' can see it now.');
 };
 A.annDel=el=>{const id=el.dataset.id;ask('Delete this item?','Delete',()=>{DB.anns=DB.anns.filter(a=>a.id!==id);render();toast('Deleted.');});};
 
 /* ---------- database connection (live mode only) ---------- */
 const SYNC={last:{},busy:false,again:false,failed:false,timer:null,poll:null,refreshing:false};
-const DICT=['att','tatt','res','pub','hwSub'];
+const DICT=['att','tatt','res','pub','hwSub','tt'];
 const LISTS=['leaves','tleaves','hw','datesheet','anns','events'];
 const sigOf=v=>JSON.stringify(v);
 function recMap(c){
@@ -1174,6 +1156,7 @@ async function flushSync(){clearTimeout(SYNC.timer);SYNC.again=false;let n=0;whi
 function canRepaint(){
   if($('modal').innerHTML)return false;
   const a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return false;
+  if(Array.prototype.some.call(document.querySelectorAll('#view select[id^="tt_"]'),e=>e.selectedOptions[0]&&!e.selectedOptions[0].defaultSelected))return false;
   return !Array.prototype.some.call(document.querySelectorAll('#view textarea,#view input[type=text],#view input[type=number],#view input[type=date]'),e=>e.value!==e.defaultValue);
 }
 async function refresh(){
@@ -1570,6 +1553,123 @@ async function init(){
   render();
 }
 
+
+/* ---------- Admin posting tools: timetable, date sheet, announcements, notices, events and holidays ---------- */
+
+/* Weekly timetable. DB.tt[classId] = {days:[[sub x5] x5]} (Monday to Friday, lectures 1 to 5). */
+const TTD=[0,1,2,3,4];
+const ttDays=cid=>TTD.map(i=>[1,2,3,4,5].map(p=>ttCell(cid,i,p)));
+const ttNote=(cid,title)=>{
+  const c=cls(cid);if(!c)return;
+  ev({role:'parent',cids:[cid]},title,c.name+' timetable was updated. See the Timetable page.','event');
+  DB.teachers.filter(t=>t.assign.some(a=>a[0]===cid)).forEach(t=>ev({role:'teacher',id:t.id},title,c.name+' timetable was updated. See the Timetable page.','event'));
+};
+const ttHead=()=>`<thead><tr><th>Lecture</th>${TTD.map(i=>`<th${isSchool(TODAY)&&dow(TODAY)===i?' style="color:var(--gold)"':''}>${DAYN[i]}</th>`).join('')}</tr></thead>`;
+
+VIEWS.admin.tt=()=>{
+  const ttl='Timetable',sub='Set the weekly timetable for each class. Teachers and parents see it in their own portal.';
+  if(!CLASSES.length)return head(ttl,sub)+empty('No classes yet','Add a class under Classes and subjects first.');
+  const cid=cls(F('ttc',''))?F('ttc',''):CLASSES[0].id,c=cls(cid),d=ttDays(cid),custom=!!(DB.tt&&DB.tt[cid]);
+  return head(ttl,sub)
+  +`<div class="g2" style="margin:14px 0">${fsel('ttc',CLASSES.map(x=>[x.id,x.name]),cid,'Class')}</div>`
+  +`<div class="card"><div class="row sp" style="margin-bottom:10px"><h3>${h(c.name)}</h3>${custom?chip('Custom timetable','ok'):chip('Default order, not saved yet','warn')}</div>`
+  +`<div class="tw"><table>${ttHead()}<tbody>${[1,2,3,4,5].map(p=>`<tr><td>${p} <small>${PT[p-1]}</small></td>${TTD.map(i=>`<td><select id="tt_${i}_${p}" aria-label="${DAYN[i]} lecture ${p}">${c.subjects.map(sb=>`<option value="${h(sb)}"${d[i][p-1]===sb?' selected':''}>${h(subName(sb))}</option>`).join('')}</select></td>`).join('')}</tr>`).join('')}</tbody></table></div>`
+  +`<div class="meta" style="margin-top:10px">${c.subjects.map(sb=>{const t=teacherFor(c.id,sb);return chip(subName(sb)+' ('+(t.id?t.name:'no teacher')+')',t.id?'info':'warn');}).join('')}</div>`
+  +`<div class="row" style="margin-top:14px"><button class="btn" data-a="ttSave" data-id="${h(cid)}">Save timetable</button>${custom?`<button class="btn sec" data-a="ttReset" data-id="${h(cid)}">Reset to default order</button>`:''}</div></div>`;
+};
+A.ttSave=el=>{
+  const cid=el.dataset.id,c=cls(cid);if(!c)return;
+  const days=TTD.map(i=>[1,2,3,4,5].map(p=>{const s=$('tt_'+i+'_'+p);return s&&c.subjects.includes(s.value)?s.value:c.subjects[(p-1+i)%5];}));
+  DB.tt[cid]={days};
+  ttNote(cid,'Timetable updated');
+  render();toast('Timetable saved for '+c.name+'. Teachers and parents can see it now.');
+};
+A.ttReset=el=>{
+  const cid=el.dataset.id,c=cls(cid);
+  ask('Reset the timetable for '+(c?c.name:'this class')+' to the default order?','Reset',()=>{delete DB.tt[cid];ttNote(cid,'Timetable updated');render();toast('Timetable reset.');});
+};
+
+function ttView(cid,cell,hl){
+  return `<div class="tw"><table>${ttHead()}<tbody>${[1,2,3,4,5].map(p=>`<tr><td>${p} <small>${PT[p-1]}</small></td>${TTD.map(i=>`<td${hl&&dow(TODAY)===i&&isSchool(TODAY)?' style="background:var(--infobg)"':''}>${cell(i,p)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
+VIEWS.parent.tt=()=>{
+  const k=curKid();if(!k)return noKid();
+  const c=cls(k.cid);
+  return head('Timetable',c.name+(c.room?', '+c.room:'')+'. Lectures start at '+PT[0]+'.')+kidSwitch()
+  +`<div class="card">${ttView(k.cid,(i,p)=>{const sb=ttCell(k.cid,i,p),t=teacherFor(k.cid,sb);return `<b>${h(subName(sb))}</b><br><small>${h(t.id?t.name:'')}</small>`;},true)}</div>`;
+};
+VIEWS.teacher.tt=()=>{
+  const t=S.user;if(!t.assign.length)return head('Timetable')+noAsg();
+  const total=TTD.reduce((n,i)=>n+[1,2,3,4,5].filter(p=>t.assign.some(a=>ttCell(a[0],i,p)===a[1])).length,0);
+  return head('Timetable','Your lectures in the week: '+total+'.')
+  +`<div class="card">${ttView('',(i,p)=>{const m=t.assign.filter(a=>ttCell(a[0],i,p)===a[1]);return m.length?m.map(a=>`<b>${h(cls(a[0]).name)}</b><br><small>${h(subName(a[1]))}</small>`).join('<br>'):'<span class="mut">Free</span>';},true)}</div>`;
+};
+
+/* Date sheet (exam papers). Only the Admin posts these. */
+VIEWS.admin.ds=()=>{
+  const ttl='Date sheet',sub='Exam paper dates for each class. Parents see them in their Date sheet page.';
+  if(!CLASSES.length)return head(ttl,sub)+empty('No classes yet','Add a class under Classes and subjects first.');
+  const f=F('dsf','all'),list=DB.datesheet.filter(d=>cls(d.cid)&&(f==='all'||d.cid===f)).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  return head(ttl,sub,`<button class="btn" data-a="dsNew">Add paper</button>`)
+  +`<div class="g2" style="margin:14px 0"><div>${fsel('dsf',[['all','All classes']].concat(CLASSES.map(x=>[x.id,x.name])),f,'Class')}</div></div>`
+  +(list.length?`<div class="tw"><table><thead><tr><th>Class</th><th>Exam</th><th>Subject</th><th>Date</th><th>Time</th><th>Room</th><th></th></tr></thead><tbody>${list.map(d=>`<tr><td>${h(cls(d.cid).name)}</td><td>${h(d.exam||'')}</td><td>${h(subName(d.sub))}</td><td>${fd(d.date)}</td><td>${h(d.time||'')}</td><td>${h(d.room||'')}</td><td><button class="btn sm bad" data-a="dsDel" data-id="${h(d.id)}">Remove</button></td></tr>`).join('')}</tbody></table></div>`:empty('No papers yet','Use Add paper to build the date sheet.'));
+};
+const dsSubOpts=cid=>{const c=cls(cid);return c?c.subjects.map(sb=>`<option value="${h(sb)}">${h(subName(sb))}</option>`).join(''):'';};
+A.dsNew=()=>{
+  const c=CLASSES[0];if(!c)return;
+  const f=cls(F('dsf',''))?F('dsf',''):c.id,cc=cls(f);
+  modal('Add exam paper',
+   `<label for="dsa_c">Class</label><select id="dsa_c" data-c="dsaCls">${opts(CLASSES.map(x=>[x.id,x.name]),f)}</select>
+    <label for="dsa_e">Exam</label><input type="text" id="dsa_e" value="Monthly Test" placeholder="For example, First Term">
+    <label for="dsa_s">Subject</label><select id="dsa_s">${dsSubOpts(f)}</select>
+    <div class="g2"><div><label for="dsa_d">Date</label><input type="date" id="dsa_d" value="${addDays(TODAY,7)}" min="${TODAY}"></div><div><label for="dsa_t">Time</label><input type="text" id="dsa_t" value="9:00 am"></div></div>
+    <label for="dsa_r">Room</label><input type="text" id="dsa_r" value="${h(cc.room||'')}">
+    <div class="err" id="merr"></div>`,
+   [['Add paper','dsSave','','']]);
+};
+C.dsaCls=el=>{$('dsa_s').innerHTML=dsSubOpts(el.value);const c=cls(el.value);if(c)$('dsa_r').value=c.room||'';};
+A.dsSave=()=>{
+  const cid=val('dsa_c'),sb=val('dsa_s'),d=val('dsa_d'),tm=val('dsa_t'),ex=val('dsa_e');
+  if(!cls(cid)||!sb)return merr('Choose a class and subject.');
+  if(ex.length<2)return merr('Write the exam name.');
+  if(!d)return merr('Choose the date of the paper.');
+  if(!isSchool(d))return merr('The paper date must be a weekday.');
+  if(!tm)return merr('Enter the time.');
+  DB.datesheet.push({id:'d'+uid(),cid,exam:ex,sub:sb,date:d,time:tm,room:val('dsa_r'),by:S.user.id});
+  ev({role:'parent',cids:[cid]},'Date sheet updated',subName(sb)+' paper on '+fd(d)+', '+tm+'.','event');
+  closeModal();render();toast('Paper added to the date sheet.');
+};
+
+/* Announcements and notices: the Admin uses the same screens as the Principal. */
+VIEWS.admin.ann=()=>annScreen('announcement');
+VIEWS.admin.notice=()=>annScreen('notice');
+
+/* Events and holidays, shown to parents and/or teachers. */
+VIEWS.admin.evt=()=>{
+  const seen={},list=[];
+  DB.events.filter(e=>e.adm).forEach(e=>{if(seen[e.grp])return;seen[e.grp]=1;list.push(e);});
+  list.sort((a,b)=>a.ts<b.ts?1:-1);
+  const to=g=>['parent','teacher'].filter(r=>DB.events.some(x=>x.grp===g&&x.to.role===r)).map(r=>r==='parent'?'Parents':'Teachers').join(' and ');
+  return head('Events and holidays','Holidays, meetings and events. They appear in the notifications of parents and teachers.',`<button class="btn" data-a="evNew">New event or holiday</button>`)
+  +(list.length?list.map(e=>`<div class="item"><div class="row sp"><span class="row">${chip(TYPEL[e.type]||'Event',TYPEC[e.type])}${e.date?chip(fd(e.date),'info'):''}</span><small>Posted ${fs(e.ts.slice(0,10))}</small></div><h4>${h(e.title)}</h4><p>${h(e.text)}</p><div class="meta"><span>To ${h(to(e.grp))}</span></div><div class="row"><button class="btn sm bad" data-a="evDel" data-id="${h(e.grp)}">Delete</button></div></div>`).join(''):empty('Nothing posted yet','Use the button above to post a holiday or an event.'));
+};
+A.evNew=()=>{
+  modal('New event or holiday',
+   `<label for="ev_t">Title</label><input type="text" id="ev_t" placeholder="For example, Winter holiday">
+    <label for="ev_b">Details</label><textarea id="ev_b" placeholder="What should parents and teachers know?"></textarea>
+    <div class="g2"><div><label for="ev_type">Type</label><select id="ev_type">${opts([['holiday','Holiday'],['event','Event'],['ptm','PTM'],['urgent','Urgent']],'holiday')}</select></div><div><label for="ev_d">Date (optional)</label><input type="date" id="ev_d" min="${TODAY}"></div></div>
+    <label for="ev_a">Send to</label><select id="ev_a">${opts([['both','Parents and teachers'],['parent','Parents only'],['teacher','Teachers only']],'both')}</select>
+    <div class="err" id="merr"></div>`,
+   [['Post','evSave','','']]);
+};
+A.evSave=()=>{
+  const t=val('ev_t'),b=val('ev_b'),d=val('ev_d'),ty=val('ev_type'),a=val('ev_a');
+  if(t.length<3)return merr('Write a title.');if(b.length<5)return merr('Write the details.');
+  const grp='g'+uid(),roles=a==='both'?['parent','teacher']:[a],text=(d?fd(d)+'. ':'')+b;
+  roles.forEach(r=>DB.events.unshift({id:'ev'+uid(),ts:TODAY+'T'+nowHM(),title:t,text,type:ty,to:{role:r},adm:1,grp,date:d||''}));
+  closeModal();render();toast('Posted to '+roles.map(r=>r==='parent'?'parents':'teachers').join(' and ')+'.');
+};
+A.evDel=el=>{const g=el.dataset.id;ask('Delete this post?','Delete',()=>{DB.events=DB.events.filter(x=>x.grp!==g);render();toast('Deleted.');});};
 /* ---------- events ---------- */
 document.addEventListener('click',e=>{
   if(e.target.classList&&e.target.classList.contains('ov')){closeModal();return;}
