@@ -53,7 +53,7 @@ button{cursor:pointer}
 .rtabs button{border:0;background:transparent;padding:10px 2px;font-size:13.5px;border-radius:9px;font-weight:700;color:var(--mut)}
 .rtabs button[aria-pressed="true"]{background:var(--btn);color:var(--btnink)}
 .demo{margin-top:16px;background:var(--sf2);border:1px dashed var(--ln);border-radius:12px;padding:12px 14px;font-size:13.5px}
-.item code,.md code{background:var(--infobg);color:var(--info);padding:1px 6px;border-radius:6px;font-weight:700}
+.av{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--infobg);color:var(--info);font-weight:700;font-size:12px;overflow:hidden;flex:none;margin-right:10px;vertical-align:middle}\n.av.lg{width:52px;height:52px;font-size:20px;margin-right:0}\n.av img{width:100%;height:100%;object-fit:cover;display:block}\n.who{display:inline-flex;align-items:center}\n.item code,.md code{background:var(--infobg);color:var(--info);padding:1px 6px;border-radius:6px;font-weight:700}
 .demo code{background:var(--infobg);color:var(--info);padding:1px 6px;border-radius:6px;font-weight:700}
 
 /* forms */
@@ -686,7 +686,7 @@ VIEWS.teacher.att=()=>{
   const cn={P:0,A:0,L:0,U:0};st.forEach(s=>cn[S.work[s.id]||'U']++);
   return head('Student attendance',cls(cid).name+', '+subName(sub)+', lecture '+p+' ('+PT[p-1]+')',`<button class="btn sec" data-a="allP">Mark all present</button><button class="btn" data-a="attSave">Save attendance</button>`)+sel
   +`<div class="row" style="margin-bottom:12px">${chip('Present '+cn.P,'ok')}${chip('Absent '+cn.A,'bad')}${chip('Leave '+cn.L,'warn')}${chip('Not marked '+cn.U,'')}${DB.att[key]?chip('Saved earlier. You can edit it.','info'):''}</div>`
-  +(st.length?st.map(s=>`<div class="mark"><span class="roll">${s.roll}</span><span><b>${h(s.name)}</b></span>${locked(s)?chip('Approved leave','warn'):`<div class="three" role="group" aria-label="Attendance for ${h(s.name)}">${['P','A','L'].map(v=>`<button class="${v}" data-a="tmark" data-id="${s.id}" data-v="${v}" aria-pressed="${S.work[s.id]===v}">${v==='P'?'Present':v==='A'?'Absent':'Leave'}</button>`).join('')}</div>`}</div>`).join(''):empty('No students in this class'));
+  +(st.length?st.map(s=>`<div class="mark"><span class="roll">${s.roll}</span><span class="who">${av(s)}<b>${h(s.name)}</b></span>${locked(s)?chip('Approved leave','warn'):`<div class="three" role="group" aria-label="Attendance for ${h(s.name)}">${['P','A','L'].map(v=>`<button class="${v}" data-a="tmark" data-id="${s.id}" data-v="${v}" aria-pressed="${S.work[s.id]===v}">${v==='P'?'Present':v==='A'?'Absent':'Leave'}</button>`).join('')}</div>`}</div>`).join(''):empty('No students in this class'));
 };
 
 VIEWS.teacher.hw=()=>{
@@ -708,7 +708,7 @@ VIEWS.teacher.res=()=>{
   return head('Upload results','Enter marks out of 100. Parents see them after you publish.',pb?`<button class="btn sec" data-a="resUnpub">Unpublish to edit</button>`:`<button class="btn sec" data-a="resSave" data-id="draft">Save draft</button><button class="btn gold" data-a="resSave" data-id="pub">Publish to parents</button>`)
   +`<div class="g2" style="margin-bottom:14px">${asgSel('tasg',i)}${fsel('texam',EXAMS.map(e=>[e.id,e.name]),ex,'Exam')}</div>`
   +`<div class="row" style="margin-bottom:12px">${pb?chip('Published','ok'):chip('Draft, not visible to parents','warn')}${pb?'':`<label class="btn sec sm" style="margin:0;cursor:pointer">Upload CSV<input type="file" accept=".csv,.txt" data-c="csv" style="display:none"></label><small>CSV format: roll,marks</small>`}</div>`
-  +`<div class="tw"><table><thead><tr><th>Roll</th><th>Student</th><th class="n">Marks /100</th><th>Grade</th></tr></thead><tbody>${st.map(s=>{const m=cur[s.id];const g=(m===''||m==null)?null:+m;return `<tr><td>${s.roll}</td><td>${h(s.name)}</td><td class="n"><input type="number" min="0" max="100" style="width:90px;text-align:right" id="mk_${s.id}" data-i="mk" data-id="${s.id}" value="${m==null?'':m}"${pb?' disabled':''} aria-label="Marks for ${h(s.name)}"></td><td id="g_${s.id}">${g==null?'':chip(gradeOf(g),gcls(g))}</td></tr>`;}).join('')}</tbody></table></div>`;
+  +`<div class="tw"><table><thead><tr><th>Roll</th><th>Student</th><th class="n">Marks /100</th><th>Grade</th></tr></thead><tbody>${st.map(s=>{const m=cur[s.id];const g=(m===''||m==null)?null:+m;return `<tr><td>${s.roll}</td><td><span class="who">${av(s)}${h(s.name)}</span></td><td class="n"><input type="number" min="0" max="100" style="width:90px;text-align:right" id="mk_${s.id}" data-i="mk" data-id="${s.id}" value="${m==null?'':m}"${pb?' disabled':''} aria-label="Marks for ${h(s.name)}"></td><td id="g_${s.id}">${g==null?'':chip(gradeOf(g),gcls(g))}</td></tr>`;}).join('')}</tbody></table></div>`;
 };
 
 VIEWS.teacher.leave=()=>{
@@ -744,7 +744,7 @@ VIEWS.teacher.parents=()=>{
   const t=S.user,cids=tClasses(t);if(!cids.length)return head('Parents')+noAsg();
   const cid=cids.includes(F('tpc',cids[0]))?F('tpc',cids[0]):cids[0];
   return head('Parents','Parents of the students in your classes. Only the Admin can add or remove them.')+`<div style="max-width:320px;margin-bottom:14px">${fsel('tpc',cids.map(c=>[c,cls(c).name]),cid,'Class')}</div>`
-  +DB.students.filter(s=>s.cid===cid&&s.active).map(s=>{const ps=parentsOf(s.id);return `<div class="item"><div class="row sp"><h4>${s.roll}. ${h(s.name)}</h4></div>${ps.length?ps.map(p=>`<div class="row sp"><span>${h(p.name)} <small>${h(p.rel)}, ${h(p.phone)}</small></span></div>`).join(''):'<div class="meta">No parent linked yet</div>'}</div>`;}).join('');
+  +DB.students.filter(s=>s.cid===cid&&s.active).map(s=>{const ps=parentsOf(s.id);return `<div class="item"><div class="row sp"><h4 class="who">${av(s)}${s.roll}. ${h(s.name)}</h4></div>${ps.length?ps.map(p=>`<div class="row sp"><span>${h(p.name)} <small>${h(p.rel)}, ${h(p.phone)}</small></span></div>`).join(''):'<div class="meta">No parent linked yet</div>'}</div>`;}).join('');
 };
 
 VIEWS.teacher.me=()=>{
@@ -799,9 +799,9 @@ function attTable(){
   if(!st.length)return empty('No students found','Try a different class or search.');
   if(mode==='daily'){
     if(!isSchool(d))return empty('No school on this day','Pick a weekday.');
-    return `<div class="tw"><table><thead><tr><th>Roll</th><th>Student</th>${[1,2,3,4,5].map(p=>`<th title="${h(subName(subjAt(cid,d,p)))}">L${p}<br><small>${h(subName(subjAt(cid,d,p)).slice(0,5))}</small></th>`).join('')}<th class="n">Day</th></tr></thead><tbody>${st.map(s=>{const a=agg([s.id],[d]);return `<tr><td>${s.roll}</td><td>${h(s.name)}</td>${[1,2,3,4,5].map(p=>`<td>${pill(effStatus(s.id,d,p))}</td>`).join('')}<td class="n"><b>${a.pct==null?(a.L?'Leave':'-'):Math.round(a.pct)+'%'}</b></td></tr>`;}).join('')}</tbody></table></div>`;
+    return `<div class="tw"><table><thead><tr><th>Roll</th><th>Student</th>${[1,2,3,4,5].map(p=>`<th title="${h(subName(subjAt(cid,d,p)))}">L${p}<br><small>${h(subName(subjAt(cid,d,p)).slice(0,5))}</small></th>`).join('')}<th class="n">Day</th></tr></thead><tbody>${st.map(s=>{const a=agg([s.id],[d]);return `<tr><td>${s.roll}</td><td><span class="who">${av(s)}${h(s.name)}</span></td>${[1,2,3,4,5].map(p=>`<td>${pill(effStatus(s.id,d,p))}</td>`).join('')}<td class="n"><b>${a.pct==null?(a.L?'Leave':'-'):Math.round(a.pct)+'%'}</b></td></tr>`;}).join('')}</tbody></table></div>`;
   }
-  return `<div class="tw"><table><thead><tr><th>Roll</th><th>Student</th><th class="n">Present</th><th class="n">Absent</th><th class="n">Leave</th><th class="n">Attendance</th></tr></thead><tbody>${st.map(s=>{const a=agg([s.id],dates);return `<tr><td>${s.roll}</td><td>${h(s.name)}</td><td class="n">${a.P}</td><td class="n">${a.A}</td><td class="n">${a.L}</td><td class="n"><b>${a.pct==null?'-':Math.round(a.pct)+'%'}</b></td></tr>`;}).join('')}</tbody></table></div>`;
+  return `<div class="tw"><table><thead><tr><th>Roll</th><th>Student</th><th class="n">Present</th><th class="n">Absent</th><th class="n">Leave</th><th class="n">Attendance</th></tr></thead><tbody>${st.map(s=>{const a=agg([s.id],dates);return `<tr><td>${s.roll}</td><td><span class="who">${av(s)}${h(s.name)}</span></td><td class="n">${a.P}</td><td class="n">${a.A}</td><td class="n">${a.L}</td><td class="n"><b>${a.pct==null?'-':Math.round(a.pct)+'%'}</b></td></tr>`;}).join('')}</tbody></table></div>`;
 }
 VIEWS.principal.att=()=>{
   const tab=F('patab','students'),mode=F('pmode','daily'),d=F('pdate',TODAY),m=F('pmonth',CM());
@@ -811,8 +811,8 @@ VIEWS.principal.att=()=>{
   if(tab==='teachers'){
     const dates=ALLD.filter(x=>x.indexOf(m)===0);
     body=`<div class="g2" style="margin:14px 0"><div>${modeSeg}</div><div>${mode==='daily'?fdate('pdate',d,'Date',TODAY):monthSel}</div></div>`
-    +(mode==='daily'?`<div class="tw"><table><thead><tr><th>Teacher</th><th>Status</th><th>Check in</th><th>Check out</th></tr></thead><tbody>${DB.teachers.filter(t=>t.active).map(t=>{const x=tStatus(t.id,d),r=DB.tatt[t.id+'|'+d]||{};return `<tr><td>${h(t.name)}</td><td>${x?stChip(x):chip(isSchool(d)?'Not in yet':'Holiday','')}</td><td>${h(r.in||'')}${r.in&&r.in>'08:10'?' '+chip('Late','warn'):''}</td><td>${h(r.out||'')}</td></tr>`;}).join('')}</tbody></table></div>`
-      :`<div class="tw"><table><thead><tr><th>Teacher</th><th class="n">Present</th><th class="n">Absent</th><th class="n">Leave</th><th class="n">Late</th><th class="n">Attendance</th></tr></thead><tbody>${DB.teachers.filter(t=>t.active).map(t=>{const c={P:0,A:0,L:0},late=dates.filter(x=>{const r=DB.tatt[t.id+'|'+x];return r&&r.in>'08:10';}).length;dates.forEach(x=>{const s=tStatus(t.id,x);if(s)c[s]++;});return `<tr><td>${h(t.name)}</td><td class="n">${c.P}</td><td class="n">${c.A}</td><td class="n">${c.L}</td><td class="n">${late}</td><td class="n"><b>${(c.P+c.A)?Math.round(c.P/(c.P+c.A)*100)+'%':'-'}</b></td></tr>`;}).join('')}</tbody></table></div>`);
+    +(mode==='daily'?`<div class="tw"><table><thead><tr><th>Teacher</th><th>Status</th><th>Check in</th><th>Check out</th></tr></thead><tbody>${DB.teachers.filter(t=>t.active).map(t=>{const x=tStatus(t.id,d),r=DB.tatt[t.id+'|'+d]||{};return `<tr><td><span class="who">${av(t)}${h(t.name)}</span></td><td>${x?stChip(x):chip(isSchool(d)?'Not in yet':'Holiday','')}</td><td>${h(r.in||'')}${r.in&&r.in>'08:10'?' '+chip('Late','warn'):''}</td><td>${h(r.out||'')}</td></tr>`;}).join('')}</tbody></table></div>`
+      :`<div class="tw"><table><thead><tr><th>Teacher</th><th class="n">Present</th><th class="n">Absent</th><th class="n">Leave</th><th class="n">Late</th><th class="n">Attendance</th></tr></thead><tbody>${DB.teachers.filter(t=>t.active).map(t=>{const c={P:0,A:0,L:0},late=dates.filter(x=>{const r=DB.tatt[t.id+'|'+x];return r&&r.in>'08:10';}).length;dates.forEach(x=>{const s=tStatus(t.id,x);if(s)c[s]++;});return `<tr><td><span class="who">${av(t)}${h(t.name)}</span></td><td class="n">${c.P}</td><td class="n">${c.A}</td><td class="n">${c.L}</td><td class="n">${late}</td><td class="n"><b>${(c.P+c.A)?Math.round(c.P/(c.P+c.A)*100)+'%':'-'}</b></td></tr>`;}).join('')}</tbody></table></div>`);
   }else{
     body=`<div class="g3" style="margin:14px 0">${fsel('pcls',[['all','All classes'],...CLASSES.map(c=>[c.id,c.name])],F('pcls',dc()),'Class')}<div>${mode==='daily'?fdate('pdate',d,'Date',TODAY):monthSel}</div><div><label for="psq">Search student</label><input type="search" id="psq" data-i="psq" value="${h(F('psq',''))}" placeholder="Type a name"></div></div><div style="margin-bottom:12px">${modeSeg}</div><div id="plist">${attTable()}</div>`;
   }
@@ -834,18 +834,18 @@ function usersList(tab,edit){
   const q=(F('uq','')||'').toLowerCase();
   if(tab==='teachers'){
     const l=DB.teachers.filter(t=>!q||t.name.toLowerCase().indexOf(q)>-1);
-    return l.length?l.map(t=>`<div class="item"><div class="row sp"><h4>${h(t.name)}</h4>${t.active?chip('Active','ok'):chip('Inactive','')}</div><div class="meta"><span>${h(t.phone)}</span><span>User ${h(t.user)}</span></div><div class="meta">${t.assign.length?t.assign.map(a=>chip(cls(a[0]).name+' '+subName(a[1]),'info')).join(''):'No classes assigned'}</div>${edit?acts('teacher',t):''}</div>`).join(''):empty('No teachers found');
+    return l.length?l.map(t=>`<div class="item"><div class="row sp"><h4 class="who">${av(t)}${h(t.name)}</h4>${t.active?chip('Active','ok'):chip('Inactive','')}</div><div class="meta"><span>${h(t.phone)}</span><span>User ${h(t.user)}</span></div><div class="meta">${t.assign.length?t.assign.map(a=>chip(cls(a[0]).name+' '+subName(a[1]),'info')).join(''):'No classes assigned'}</div>${edit?acts('teacher',t):''}</div>`).join(''):empty('No teachers found');
   }
   if(tab==='principals'){
     const l=DB.principals.filter(t=>!q||t.name.toLowerCase().indexOf(q)>-1);
-    return l.length?l.map(t=>`<div class="item"><div class="row sp"><h4>${h(t.name)}</h4>${t.active?chip('Active','ok'):chip('Inactive','')}</div><div class="meta"><span>${h(t.phone)}</span><span>User ${h(t.user)}</span></div>${edit?acts('principal',t):''}</div>`).join(''):empty('No principals found');
+    return l.length?l.map(t=>`<div class="item"><div class="row sp"><h4 class="who">${av(t)}${h(t.name)}</h4>${t.active?chip('Active','ok'):chip('Inactive','')}</div><div class="meta"><span>${h(t.phone)}</span><span>User ${h(t.user)}</span></div>${edit?acts('principal',t):''}</div>`).join(''):empty('No principals found');
   }
   if(tab==='parents'){
     const l=DB.parents.filter(p=>!q||p.name.toLowerCase().indexOf(q)>-1||p.kids.some(k=>stu(k)&&stu(k).name.toLowerCase().indexOf(q)>-1));
-    return l.length?l.map(p=>`<div class="item"><div class="row sp"><h4>${h(p.name)} <small>${h(p.rel)}</small></h4>${p.active?chip('Active','ok'):chip('Inactive','')}</div><div class="meta"><span>${h(p.phone)}</span><span>User ${h(p.user)}</span></div><div class="meta">${p.kids.filter(k=>stu(k)).map(k=>chip(stu(k).name+' ('+cls(stu(k).cid).name+')','info')).join('')||'No student linked'}</div>${edit?acts('parent',p):''}</div>`).join(''):empty('No parents found');
+    return l.length?l.map(p=>`<div class="item"><div class="row sp"><h4 class="who">${av(p)}<span>${h(p.name)} <small>${h(p.rel)}</small></span></h4>${p.active?chip('Active','ok'):chip('Inactive','')}</div><div class="meta"><span>${h(p.phone)}</span><span>User ${h(p.user)}</span></div><div class="meta">${p.kids.filter(k=>stu(k)).map(k=>chip(stu(k).name+' ('+cls(stu(k).cid).name+')','info')).join('')||'No student linked'}</div>${edit?acts('parent',p):''}</div>`).join(''):empty('No parents found');
   }
   const cf=F('ucls','all'),l=DB.students.filter(s=>(cf==='all'||s.cid===cf)&&(!q||s.name.toLowerCase().indexOf(q)>-1));
-  return l.length?`<div class="tw"><table><thead><tr><th>Roll</th><th>Student</th><th>Class</th><th>Parent</th><th>Status</th>${edit?'<th></th>':''}</tr></thead><tbody>${l.map(s=>`<tr><td>${s.roll}</td><td>${h(s.name)}</td><td>${h(cls(s.cid)?cls(s.cid).name:'')}</td><td>${h(parentsOf(s.id).map(p=>p.name).join(', ')||'None')}</td><td>${s.active?chip('Active','ok'):chip('Inactive','')}</td>${edit?`<td><div class="row"><button class="btn sm sec" data-a="sEdit" data-id="${h(s.id)}">Edit</button><button class="btn sm ${s.active?'bad':'ok'}" data-a="sToggle" data-id="${h(s.id)}">${s.active?'Deactivate':'Activate'}</button><button class="btn sm bad" data-a="sRemove" data-id="${h(s.id)}">Remove</button></div></td>`:''}</tr>`).join('')}</tbody></table></div>`:empty('No students found');
+  return l.length?`<div class="tw"><table><thead><tr><th>Roll</th><th>Student</th><th>Class</th><th>Parent</th><th>Status</th>${edit?'<th></th>':''}</tr></thead><tbody>${l.map(s=>`<tr><td>${s.roll}</td><td><span class="who">${av(s)}${h(s.name)}</span></td><td>${h(cls(s.cid)?cls(s.cid).name:'')}</td><td>${h(parentsOf(s.id).map(p=>p.name).join(', ')||'None')}</td><td>${s.active?chip('Active','ok'):chip('Inactive','')}</td>${edit?`<td><div class="row"><button class="btn sm sec" data-a="sEdit" data-id="${h(s.id)}">Edit</button><button class="btn sm ${s.active?'bad':'ok'}" data-a="sToggle" data-id="${h(s.id)}">${s.active?'Deactivate':'Activate'}</button><button class="btn sm bad" data-a="sRemove" data-id="${h(s.id)}">Remove</button></div></td>`:''}</tr>`).join('')}</tbody></table></div>`:empty('No students found');
 }
 const searchBar=(tab)=>`<div class="g2" style="margin:14px 0"><div><label for="uq">Search</label><input type="search" id="uq" data-i="uq" value="${h(F('uq',''))}" placeholder="Type a name"></div>${tab==='students'?`<div>${fsel('ucls',[['all','All classes'],...CLASSES.map(c=>[c.id,c.name])],F('ucls','all'),'Class')}</div>`:''}</div>`;
 
@@ -1083,19 +1083,19 @@ async function loadCore(){
   const all=await Promise.all([
     fetchAll('subjects','code,name',['code']),
     fetchAll('classes','id,name,level,room,class_teacher,subjects',['id']),
-    fetchAll('students','id,full_name,roll,class_id,active',['id']),
+    fetchAll('students','id,full_name,roll,class_id,active,photo',['id']),
     fetchAll('parent_students','parent_id,student_id',['parent_id','student_id']),
     fetchAll('teacher_assignments','teacher_id,class_id,subject_code',['class_id','subject_code']),
-    fetchAll('profiles','id,username,full_name,phone,role,relation,active',['id'])
+    fetchAll('profiles','id,username,full_name,phone,role,relation,active,photo',['id'])
   ]);
   const subj=all[0],cl=all[1],st=all[2],ps=all[3],ta=all[4],prof=all[5];
   Object.keys(SUBJ).forEach(k=>{delete SUBJ[k];});subj.forEach(s=>{SUBJ[s.code]=s.name;});
   CLASSES.length=0;cl.forEach(c=>CLASSES.push({id:c.id,name:c.name,level:c.level,ct:c.class_teacher||'',subjects:c.subjects.slice(),room:c.room||''}));
-  DB.students=st.map(s=>({id:s.id,name:s.full_name,roll:s.roll,cid:s.class_id,active:s.active}));
+  DB.students=st.map(s=>({id:s.id,name:s.full_name,roll:s.roll,cid:s.class_id,active:s.active,photo:s.photo||''}));
   const kids={},asg={};
   ps.forEach(x=>{(kids[x.parent_id]=kids[x.parent_id]||[]).push(x.student_id);});
   ta.forEach(x=>{(asg[x.teacher_id]=asg[x.teacher_id]||[]).push([x.class_id,x.subject_code]);});
-  const base=p=>({id:p.id,name:p.full_name,phone:p.phone||'',user:p.username,active:p.active});
+  const base=p=>({id:p.id,name:p.full_name,phone:p.phone||'',user:p.username,active:p.active,photo:p.photo||''});
   DB.teachers=prof.filter(p=>p.role==='teacher').map(p=>Object.assign(base(p),{assign:asg[p.id]||[]}));
   DB.parents=prof.filter(p=>p.role==='parent').map(p=>Object.assign(base(p),{rel:p.relation||'Father',kids:kids[p.id]||[]}));
   DB.principals=prof.filter(p=>p.role==='principal').map(base);
@@ -1216,6 +1216,43 @@ function resetData(){
   SYNC.last={};S.me=null;
 }
 
+/* ---------- profile pictures (small square thumbnails saved with the record) ---------- */
+const PH={};
+function av(o,cl){
+  const n=((o&&o.name)||'').trim(),ini=n.split(/\s+/).slice(0,2).map(w=>w.charAt(0)).join('').toUpperCase();
+  return `<span class="av${cl?' '+cl:''}" aria-hidden="true">${o&&o.photo?`<img src="${h(o.photo)}" alt="">`:h(ini)}</span>`;
+}
+function readPhoto(file){
+  return new Promise((res,rej)=>{
+    if(!file||!/^image\//.test(file.type))return rej(new Error('Choose an image file (JPG or PNG).'));
+    if(file.size>15*1024*1024)return rej(new Error('This image is too large. Choose one under 15 MB.'));
+    const r=new FileReader();
+    r.onerror=()=>rej(new Error('Could not read the image.'));
+    r.onload=()=>{
+      const im=new Image();
+      im.onerror=()=>rej(new Error('This image could not be opened.'));
+      im.onload=()=>{
+        const Z=160,cv=document.createElement('canvas');cv.width=cv.height=Z;
+        const x=cv.getContext('2d'),m=Math.min(im.width,im.height);
+        x.fillStyle='#fff';x.fillRect(0,0,Z,Z);
+        x.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,Z,Z);
+        res(cv.toDataURL('image/jpeg',0.72));
+      };
+      im.src=r.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+function photoField(key,o){
+  return `<label>Photo (optional)</label><div class="row" style="gap:12px;align-items:center"><span id="ph_prev_${key}">${o&&o.photo?av(o,'lg'):'<span class="av lg" aria-hidden="true">+</span>'}</span><input type="file" id="ph_${key}" accept="image/*" data-c="photoPick" data-k="${key}" style="flex:1;min-width:0"><button type="button" class="btn sm sec" data-a="photoClear" data-k="${key}">Remove</button></div>`;
+}
+C.photoPick=async el=>{
+  const k=el.dataset.k,f=el.files[0];if(!f)return;
+  try{PH[k]=await readPhoto(f);$('ph_prev_'+k).innerHTML=`<span class="av lg"><img src="${h(PH[k])}" alt=""></span>`;merr('');}
+  catch(e){el.value='';merr(e.message||'Could not use this image.');}
+};
+A.photoClear=el=>{const k=el.dataset.k;PH[k]='';$('ph_prev_'+k).innerHTML='<span class="av lg" aria-hidden="true">+</span>';const f=$('ph_'+k);if(f)f.value='';};
+
 /* ---------- admin: how changes are stored ---------- */
 async function callAdmin(action,payload){
   const ss=await sb.auth.getSession();
@@ -1236,6 +1273,7 @@ function dbErr(r,map){
 const liveStore={
   async saveStudent(id,v){
     const row={full_name:v.name,class_id:v.cid,roll:v.roll};
+    if(v.photo!==undefined)row.photo=v.photo;
     dbErr(id?await sb.from('students').update(row).eq('id',id):await sb.from('students').insert(row),{'23505':'This roll number is already used in that class.'});
     await loadCore();
   },
@@ -1246,11 +1284,18 @@ const liveStore={
     await loadCore();await sync();
   },
   async saveAccount(role,id,v){
-    if(!id){const j=await callAdmin('createUser',{role,username:v.username,password:v.password,full_name:v.name,phone:v.phone,relation:v.rel});await loadCore();return {id:j.id};}
+    if(!id){
+      const j=await callAdmin('createUser',{role,username:v.username,password:v.password,full_name:v.name,phone:v.phone,relation:v.rel});
+      let photoFailed=false;
+      if(v.photo){const r=await sb.from('profiles').update({photo:v.photo}).eq('id',j.id);if(r.error)photoFailed=true;}
+      await loadCore();return {id:j.id,photoFailed};
+    }
     const cur=ROLE_LIST[role]().find(x=>x.id===id);
     const p={id,full_name:v.name,phone:v.phone,relation:role==='parent'?v.rel:undefined};
     if(cur&&cur.user!==v.username)p.username=v.username;
-    await callAdmin('updateUser',p);await loadCore();return {id};
+    await callAdmin('updateUser',p);
+    if(v.photo!==undefined)dbErr(await sb.from('profiles').update({photo:v.photo}).eq('id',id));
+    await loadCore();return {id};
   },
   async setKids(pid,kids){
     const cur=(DB.parents.find(p=>p.id===pid)||{kids:[]}).kids;
@@ -1291,8 +1336,8 @@ const liveStore={
 const demoStore={
   async saveStudent(id,v){
     if(DB.students.some(x=>x.cid===v.cid&&x.roll===v.roll&&x.id!==id))throw new Error('This roll number is already used in that class.');
-    if(id){const s=stu(id);s.name=v.name;s.cid=v.cid;s.roll=v.roll;}
-    else DB.students.push({id:'s'+uid(),name:v.name,roll:v.roll,cid:v.cid,active:true,ab:0.05,skill:0.6});
+    if(id){const s=stu(id);s.name=v.name;s.cid=v.cid;s.roll=v.roll;if(v.photo!==undefined)s.photo=v.photo;}
+    else DB.students.push({id:'s'+uid(),name:v.name,roll:v.roll,cid:v.cid,active:true,ab:0.05,skill:0.6,photo:v.photo||''});
   },
   async setStudentActive(id,on){stu(id).active=on;},
   async removeStudent(id){DB.students=DB.students.filter(s=>s.id!==id);DB.parents.forEach(p=>{p.kids=p.kids.filter(k=>k!==id);});DB.leaves=DB.leaves.filter(l=>l.sid!==id);},
@@ -1301,7 +1346,7 @@ const demoStore={
     if(allUsers().some(x=>x.user===v.username&&x.id!==id))throw new Error('This username is already taken. Choose another.');
     let o=id?list.find(x=>x.id===id):null;
     if(!o){o={id:({parent:'par',teacher:'t',principal:'pr'}[role])+uid(),active:true,pass:v.password};if(role==='teacher')o.assign=[];if(role==='parent')o.kids=[];list.push(o);}
-    o.name=v.name;o.phone=v.phone;o.user=v.username;if(role==='parent')o.rel=v.rel;
+    o.name=v.name;o.phone=v.phone;o.user=v.username;if(role==='parent')o.rel=v.rel;if(v.photo!==undefined)o.photo=v.photo;
     return {id:o.id};
   },
   async setKids(pid,kids){DB.parents.find(p=>p.id===pid).kids=kids;},
@@ -1359,6 +1404,7 @@ A.acNew=el=>{
 A.acEdit=el=>{
   if(!adminOnly())return;
   const role=el.dataset.k,o=el.dataset.id?ROLE_LIST[role]().find(x=>x.id===el.dataset.id):null;
+  delete PH.ma;
   let extra='';
   if(role==='teacher'){
     const pairs=[];CLASSES.forEach(c=>c.subjects.forEach(sb=>pairs.push([c.id,sb])));
@@ -1369,7 +1415,7 @@ A.acEdit=el=>{
     extra=`<label>Linked students</label>${sts.length?`<div class="chks cols">${sts.map(s=>`<label class="chk"><input type="checkbox" name="mp_s" value="${h(s.id)}"${o&&o.kids.includes(s.id)?' checked':''}> ${h(s.name)} <small>${h(cls(s.cid)?cls(s.cid).name:'')}</small></label>`).join('')}</div>`:'<p class="mut">Add students first, then come back to link them.</p>'}`;
   }
   const rel=role==='parent'?`<div><label for="ma_r">Relation</label><select id="ma_r">${opts([['Father','Father'],['Mother','Mother'],['Guardian','Guardian']],o?o.rel:'Father')}</select></div>`:'<div></div>';
-  modal((o?'Edit ':'Add ')+roleLabel[role],`<label for="ma_n">Full name</label><input type="text" id="ma_n" value="${h(o?o.name:'')}" autocomplete="off"><div class="g2"><div><label for="ma_p">Phone</label><input type="text" id="ma_p" value="${h(o?o.phone:'')}" placeholder="0300-1234567" autocomplete="off"></div>${rel}</div>${credFields(o)}${extra}`,[[o?'Save changes':'Add '+roleLabel[role],'acSave','',o?o.id:'',role]]);
+  modal((o?'Edit ':'Add ')+roleLabel[role],`<label for="ma_n">Full name</label><input type="text" id="ma_n" value="${h(o?o.name:'')}" autocomplete="off"><div class="g2"><div><label for="ma_p">Phone</label><input type="text" id="ma_p" value="${h(o?o.phone:'')}" placeholder="0300-1234567" autocomplete="off"></div>${rel}</div>${photoField('ma',o)}${credFields(o)}${extra}`,[[o?'Save changes':'Add '+roleLabel[role],'acSave','',o?o.id:'',role]]);
 };
 A.acSave=async el=>{
   if(!adminOnly())return;
@@ -1386,7 +1432,7 @@ A.acSave=async el=>{
   if(!id&&pw.length<8)return merr('Password must be at least 8 characters.');
   el.disabled=true;
   let r;
-  try{r=await store.saveAccount(role,id,{name:n,phone:ph,username:u,password:pw,rel:val('ma_r')||'Father'});}
+  try{r=await store.saveAccount(role,id,{name:n,phone:ph,username:u,password:pw,rel:val('ma_r')||'Father',photo:PH.ma});}
   catch(e){el.disabled=false;return merr(e.message||'Something went wrong.');}
   try{
     if(role==='parent')await store.setKids(r.id,kids);
@@ -1396,6 +1442,7 @@ A.acSave=async el=>{
     return toast('Saved, but the links did not save: '+e.message+' Open Edit to try again.');
   }
   closeModal();render();
+  if(r&&r.photoFailed)toast('Saved, but the photo could not be saved. Open Edit to try again.');
   if(id)toast(cap(roleLabel[role])+' updated.');else showCreds(n,u,pw);
 };
 A.pwReset=el=>{
@@ -1431,7 +1478,8 @@ A.sEdit=el=>{
   if(!adminOnly())return;
   if(!CLASSES.length)return toast('Add a class first, then add students.');
   const s=el.dataset.id?stu(el.dataset.id):null;
-  modal(s?'Edit student':'Add student',`<label for="ms_n">Full name</label><input type="text" id="ms_n" value="${h(s?s.name:'')}" autocomplete="off"><div class="g2"><div><label for="ms_c">Class</label><select id="ms_c">${opts(CLASSES.map(c=>[c.id,c.name]),s?s.cid:CLASSES[0].id)}</select></div><div><label for="ms_r">Roll number</label><input type="number" id="ms_r" min="1" value="${s?s.roll:''}"></div></div>`,[[s?'Save changes':'Add student','sSave','',s?s.id:'']]);
+  delete PH.ms;
+  modal(s?'Edit student':'Add student',`<label for="ms_n">Full name</label><input type="text" id="ms_n" value="${h(s?s.name:'')}" autocomplete="off"><div class="g2"><div><label for="ms_c">Class</label><select id="ms_c">${opts(CLASSES.map(c=>[c.id,c.name]),s?s.cid:CLASSES[0].id)}</select></div><div><label for="ms_r">Roll number</label><input type="number" id="ms_r" min="1" value="${s?s.roll:''}"></div></div>${photoField('ms',s)}`,[[s?'Save changes':'Add student','sSave','',s?s.id:'']]);
 };
 A.sSave=async el=>{
   if(!adminOnly())return;
@@ -1439,7 +1487,7 @@ A.sSave=async el=>{
   if(n.length<3)return merr('Enter the student’s name.');if(!r||r<1)return merr('Enter a roll number.');
   if(DB.students.some(x=>x.cid===c&&x.roll===r&&x.id!==id))return merr('This roll number is already used in that class.');
   el.disabled=true;
-  try{await store.saveStudent(id,{name:n,cid:c,roll:r});}catch(e){el.disabled=false;return merr(e.message||'Something went wrong.');}
+  try{await store.saveStudent(id,{name:n,cid:c,roll:r,photo:PH.ms});}catch(e){el.disabled=false;return merr(e.message||'Something went wrong.');}
   closeModal();render();toast(id?'Student updated.':'Student added to '+cls(c).name+'.');
 };
 A.sToggle=async el=>{
