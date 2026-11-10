@@ -104,6 +104,8 @@ begin
   if r is distinct from 'parent' then return false; end if;
   if c in ('att','res','pub') then
     return split_part(rid, '|', 2) in (select my_class_ids());
+  elsif c = 'tt' then
+    return rid in (select my_class_ids());
   elsif c in ('hw','datesheet') then
     return (d->>'cid') in (select my_class_ids());
   elsif c = 'hwSub' then
@@ -118,6 +120,7 @@ begin
   elsif c = 'events' then
     return (d->'to'->>'role') = 'parent' and (
               (d->'to'->>'id') = auth.uid()::text
+           or ((d->'to'->>'id') is null and (d->'to'->'cids') is null)
            or exists (
               select 1 from jsonb_array_elements_text(coalesce(d->'to'->'cids','[]'::jsonb)) x
               where x in (select my_class_ids())));
@@ -132,6 +135,7 @@ language plpgsql stable security definer set search_path = public as
 $$
 declare r text := my_role();
 begin
+  if c in ('tt','datesheet') then return r = 'admin'; end if;   -- only the Admin posts timetables and date sheets
   if r in ('admin','principal','teacher') then return true; end if;
   if r = 'parent' then
     if c = 'leaves' then
