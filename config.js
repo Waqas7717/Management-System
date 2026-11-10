@@ -8,6 +8,6 @@
 //   supabaseAnonKey  the "anon public" key (this one is safe to put in a web page;
 //                    NEVER put the "service_role" key here)
 window.FG_CONFIG = {
-  supabaseUrl: '',
-  supabaseAnonKey: ''
+  supabaseUrl: 'https://jbxmptfzwlqtbrmbucou.supabase.co',
+  supabaseAnonKey: 'sb_publishable_bNLvkCllBp4F0mfgCdj1oA_zXdFx43v'
 };
