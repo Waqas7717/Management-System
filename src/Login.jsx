@@ -89,27 +89,29 @@ export default function Login() {
 
   // Live site with the demo sign-in switched on: choose a person, no password
   if (LIVE && S.demoUsers && !S.pwMode) {
-    const list = S.demoUsers.filter((x) => x.role === r);
+    const found = S.demoUsers.filter((x) => x.role === r);
+    const list = found.length ? found : r === 'admin' ? [{ role: 'admin', username: 'admin', name: 'School Admin' }] : [];
     const who = du && list.some((x) => x.username === du) ? du : (list[0] ? list[0].username : '');
     return (
       <Shell>
         <Brand />{tabs}
-        {r === 'admin' ? <p className="mut" style={{ margin: '12px 0' }}>Demo mode: the Admin signs in with one click.</p>
-          : list.length ? (
-            <>
-              <label className="flab" htmlFor="du"><I k="user" />Choose a {r}</label>
-              <TextField select id="du" value={who} onChange={(e) => setDu(e.target.value)} SelectProps={{ native: true }} InputLabelProps={{ shrink: false }} label="">
-                {list.map((x) => <option key={x.username} value={x.username}>{x.name} ({x.username})</option>)}
-              </TextField>
-            </>
-          ) : <p className="mut" style={{ margin: '12px 0' }}>No {r} accounts yet. The Admin adds them first.</p>}
+        {list.length ? (
+          <>
+            <label className="flab" htmlFor="du"><I k="user" />Username</label>
+            <TextField select id="du" value={who} onChange={(e) => setDu(e.target.value)} SelectProps={{ native: true }} InputLabelProps={{ shrink: false }} label="">
+              {list.map((x) => <option key={x.username} value={x.username}>{x.name} ({x.username})</option>)}
+            </TextField>
+            <label className="flab" htmlFor="dp"><I k="lock" />Password</label>
+            <TextField id="dp" type="password" value="demo-password" InputProps={{ readOnly: true }} InputLabelProps={{ shrink: false }} label="" />
+          </>
+        ) : <p className="mut" style={{ margin: '12px 0' }}>No {r} accounts yet. The Admin adds them first.</p>}
         <Err>{err}</Err>
-        {(r === 'admin' || list.length > 0) && (
+        {list.length > 0 && (
           <Button fullWidth variant="contained" color="secondary" className="gobtn" disabled={busy} sx={{ mt: 1.5, height: 54, fontSize: 17, fontWeight: 800 }} onClick={() => run(() => demoLogin(r, who))}>
             <I k="go" />Sign in as {cap(r)}
           </Button>
         )}
-        <p className="mut" style={{ marginTop: 14, fontSize: 12.5 }}>Demo mode, no password needed.</p>
+        <p className="mut" style={{ marginTop: 14, fontSize: 12.5 }}>Demo mode: pick a name and press Sign in. The password is filled in for you.</p>
         <Button size="small" variant="outlined" sx={{ mt: 1 }} onClick={() => { S.pwMode = true; render(); }}>Sign in with a password instead</Button>
       </Shell>
     );
