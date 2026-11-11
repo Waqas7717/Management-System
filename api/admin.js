@@ -177,7 +177,7 @@ const actions = {
   },
 };
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   try {
     if (req.method !== 'POST') throw new HttpError(405, 'Use POST.');
