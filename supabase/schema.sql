@@ -69,10 +69,6 @@ create table if not exists records (
 );
 create index if not exists records_collection_idx on records (collection);
 
--- Profile pictures (small square thumbnails saved as text).
-alter table profiles add column if not exists photo text not null default '';
-alter table students add column if not exists photo text not null default '';
-
 ------------------------------------------------------------------------
 -- 2. Helper functions (they look up the signed-in user's role)
 ------------------------------------------------------------------------
@@ -113,14 +109,19 @@ begin
   elsif c in ('hw','datesheet') then
     return (d->>'cid') in (select my_class_ids());
   elsif c = 'hwSub' then
-    return true;
+    -- homework hand-in marks: only for homework that belongs to one of the parent's classes
+    return exists (select 1 from records h where h.collection = 'hw' and h.id = rid
+                   and (h.data->>'cid') in (select my_class_ids()));
   elsif c = 'leaves' then
     return (d->>'sid') in (select k::text from my_kid_ids() k);
   elsif c = 'anns' then
     return (d->'aud'->>'kind') in ('all','parents')
         or ((d->'aud'->>'kind') = 'classes' and exists (
               select 1 from jsonb_array_elements_text(coalesce(d->'aud'->'cids','[]'::jsonb)) x
-              where x in (select my_class_ids())));
+              where x in (select my_class_ids())
+                and (jsonb_array_length(coalesce(d->'aud'->'sids','[]'::jsonb)) = 0
+                     or exists (select 1 from jsonb_array_elements_text(d->'aud'->'sids') y
+                                where y in (select k::text from my_kid_ids() k)))));
   elsif c = 'events' then
     return (d->'to'->>'role') = 'parent' and (
               (d->'to'->>'id') = auth.uid()::text
