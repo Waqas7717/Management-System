@@ -200,7 +200,7 @@ export async function login(role, username, password) {
 }
 export async function demoLogin(role, username) {
   try {
-    const res = await fetch('/api/demo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', role, username: role === 'admin' ? '' : username }) });
+    const res = await fetch('/api/demo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', role, username }) });
     const j = await res.json();
     if (!j.ok || !j.token_hash) return j.error || 'Could not sign in.';
     const vo = await sb.auth.verifyOtp({ token_hash: j.token_hash, type: 'magiclink' });
