@@ -28,7 +28,7 @@ async function supa(path, options = {}) {
   return { ok: res.ok, status: res.status, body };
 }
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   const send = (status, obj) => res.status(status).json(obj);
   try {
@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
     b = b || {};
 
     if (b.action === 'list') {
-      const r = await supa('/rest/v1/profiles?active=eq.true&role=in.(principal,teacher,parent)&select=username,full_name,role,relation&order=full_name.asc');
+      const r = await supa('/rest/v1/profiles?active=eq.true&role=in.(admin,principal,teacher,parent)&select=username,full_name,role,relation&order=full_name.asc');
       if (!r.ok) return send(200, { ok: false, error: 'Could not load the list.' });
       return send(200, { ok: true, enabled: true, users: r.body.map(p => ({ role: p.role, username: p.username, name: p.full_name })) });
     }
@@ -47,9 +47,12 @@ module.exports = async (req, res) => {
     if (b.action === 'login') {
       const role = String(b.role || '');
       if (!['admin', 'principal', 'teacher', 'parent'].includes(role)) return send(400, { ok: false, error: 'Unknown role.' });
-      let q = '/rest/v1/profiles?active=eq.true&role=eq.' + role + '&select=email,username&order=created_at.asc&limit=1';
-      if (role !== 'admin') q = '/rest/v1/profiles?active=eq.true&role=eq.' + role + '&username=eq.' + encodeURIComponent(String(b.username || '').toLowerCase()) + '&select=email,username&limit=1';
-      const p = await supa(q);
+      const uname = String(b.username || '').toLowerCase();
+      const base = '/rest/v1/profiles?active=eq.true&role=eq.' + role + '&select=email,username';
+      let p = uname ? await supa(base + '&username=eq.' + encodeURIComponent(uname) + '&limit=1') : { ok: false };
+      // The Admin falls back to the first admin account if the name does not match
+      if (role === 'admin' && !(p.ok && Array.isArray(p.body) && p.body[0])) p = await supa(base + '&order=created_at.asc&limit=1');
+      else if (role !== 'admin' && !uname) p = { ok: false };
       const row = p.ok && Array.isArray(p.body) ? p.body[0] : null;
       if (!row) return send(404, { ok: false, error: 'That account was not found or is inactive.' });
       const link = await supa('/auth/v1/admin/generate_link', { method: 'POST', body: JSON.stringify({ type: 'magiclink', email: row.email }) });
