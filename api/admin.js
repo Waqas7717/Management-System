@@ -27,7 +27,7 @@ async function supa(path, options = {}) {
     ...options,
     headers: {
       apikey: SERVICE_KEY,
-      // Old-style keys are JWTs and go in Authorization too. New sb_secret_ keys go in apikey only.
+      // Old-style keys are JWTs and go in Authorization too. New "sb_secret_" keys go in apikey only.
       ...(SERVICE_KEY.startsWith('eyJ') ? { Authorization: 'Bearer ' + SERVICE_KEY } : {}),
       'Content-Type': 'application/json',
       ...(options.headers || {}),
