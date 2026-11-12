@@ -8,7 +8,7 @@
 const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
-const MODEL = process.env.AI_MODEL || 'gemini-flash-latest';
+const MODELS = process.env.AI_MODEL ? [process.env.AI_MODEL] : ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-lite-latest'];
 const LIMIT = Math.max(5, Number(process.env.AI_DAILY_LIMIT) || 40);
 
 const used = new Map(); // best-effort daily counter per user (resets when the server instance restarts)
@@ -80,20 +80,24 @@ export default async (req, res) => {
     used.set(key, n + 1);
     if (used.size > 2000) for (const k of used.keys()) if (!k.endsWith(day)) used.delete(k);
 
-    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(MODEL) + ':generateContent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYS[action] }] },
-        contents: [{ role: 'user', parts: [{ text: buildPrompt(action, b) }] }],
-        generationConfig: { temperature: action === 'ask' ? 0.2 : 0.6, maxOutputTokens: action === 'comments' ? 2200 : 900 },
-      }),
+    const reqBody = JSON.stringify({
+      systemInstruction: { parts: [{ text: SYS[action] }] },
+      contents: [{ role: 'user', parts: [{ text: buildPrompt(action, b) }] }],
+      generationConfig: { temperature: action === 'ask' ? 0.2 : 0.6, maxOutputTokens: action === 'comments' ? 2200 : 900 },
     });
-    const j = await r.json().catch(() => null);
+    let r = null, j = null;
+    for (const m of MODELS) {
+      r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(m) + ':generateContent', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY }, body: reqBody,
+      });
+      j = await r.json().catch(() => null);
+      if (r.ok || (r.status !== 404 && r.status !== 429 && r.status !== 503)) break; // try the next model only if this one is missing or busy
+    }
     if (!r.ok) {
       used.set(key, n);
-      if (r.status === 429) throw new HttpError(429, 'The free AI service is busy. Try again in a minute.');
-      throw new HttpError(502, 'The AI service could not answer right now.');
+      const why = j && j.error && j.error.message ? ' (' + clip(j.error.message, 140) + ')' : '';
+      if (r.status === 429) throw new HttpError(429, 'The free AI service is busy or its free limit is used up. Try again in a minute.' + why);
+      throw new HttpError(502, 'The AI service refused the request, status ' + r.status + '.' + why);
     }
     const text = j && j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts
       ? j.candidates[0].content.parts.map((p) => p.text || '').join('').trim() : '';
