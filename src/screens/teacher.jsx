@@ -1,3 +1,4 @@
+import { CommentsDialog, useAI } from './aiparts';
 import { AttnRow, Attention, DCard, KpiTile, Ticker, dayCounts } from '../ui/dash';
 import { BarRows } from '../ui/Charts';
 import { useState } from 'react';
@@ -122,6 +123,7 @@ function Att() {
 
 function HwForm() {
   const t = S.user;
+  const [aiBusy, aiRun] = useAI();
   const [a, setA] = useState('0'), [title, setTitle] = useState(''), [desc, setDesc] = useState(''), [due, setDue] = useState(addDays(TODAY, 2)), [file, setFile] = useState(null), [fk, setFk] = useState(0);
   const add = () => {
     const as = t.assign[+a];
@@ -136,6 +138,15 @@ function HwForm() {
       <Sel id="hw_a" label="Class and subject" value={a} onChange={setA} list={asgList()} />
       <div className="field"><TF id="hw_t" label="Title" value={title} onChange={setTitle} placeholder="For example, Exercise 5.2, Q1 to Q8" /></div>
       <div className="field"><TF id="hw_d" label="Details" value={desc} onChange={setDesc} multiline minRows={3} placeholder="What should students do?" /></div>
+      <div className="row" style={{ margin: '8px 0 12px' }}>
+        <Button size="small" variant="outlined" disabled={aiBusy} onClick={async () => {
+          if (title.trim().length < 3) return toast('Write the topic in Title first, then tap Suggest with AI.');
+          const as = t.assign[+a];
+          const r = await aiRun('homework', { request: 'Write homework instructions for ' + cls(as[0]).name + ', subject ' + subName(as[1]) + ', topic: ' + title.trim() + '. Give 4 to 6 short numbered questions or tasks a student can do at home. ' + (desc.trim() ? 'Teacher notes: ' + desc.trim() : '') });
+          if (r) setDesc(r);
+        }}>{aiBusy ? 'Writing...' : 'Suggest with AI'}</Button>
+        <small className="mut">Write the topic in Title, then let AI draft the details. Edit before posting.</small>
+      </div>
       <div className="g2"><DateF id="hw_due" label="Due date" value={due} onChange={setDue} min={TODAY} /><FileBox key={fk} id="hw_f" label="Attachment (optional)" onChange={setFile} /></div>
       <div style={{ marginTop: 14 }}><Button fullWidth variant="contained" onClick={add}>Post homework</Button></div>
     </Card>
@@ -190,6 +201,7 @@ function Hw() {
 function ResBody({ i, ex, cid, sub, rkey }) {
   const pb = isPub(ex, cid, sub), cur = DB.res[rkey] || {}, st = DB.students.filter((s) => s.cid === cid && s.active);
   const [marks, setMarks] = useState(() => { const o = {}; st.forEach((s) => { o[s.id] = cur[s.id] == null ? '' : String(cur[s.id]); }); return o; });
+  const [cmt, setCmt] = useState(false);
   const set = (id, v) => setMarks((m) => Object.assign({}, m, { [id]: v }));
   const save = (pubNow) => {
     const o = {}; let miss = 0, bad = 0;
@@ -224,6 +236,8 @@ function ResBody({ i, ex, cid, sub, rkey }) {
         {pb ? <Tag c="ok">Published</Tag> : <Tag c="warn">Draft, not visible to parents</Tag>}
         {pb ? null : <><Button size="small" variant="outlined" component="label">Upload CSV<input hidden type="file" accept=".csv,.txt" onChange={(e) => { csv(e.target.files[0]); e.target.value = ''; }} /></Button><small>CSV format: roll,marks</small></>}
       </div>
+      <div style={{ marginBottom: 12 }}><Button size="small" variant="outlined" onClick={() => setCmt(true)}>Report card comments (AI)</Button></div>
+      {cmt ? <CommentsDialog students={st} marks={marks} exam={EXAMS.find((e) => e.id === ex).name} subject={subName(sub)} onClose={() => setCmt(false)} /> : null}
       <DT cols={['Roll', 'Student', { h: 'Marks /100', n: 1 }, 'Grade']} rows={st.map((s) => {
         const v = marks[s.id], g = v === '' || v == null || isNaN(+v) ? null : Math.max(0, Math.min(100, +v));
         return [s.roll, <Who o={s}>{s.name}</Who>,

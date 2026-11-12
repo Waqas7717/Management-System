@@ -11,6 +11,7 @@ import { BarRows, COLORS, LineChart, Split } from '../ui/Charts';
 import { Av, Card, DT, DateF, Empty, FDate, FSel, Item, Kpi, LeaveChip, PageHead, Pill, Seg, StChip, TF, Tag, Who } from '../ui';
 import { AnnScreen } from './common';
 import { UsersList } from './admin/users';
+import { AskCard, InsightsCard } from './aiparts';
 import { AttnRow, Attention, ClassCards, DCard, KpiTile, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../ui/dash';
 
 const dc = () => (CLASSES.length ? CLASSES[0].id : 'all');
@@ -67,6 +68,10 @@ function Dash() {
             </>
           ) : <p>All clear. Nothing is waiting for you right now.</p>}
         </Attention>
+      </div>
+      <div className="two st" style={{ marginBottom: 16 }}>
+        <InsightsCard />
+        <AskCard />
       </div>
       <div className="two eq" style={{ marginTop: 14 }}>
         <Card title="Class-wise results">

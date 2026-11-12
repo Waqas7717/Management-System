@@ -1,4 +1,5 @@
 import { DCard, KpiTile, Ticker } from '../ui/dash';
+import { Translate } from './aiparts';
 import { useState } from 'react';
 import { Button } from '@mui/material';
 import { DEMO } from '../core/config';
@@ -66,7 +67,7 @@ function Home() {
         <div className="stack">
           <DCard title="Fee voucher" ico="file"><FeeBox k={k} /></DCard>
           <DCard title="Latest from school" ico="mega" right={<Button size="small" onClick={() => go('notices')}>View all</Button>}>
-            {f.length ? f.map((x) => <Item key={x.id} unread={!isRead(x.id)}><div className="row"><TypeTag t={x.type} /><small>{fs(x.ts.slice(0, 10))}</small></div><h4>{x.title}</h4><p className="mut">{x.text}</p></Item>) : <Empty t="No notices yet" />}
+            {f.length ? f.map((x) => <Item key={x.id} unread={!isRead(x.id)}><div className="row"><TypeTag t={x.type} /><small>{fs(x.ts.slice(0, 10))}</small></div><h4>{x.title}</h4><p className="mut">{x.text}</p><Translate text={x.title + '. ' + x.text} /></Item>) : <Empty t="No notices yet" />}
           </DCard>
         </div>
       </div>
@@ -257,6 +258,7 @@ function Notices() {
           <Item key={x.id} unread={!isRead(x.id)}>
             <div className="row sp"><span className="row"><TypeTag t={x.type} /><small>{fd(x.ts.slice(0, 10))}</small></span>{isRead(x.id) ? null : <Tag c="gold">New</Tag>}</div>
             <h4>{x.title}</h4><p>{x.text}</p>
+            <Translate text={x.title + '. ' + x.text} />
             {x.by ? <div className="meta">From {byName(x.by)}</div> : null}
             {isRead(x.id) ? null : <div><Button size="small" variant="outlined" onClick={() => { S.reads[S.user.id][x.id] = true; saveReads(); render(); }}>Mark as read</Button></div>}
           </Item>

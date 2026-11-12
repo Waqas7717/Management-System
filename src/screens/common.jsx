@@ -3,6 +3,7 @@ import { Button } from '@mui/material';
 import { CLASSES, DB, S, audLabel, byName, uid } from '../core/data';
 import { DAYN, PT, TODAY, dow, fd, fs, isSchool, nowHM } from '../core/dates';
 import { ask, render, toast } from '../core/store';
+import { useAI } from './aiparts';
 import { Empty, Item, Modal, PageHead, Sel, TF, DateF, CheckGroup, Tag, TypeTag } from '../ui';
 
 /* ---- weekly timetable grid (read-only views) ---- */
@@ -31,6 +32,7 @@ export function AnnDialog({ kind, ann, onClose }) {
   const [title, setTitle] = useState(ann ? ann.title : ''), [body, setBody] = useState(ann ? ann.body : '');
   const [type, setType] = useState(ann ? ann.type : 'notice'), [pub, setPub] = useState(ann ? ann.publish : TODAY);
   const [ak, setAk] = useState(au.kind), [cids, setCids] = useState(au.cids.slice()), [err, setErr] = useState('');
+  const [aiBusy, aiRun] = useAI(), [aiLang, setAiLang] = useState('en');
   const types = kind === 'notice' ? [['notice', 'Notice'], ['event', 'Event'], ['urgent', 'Urgent']] : [['notice', 'Notice'], ['ptm', 'PTM'], ['event', 'Event'], ['urgent', 'Urgent']];
   const save = () => {
     const t = title.trim(), b = body.trim();
@@ -49,6 +51,11 @@ export function AnnDialog({ kind, ann, onClose }) {
       actions={[{ label: ann ? 'Save changes' : 'Publish', onClick: save }]}>
       <TF label="Title" value={title} onChange={setTitle} />
       <div className="field"><TF label="Message" value={body} onChange={setBody} multiline minRows={3} /></div>
+      <div className="row" style={{ marginTop: 8 }}>
+        <Button size="small" variant="outlined" disabled={aiBusy} onClick={async () => { const t = await aiRun('notice', { text: (body.trim() || title.trim()), lang: aiLang }); if (t) setBody(t); }}>{aiBusy ? 'Writing...' : 'Write with AI'}</Button>
+        <div style={{ width: 130 }}><Sel label="Language" value={aiLang} onChange={setAiLang} list={[['en', 'English'], ['ur', 'Urdu']]} /></div>
+        <small className="mut">Type a rough note, then tap Write with AI. Check the result before publishing.</small>
+      </div>
       <div className="g2 field">
         <Sel label="Type" value={type} onChange={setType} list={types} />
         <DateF label="Publish date" value={pub} onChange={setPub} min={TODAY} />
