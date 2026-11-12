@@ -10,6 +10,7 @@ import { ask, render, toast } from '../../core/store';
 import { scheduleSync } from '../../core/sync';
 import { store } from '../../core/stores';
 import { Card, DT, Empty, FSel, Item, Kpi, PageHead, Tag, TypeTag } from '../../ui';
+import { ClassCards, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../../ui/dash';
 import { AnnScreen, TtGrid } from '../common';
 import { UsersList } from './users';
 import { AccountDialog, ClassDialog, CredsDialog, DsDialog, EvDialog, PwDialog, StudentDialog, SubjectDialog } from './dialogs';
@@ -83,21 +84,26 @@ function Dash() {
   const steps = [['classes', '1. Add subjects and classes', CLASSES.length > 0], ['teachers', '2. Add teachers and give them classes', DB.teachers.length > 0], ['students', '3. Add students', DB.students.length > 0], ['parents', '4. Add parents and link them to students', DB.parents.length > 0]];
   const List = ({ arr, max }) => <ul className="mut" style={{ paddingLeft: 18 }}>{arr.slice(0, max).map((x, i) => <li key={i}>{x}</li>)}{arr.length > max ? <li>and {arr.length - max} more</li> : null}</ul>;
   const issues = noPar.length || noCt.length || gaps.length;
+  const rng = rangeInfo();
   return (
     <>
-      <PageHead title="Admin overview" sub={(DEMO ? 'Demo with sample data. ' : '') + 'FG Public School and College'} />
+      <PageHead title="Admin overview" sub={(DEMO ? 'Demo with sample data. ' : '') + 'FG Public School and College'}><RangeChips /></PageHead>
+      <Ticker />
       <div className="g4" style={{ marginBottom: 14 }}>
         <Kpi l="Students" v={act.length} s={CLASSES.length + (CLASSES.length === 1 ? ' class' : ' classes')} />
         <Kpi l="Parents" v={DB.parents.length} s="With a login" />
         <Kpi l="Teachers" v={DB.teachers.length} s={DB.teachers.filter((t) => t.active).length + ' active'} />
         <Kpi l="Principals" v={DB.principals.length} s={DB.principals.filter((t) => t.active).length + ' active'} />
       </div>
+      <ClassCards classes={CLASSES} range={rng} />
+      <StaffCheckin />
       {steps.some((x) => !x[2]) && (
-        <Card title="Get started" style={{ marginBottom: 14 }}>
+        <Card title="Get started" style={{ marginTop: 18, marginBottom: 14 }}>
           <p className="mut" style={{ marginBottom: 10 }}>Set up your school in this order.</p>
           <div className="stack">{steps.map((x) => <div className="row sp" key={x[0]}><span>{x[2] ? <><Tag c="ok">Done</Tag> </> : null}{x[1]}</span><Button size="small" variant={x[2] ? 'outlined' : 'contained'} onClick={() => go(x[0])}>Open</Button></div>)}</div>
         </Card>
       )}
+      <div style={{ height: 18 }} />
       <Card title="Needs attention">
         {issues ? (
           <div className="stack">
