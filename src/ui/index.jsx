@@ -29,7 +29,18 @@ export const TypeTag = ({ t, fallback = 'Update' }) => <Tag c={TYPEC[t]}>{TYPEL[
 export const Pill = ({ st }) => <span className={'pill ' + (st || '')}>{st || '-'}</span>;
 export const Empty = ({ t, s }) => <div className="empty"><b>{t}</b>{s}</div>;
 export const Err = ({ children }) => <div className="err" role="alert">{children}</div>;
-export const Card = ({ title, children, style }) => <div className="card" style={style}>{title && <h3>{title}</h3>}{children}</div>;
+const CARD_IC = [[/attend|present|today|marked/, 'check'], [/result|mark|performance|exam|grade|progress|trend/, 'chart'], [/leave|date sheet|calendar|timetable/, 'cal'], [/homework|add|subject/, 'book'], [/notif|notice|announce|sent|posted/, 'mega'], [/student|parent|teacher|user/, 'users'], [/lecture|clock/, 'clock']];
+export const Card = ({ title, children, style }) => {
+  if (!title) return <div className="card" style={style}>{children}</div>;
+  const t = typeof title === 'string' ? title.toLowerCase() : '';
+  const hit = CARD_IC.find((x) => x[0].test(t));
+  return (
+    <section className="card dcard" style={style}>
+      <header className="dc-h"><h3><span className="dc-ic"><Ico n={hit ? hit[1] : 'file'} s={18} /></span>{title}</h3></header>
+      {children}
+    </section>
+  );
+};
 export const Item = ({ children, unread, style }) => <div className={'item' + (unread ? ' unread' : '')} style={style}>{children}</div>;
 
 const KCOL = { b: ['#2F6FDE', '#E6EEFD'], g: ['#17936A', '#E3F6EE'], o: ['#D6760F', '#FFF3D6'], p: ['#8A4FD3', '#F0E8FB'], r: ['#D64545', '#FBE4E1'] };
@@ -42,11 +53,9 @@ function kpiIcon(l) {
 export function Kpi({ l, v, s, vs }) {
   const [n, c] = kpiIcon(l);
   return (
-    <div className="kpi">
-      <div className="l">{l}</div>
-      <div className="v" style={vs ? { fontSize: vs } : undefined}>{v}</div>
-      {s != null && s !== '' && <div className="s">{s}</div>}
-      <span className="kic" style={{ color: c[0], background: c[1] }} aria-hidden="true"><Ico n={n} s={20} /></span>
+    <div className="ktile">
+      <span className="kt-ic" style={{ color: c[0], background: c[1] }} aria-hidden="true"><Ico n={n} s={24} /></span>
+      <span className="kt-b"><b style={vs ? { fontSize: vs } : undefined}>{v}</b><span className="kt-l">{l}</span>{s != null && s !== '' ? <small>{s}</small> : null}</span>
     </div>
   );
 }
