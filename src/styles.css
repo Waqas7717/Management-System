@@ -488,3 +488,12 @@ html[data-theme=dark] .aih-acts button svg{background:rgba(124,77,214,.2);color:
 html[data-theme=dark] .aipanel{border-color:rgba(124,77,214,.4)}
 html[data-theme=dark] .aipanel{background:#161D30}
 @media (max-width:899px){.top{position:relative;background:transparent;border:0;backdrop-filter:none}}
+@media (max-width:640px){
+  .annbar{min-height:0;gap:3px 8px;padding:6px 8px 6px 13px;border-radius:14px;margin-bottom:10px}
+  .annbar .ab-ic svg{width:15px;height:15px}
+  .annbar .ab-pill{padding:2px 9px;font-size:11px;gap:5px}
+  .annbar .ab-pill::before{width:6px;height:6px}
+  .annbar .ab-title{font-size:13.5px;line-height:1.25}
+  .annbar .ab-btn.MuiButton-root{min-height:26px;padding:1px 10px;font-size:12px}
+  .annbar .ab-btn .MuiSvgIcon-root,.annbar .ab-btn svg{width:14px;height:14px}
+}
