@@ -51,13 +51,80 @@ export function Ticker() {
   );
 }
 
+/* ---------- shared dashboard pieces ---------- */
+const TONES = { b: ['#2F6FDE', '#E3EDFD'], g: ['#17936A', '#E1F5EC'], p: ['#7C4DD6', '#EEE6FB'], o: ['#C98A00', '#FFF0CC'], r: ['#D64545', '#FBE4E1'] };
+const open = (to) => { if (to && typeof to === 'object') { Object.assign(S.f, to.f || {}); go(to.view); } else go(to); };
+
+/* summary tile: colored round icon, big number, label and an arrow that opens the page */
+export function KpiTile({ l, v, s, ico, tone = 'b', to, vs }) {
+  const c = TONES[tone] || TONES.b;
+  const inner = (
+    <>
+      <span className="kt-ic" style={{ color: c[0], background: c[1] }}><Ico n={ico} s={24} /></span>
+      <span className="kt-b"><b style={vs ? { fontSize: vs } : undefined}>{v}</b><span className="kt-l">{l}</span>{s != null && s !== '' ? <small>{s}</small> : null}</span>
+      {to ? <span className="kt-go" style={{ color: c[0], background: c[1] }}><Ico n="chev" s={18} /></span> : null}
+    </>
+  );
+  return to
+    ? <button type="button" className="ktile go" aria-label={l + ', ' + v + '. Open'} onClick={() => open(to)}>{inner}</button>
+    : <div className="ktile">{inner}</div>;
+}
+
+export const LinkBtn = ({ children, onClick }) => <button type="button" className="lnk" onClick={onClick}>{children}<Ico n="chev" s={16} /></button>;
+
+/* card with an icon chip, a title and an optional link or note on the right */
+export function DCard({ title, ico, right, children, className = '', style }) {
+  return (
+    <section className={'card dcard ' + className} style={style}>
+      <header className="dc-h"><h3>{ico ? <span className="dc-ic"><Ico n={ico} s={18} /></span> : null}{title}</h3>{right ? <div className="dc-r">{right}</div> : null}</header>
+      {children}
+    </section>
+  );
+}
+
+const Books = () => (
+  <svg className="attn-art" viewBox="0 0 170 112" width="150" aria-hidden="true">
+    <ellipse cx="85" cy="104" rx="70" ry="6" fill="#7a5a00" opacity=".12" />
+    <rect x="20" y="72" width="132" height="28" rx="6" fill="#2F6FDE" />
+    <rect x="20" y="72" width="16" height="28" rx="6" fill="#1D4FB8" />
+    <rect x="40" y="78" width="108" height="16" rx="3" fill="#FBF4E2" />
+    <path d="M46 83h70M46 88h54" stroke="#D9CDAA" strokeWidth="2" strokeLinecap="round" />
+    <rect x="30" y="46" width="118" height="26" rx="6" fill="#F7B500" />
+    <rect x="30" y="46" width="15" height="26" rx="6" fill="#D99A00" />
+    <rect x="49" y="52" width="95" height="14" rx="3" fill="#FFF6DC" />
+    <path d="M55 57h60M55 62h42" stroke="#E6D3A0" strokeWidth="2" strokeLinecap="round" />
+    <rect x="38" y="22" width="104" height="24" rx="6" fill="#E9742B" />
+    <rect x="38" y="22" width="14" height="24" rx="6" fill="#C95A18" />
+    <rect x="56" y="28" width="82" height="12" rx="3" fill="#FFF0DF" />
+    <path d="M62 33h50M62 37h34" stroke="#E8C9A8" strokeWidth="2" strokeLinecap="round" />
+    <path d="M150 20l8-9M156 30l11-3M143 11l3-10" stroke="#F7B500" strokeWidth="3" strokeLinecap="round" />
+  </svg>
+);
+
+/* the yellow "Needs attention" card. children are AttnRow items or a calm message */
+export function Attention({ children }) {
+  return (
+    <section className="card attn">
+      <header className="dc-h"><h3><span className="dc-ic warn"><Ico n="warn" s={18} /></span>Needs attention</h3></header>
+      <div className="attn-b">{children}</div>
+      <Books />
+    </section>
+  );
+}
+export const AttnRow = ({ n, t, sub, to, label = 'Open' }) => (
+  <div className="ar">
+    {n != null ? <span className="ar-n">{n}</span> : null}
+    <div className="ar-t"><b>{t}</b>{sub ? <small>{sub}</small> : null}</div>
+    {to ? <Button size="small" variant="outlined" onClick={() => open(to)}>{label}</Button> : null}
+  </div>
+);
+
 /* ---------- per-class summary cards ---------- */
 export function ClassCards({ classes, range }) {
   if (!classes.length) return null;
   const ex = latestExam();
   return (
-    <>
-      <div className="sec-h"><h3>Classes</h3><span className="mut">{range.label}{range.today ? '' : ', counted in student-days'}</span></div>
+    <DCard title="Classes" ico="book" right={<span className="mut">{range.label}{range.today ? '' : ', student-days'}</span>} className="classes">
       <div className="ccards">
         {classes.map((c, i) => {
           const studs = DB.students.filter((s) => s.cid === c.id && s.active), ids = studs.map((s) => s.id);
@@ -83,8 +150,8 @@ export function ClassCards({ classes, range }) {
                 </>
               ) : <div className="cc-none mut">{range.today && !isSchool(TODAY) ? 'No school today' : 'Attendance not marked yet'}</div>}
               <dl className="cc-dl">
-                <dt>Class teacher</dt><dd>{ct ? ct.name : 'Not set'}</dd>
-                <dt>Teachers</dt><dd>{teachers}</dd>
+                <dt>Teacher</dt><dd>{ct ? ct.name : 'Not set'}</dd>
+                <dt>All teachers</dt><dd>{teachers}</dd>
                 <dt>Average result</dt><dd>{avg == null ? '-' : avg.toFixed(0) + '%'}</dd>
                 <dt>Pass rate</dt><dd>{pass == null ? '-' : Math.round(pass) + '%'}</dd>
               </dl>
@@ -92,13 +159,13 @@ export function ClassCards({ classes, range }) {
           );
         })}
       </div>
-    </>
+    </DCard>
   );
 }
 
 /* ---------- staff check-in cards ---------- */
 const hm = (t) => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return (h % 12 || 12) + ':' + String(m).padStart(2, '0') + ' ' + (h < 12 ? 'am' : 'pm'); };
-export function StaffCheckin() {
+export function StaffCheckin({ to, tab }) {
   const staff = DB.teachers.filter((t) => t.active).map((t) => {
     const st = tStatus(t.id, TODAY), rec = DB.tatt[t.id + '|' + TODAY];
     return { t, st, rec, key: st === 'P' ? 0 : st === 'L' ? 2 : 1 };
@@ -106,9 +173,8 @@ export function StaffCheckin() {
   if (!staff.length) return null;
   const n = (k) => staff.filter((x) => x.key === k).length;
   return (
-    <>
-      <div className="sec-h"><h3>Teacher check-in today</h3>
-        <span className="row" style={{ gap: 6 }}><Tag c="ok">{n(0) + ' in'}</Tag><Tag c="warn">{n(1) + ' not in yet'}</Tag><Tag c="info">{n(2) + ' on leave'}</Tag></span></div>
+    <DCard title="Teacher check-in today" ico="users" className="staff"
+      right={<span className="row" style={{ gap: 6 }}><Tag c="ok">{n(0) + ' in'}</Tag><Tag c="warn">{n(1) + ' not in yet'}</Tag><Tag c="info">{n(2) + ' on leave'}</Tag>{to ? <LinkBtn onClick={() => open({ view: to, f: tab ? { utab: tab } : {} })}>View all</LinkBtn> : null}</span>}>
       {!isSchool(TODAY) ? <p className="mut">No school today.</p> : (
         <div className="scards">
           {staff.map(({ t, st, rec, key }) => (
@@ -123,6 +189,6 @@ export function StaffCheckin() {
           ))}
         </div>
       )}
-    </>
+    </DCard>
   );
 }

@@ -70,6 +70,7 @@ export function Split({ items, centerTop, centerBottom }) {
   const th = useTheme();
   const total = items.reduce((a, x) => a + x.value, 0);
   const data = items.map((x, i) => ({ id: i, label: x.label, value: x.value, color: x.color || COLORS[i % COLORS.length] }));
+  const ring = total ? data : [{ id: 0, label: 'Not marked yet', value: 1, color: th.palette.divider }];
   return (
     <div className="split">
       <div className="dn-ring big">
@@ -77,7 +78,7 @@ export function Split({ items, centerTop, centerBottom }) {
           width={170}
           height={170}
           margin={{ top: 2, bottom: 2, left: 2, right: 2 }}
-          series={[{ data, innerRadius: 54, outerRadius: 82, paddingAngle: 2, cornerRadius: 5, highlightScope: { fade: 'global', highlight: 'item' }, faded: { additionalRadius: -4, color: th.palette.divider }, valueFormatter: (v) => v.value + (total ? ' (' + Math.round(v.value / total * 100) + '%)' : '') }]}
+          series={[{ data: ring, innerRadius: 54, outerRadius: 82, paddingAngle: 2, cornerRadius: 5, highlightScope: { fade: 'global', highlight: 'item' }, faded: { additionalRadius: -4, color: th.palette.divider }, valueFormatter: (v) => v.value + (total ? ' (' + Math.round(v.value / total * 100) + '%)' : '') }]}
           slotProps={{ legend: { hidden: true } }}
         />
         <span className="dn-c"><b>{centerTop}</b><small>{centerBottom}</small></span>
