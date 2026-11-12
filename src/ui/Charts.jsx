@@ -1,62 +1,106 @@
+import { useTheme } from '@mui/material/styles';
+import { BarChart } from '@mui/x-charts/BarChart';
+import { LineChart as XLine } from '@mui/x-charts/LineChart';
+import { PieChart } from '@mui/x-charts/PieChart';
+
+export const COLORS = ['#2F6FED', '#D9A21B', '#1F8A55', '#C0392B'];
+const GOLD = '#F7B500';
+const pct = (v) => (v == null ? '-' : Math.round(v * 10) / 10 + '%');
+const short = (s, n = 13) => (String(s).length > n ? String(s).slice(0, n - 1) + '…' : String(s));
+
+/* axis, grid and tooltip text follow the app theme (light and dark) */
+const axisSx = (th) => ({
+  fontFamily: 'inherit',
+  '& .MuiChartsAxis-tickLabel, & .MuiChartsLegend-series text': { fill: th.palette.text.secondary + ' !important', fontFamily: 'inherit', fontSize: 12 },
+  '& .MuiChartsAxis-line, & .MuiChartsAxis-tick': { stroke: th.palette.divider },
+  '& .MuiChartsGrid-line': { stroke: th.palette.divider, strokeDasharray: '3 4' },
+  '& .MuiBarLabel-root': { fill: '#fff', fontWeight: 700, fontSize: 12, fontFamily: 'inherit' },
+});
+
+/* horizontal bars, one per item. cls g / y / r picks green, gold or red. */
 export function BarRows({ items }) {
+  const th = useTheme();
+  const col = { g: th.palette.success.main, y: GOLD, r: th.palette.error.main };
+  const labels = items.map((i, k) => i.label + (items.findIndex((x) => x.label === i.label) < k ? ' ' + (k + 1) : ''));
+  const colors = items.map((i) => col[i.cls] || COLORS[0]);
   return (
-    <div className="bars">
-      {items.map((i, k) => (
-        <div className="br" key={k}>
-          <span className="bl" title={i.label}>{i.label}</span>
-          <div className="bt"><div className={'bf ' + (i.cls || '')} style={{ width: Math.max(0, Math.min(100, i.val || 0)) + '%' }} /></div>
-          <span className="bn">{i.note != null ? i.note : (i.val == null ? '-' : Math.round(i.val) + '%')}</span>
-        </div>
-      ))}
-    </div>
+    <BarChart
+      layout="horizontal"
+      height={Math.max(130, items.length * 40 + 36)}
+      margin={{ left: 96, right: 16, top: 6, bottom: 32 }}
+      yAxis={[{ scaleType: 'band', data: labels, valueFormatter: (v) => short(v), colorMap: { type: 'ordinal', values: labels, colors }, categoryGapRatio: 0.35 }]}
+      xAxis={[{ min: 0, max: 100, tickNumber: 5, valueFormatter: (v) => v + '%' }]}
+      series={[{ data: items.map((i) => i.val || 0), valueFormatter: (v, ctx) => (items[ctx.dataIndex] && items[ctx.dataIndex].val == null ? 'Not marked' : pct(v)) }]}
+      barLabel={(it) => (it.value >= 12 ? Math.round(it.value) + '%' : null)}
+      grid={{ vertical: true }}
+      slotProps={{ legend: { hidden: true } }}
+      sx={axisSx(th)}
+    />
   );
 }
 
-export function Donut({ p, label, sub }) {
-  const r = 42, c = 2 * Math.PI * r, v = p == null ? 0 : p;
+/* ring. pass parts to show a Present / Absent / Leave split on hover. */
+export function Donut({ p, label, sub, parts }) {
+  const th = useTheme();
+  const hasParts = parts && parts.reduce((a, x) => a + x.value, 0) > 0;
+  let data;
+  if (hasParts) data = parts.map((x, i) => ({ id: i, label: x.label, value: x.value, color: x.color }));
+  else if (p == null) data = [{ id: 0, label: 'Not marked yet', value: 1, color: th.palette.divider }];
+  else data = [{ id: 0, label: 'Present', value: p, color: th.palette.success.main }, { id: 1, label: 'Absent or leave', value: Math.max(0, 100 - p), color: th.palette.divider }];
   return (
     <div className="dn">
-      <svg viewBox="0 0 100 100" width="112" height="112" role="img" aria-label={label + ': ' + (p == null ? 'not marked yet' : Math.round(p) + ' percent')}>
-        <circle cx="50" cy="50" r={r} fill="none" stroke="var(--ln)" strokeWidth="10" />
-        <circle cx="50" cy="50" r={r} fill="none" stroke="var(--ok)" strokeWidth="10" strokeLinecap="round" strokeDasharray={(c * v / 100).toFixed(1) + ' ' + c.toFixed(1)} transform="rotate(-90 50 50)" />
-        <text x="50" y="56" textAnchor="middle" fontSize={p == null ? 14 : 20} fontWeight="700" fill="var(--ink)">{p == null ? 'None' : Math.round(p) + '%'}</text>
-      </svg>
+      <div className="dn-ring" role="img" aria-label={label + ': ' + (p == null ? 'not marked yet' : Math.round(p) + ' percent')}>
+        <PieChart
+          width={116}
+          height={116}
+          margin={{ top: 2, bottom: 2, left: 2, right: 2 }}
+          series={[{ data, innerRadius: 38, outerRadius: 56, paddingAngle: 2, cornerRadius: 4, highlightScope: { fade: 'global', highlight: 'item' }, faded: { additionalRadius: -3, color: th.palette.divider } }]}
+          slotProps={{ legend: { hidden: true } }}
+        />
+        <span className="dn-c">{p == null ? 'None' : Math.round(p) + '%'}</span>
+      </div>
       <div><b>{label}</b><div className="mut">{sub}</div></div>
     </div>
   );
 }
 
+/* pie or ring with a legend, for splits such as students per class */
+export function Split({ items, centerTop, centerBottom }) {
+  const th = useTheme();
+  const total = items.reduce((a, x) => a + x.value, 0);
+  const data = items.map((x, i) => ({ id: i, label: x.label, value: x.value, color: x.color || COLORS[i % COLORS.length] }));
+  return (
+    <div className="split">
+      <div className="dn-ring big">
+        <PieChart
+          width={170}
+          height={170}
+          margin={{ top: 2, bottom: 2, left: 2, right: 2 }}
+          series={[{ data, innerRadius: 54, outerRadius: 82, paddingAngle: 2, cornerRadius: 5, highlightScope: { fade: 'global', highlight: 'item' }, faded: { additionalRadius: -4, color: th.palette.divider }, valueFormatter: (v) => v.value + (total ? ' (' + Math.round(v.value / total * 100) + '%)' : '') }]}
+          slotProps={{ legend: { hidden: true } }}
+        />
+        <span className="dn-c"><b>{centerTop}</b><small>{centerBottom}</small></span>
+      </div>
+      <div className="lg col">{data.map((d) => <span key={d.id}><i style={{ background: d.color }} />{d.label}<b>{d.value}</b></span>)}</div>
+    </div>
+  );
+}
+
 export function LineChart({ labels, series, min = 0 }) {
-  const W = 560, H = 230, L = 34, B = 30, T = 10, Rt = 14, iw = W - L - Rt, ih = H - T - B, n = labels.length;
-  const x = (i) => L + (n === 1 ? iw / 2 : iw * i / (n - 1));
-  const y = (v) => T + ih * (1 - (v - min) / (100 - min));
-  const grid = [];
-  for (let k = 0; k <= 4; k++) {
-    const v = min + (100 - min) * k / 4;
-    grid.push(
-      <g key={'g' + k}>
-        <line x1={L} x2={W - Rt} y1={y(v).toFixed(1)} y2={y(v).toFixed(1)} stroke="var(--ln)" />
-        <text x={L - 6} y={(y(v) + 4).toFixed(1)} textAnchor="end" fontSize="11" fill="var(--mut)">{Math.round(v)}</text>
-      </g>,
-    );
-  }
+  const th = useTheme();
   return (
     <>
-      <svg className="lc" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={'Line chart of ' + series.map((s) => s.name).join(', ')}>
-        {grid}
-        {labels.map((lb, i) => <text key={'l' + i} x={x(i).toFixed(1)} y={H - 8} textAnchor="middle" fontSize="11" fill="var(--mut)">{lb}</text>)}
-        {series.map((s, si) => {
-          const pts = s.values.map((v, i) => (v == null ? null : [x(i), y(Math.max(min, v))])).filter(Boolean);
-          return (
-            <g key={si}>
-              {pts.length > 1 && <polyline fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round" points={pts.map((p) => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')} />}
-              {pts.map((p, i) => <circle key={i} cx={p[0].toFixed(1)} cy={p[1].toFixed(1)} r="4" fill={s.color} />)}
-            </g>
-          );
-        })}
-      </svg>
+      <XLine
+        height={240}
+        margin={{ left: 46, right: 20, top: 16, bottom: 36 }}
+        xAxis={[{ scaleType: 'point', data: labels.map((l) => String(l).replace(/\((\w{3})\w*\)/, '($1)')) }]}
+        yAxis={[{ min, max: 100, tickNumber: 5 }]}
+        series={series.map((s) => ({ data: s.values.map((v) => (v == null ? null : Math.max(min, v))), label: s.name, color: s.color, curve: 'monotoneX', showMark: true, valueFormatter: pct }))}
+        grid={{ horizontal: true }}
+        slotProps={{ legend: { hidden: true } }}
+        sx={{ ...axisSx(th), '& .MuiLineElement-root': { strokeWidth: 3 }, '& .MuiMarkElement-root': { strokeWidth: 2, fill: th.palette.background.paper } }}
+      />
       <div className="lg">{series.map((s, i) => <span key={i}><i style={{ background: s.color }} />{s.name}</span>)}</div>
     </>
   );
 }
-export const COLORS = ['#2F6FED', '#D9A21B', '#1F8A55', '#C0392B'];
