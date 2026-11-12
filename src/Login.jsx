@@ -6,6 +6,7 @@ import { LIVE, DEMO } from './core/config';
 import { DB, S, cap } from './core/data';
 import { render } from './core/store';
 import { demoLogin, login } from './core/sync';
+import { LangBtn } from './ui/LangBtn';
 import { makeTheme } from './theme';
 import { Err } from './ui';
 
@@ -130,7 +131,7 @@ export default function Login() {
         )}
         <p className="mut" style={{ marginTop: 14, fontSize: 12.5 }}>Demo mode: pick a name and press Sign in. The password is filled in for you.</p>
         <Button size="small" variant="outlined" sx={{ mt: 1 }} onClick={() => { S.pwMode = true; render(); }}>Sign in with a password instead</Button>
-        <InstallApp />
+        <InstallApp /><div style={{ marginTop: 10 }}><LangBtn /></div>
       </Shell>
     );
   }
@@ -166,7 +167,7 @@ export default function Login() {
           <p className="mut" style={{ marginTop: 14, fontSize: 12.5 }}>Demo with sample data for Class 9-A, Class 10-A and FSc Part 1. Nothing is saved or sent.</p>
         </>
       ) : <p className="linfo"><I k="info" /><span>Use the username and password given to you by the school office.</span></p>}
-      <InstallApp />
+      <InstallApp /><div style={{ marginTop: 10 }}><LangBtn /></div>
     </Shell>
   );
 }

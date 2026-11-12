@@ -1,5 +1,6 @@
 import { Component, useEffect, useRef, useState } from 'react';
 import { AiFab } from './screens/aiparts';
+import { LangBtn } from './ui/LangBtn';
 import { Badge, Button, Drawer, IconButton, Popover } from '@mui/material';
 import { ARTS } from './core/arts';
 import { DEMO } from './core/config';
@@ -130,6 +131,7 @@ export default function Shell({ dark, toggleDark }) {
             <div className="mcrest"><Crest /></div>
             <div className="ttl"><b>{cur[1]}</b><small>FG Public School and College</small></div>
             <GlobalSearch />
+            <LangBtn />
             <IconButton className="iconbtn" aria-label="Switch light or dark mode" onClick={toggleDark}><Ico n="moon" s={20} /></IconButton>
             {S.role === 'admin' ? null : (
               <IconButton className="iconbtn" aria-label={`Notifications, ${n} unread`} onClick={(e) => setBell(e.currentTarget)}>
@@ -152,6 +154,7 @@ export default function Shell({ dark, toggleDark }) {
         </nav>
         {S.role !== 'admin' && <Bell anchor={bell} onClose={() => setBell(null)} />}
         <Drawer anchor="bottom" open={more} onClose={() => setMore(false)} PaperProps={{ sx: { borderRadius: '26px 26px 0 0', p: 2, display: 'grid', gap: .75, pb: 'calc(18px + env(safe-area-inset-bottom,0px))' } }}>
+          <LangBtn sheet />
           <button type="button" className="sheetbtn" onClick={openProfile}><Av o={u} /><span>My profile photo</span></button>
           {items.map((i) => (
             <button type="button" className="sheetbtn" key={i[0]} onClick={() => { setMore(false); go(i[0]); }}>

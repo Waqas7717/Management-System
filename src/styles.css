@@ -534,3 +534,16 @@ html[data-theme=dark] .aipanel{background:#161D30}
 html[data-theme=dark] .menubtn{background:rgba(120,160,255,.16)}
 @media (max-width:899px){.top .srch{width:36px;height:36px}.top .srch .si{width:36px;height:36px}.top .srch.open{height:46px}.top .srch.open .si{width:36px;height:36px}}
 @media (max-width:899px){.top .srch.open{width:auto;height:46px;top:7px;left:8px;right:8px}}
+.langbtn{flex:none;height:40px;padding:0 16px;border:1.5px solid var(--chromeln);border-radius:999px;background:var(--chrome);color:var(--ink);font:inherit;font-weight:800;font-size:15px;cursor:pointer}
+.langbtn:hover{background:#E8EEFD}
+.sheetbtn[data-nolang]{justify-content:center;font-weight:800}
+@media (max-width:899px){.top .langbtn{display:none}}
+html.lang-ur body,html.lang-ur button,html.lang-ur input,html.lang-ur textarea,html.lang-ur .MuiTypography-root,html.lang-ur .MuiButton-root,html.lang-ur .MuiInputBase-root{font-family:'Noto Naskh Arabic','Segoe UI',Tahoma,sans-serif!important}
+html.lang-ur .head h1{letter-spacing:0}
+html[dir=rtl] .aifab{right:auto;left:22px}
+html[dir=rtl] .aipanel{right:auto;left:22px}
+@media (max-width:899px){html[dir=rtl] .aifab{right:auto;left:12px}html[dir=rtl] .aipanel{left:8px;right:8px}}
+.pushbar{display:flex;align-items:center;gap:10px;margin:0 0 12px;padding:10px 12px;border-radius:16px;border:1px solid #D9D2F5;background:linear-gradient(135deg,#F7F3FF,#EEF4FF)}
+.pushbar .pb-ic{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:12px;background:#EEE6FB;color:#7C4DD6}
+.pushbar .pb-t{flex:1;min-width:0}.pushbar b{display:block;font-size:14px}.pushbar small{display:block;color:var(--mut);font-size:12px;line-height:1.3}
+html[data-theme=dark] .pushbar{background:rgba(124,77,214,.14);border-color:rgba(124,77,214,.35)}
