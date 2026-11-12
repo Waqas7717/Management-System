@@ -1,5 +1,9 @@
 import { DCard, KpiTile, Ticker } from '../ui/dash';
 import { Translate } from './aiparts';
+import { ParentFees } from './fees';
+import { PushPrompt } from '../ui/PushPrompt';
+import { printReportCard, printDateSheet, printStudentAtt } from './printables';
+import { feeAmt, feeRec, feeMonths, dueMonths } from '../core/fees';
 import { useState } from 'react';
 import { Button } from '@mui/material';
 import { DEMO } from '../core/config';
@@ -32,8 +36,13 @@ function KidSwitch() {
 const NoKid = () => <><PageHead title="No child linked" /><Empty t="No child is linked to this account" s="Please contact the school office." /></>;
 
 function FeeBox({ k }) {
-  const amt = cls(k.cid).level === 'school' ? 1200 : 2000, due = !!DB.feeDue[k.id];
-  return <div className="row sp"><div><div className="mut">November fee</div><b style={{ fontSize: 20 }}>{money(amt)}</b></div>{due ? <Tag c="warn">Due by 15 Nov</Tag> : <Tag c="ok">Paid</Tag>}</div>;
+  const amt = feeAmt(k.cid), n = dueMonths(k.id).length, cur = feeMonths().slice(-1)[0];
+  if (!amt) return <div className="row sp"><div><div className="mut">Monthly fee</div><b style={{ fontSize: 20 }}>Not set yet</b></div><Tag>Ask school office</Tag></div>;
+  return <div className="row sp"><div><div className="mut">Monthly fee</div><b style={{ fontSize: 20 }}>{money(amt)}</b></div>{n ? <Tag c="warn">{n + (n === 1 ? ' month due' : ' months due')}</Tag> : <Tag c="ok">{feeRec(k.id, cur) ? 'Paid' : 'All clear'}</Tag>}</div>;
+}
+function Fees() {
+  const k = curKid(); if (!k) return <NoKid />;
+  return <><PageHead title="Fees" sub={k.name + ', ' + cls(k.cid).name} /><KidSwitch /><ParentFees k={k} /></>;
 }
 const LecTable = ({ lec }) => (
   <DT cols={['Lecture', 'Subject', 'Teacher', 'Status']} rows={lec.map((x) => [<>{x.p} <small>{PT[x.p - 1]}</small></>, subName(x.sub), x.t.name, <StChip st={x.st} />])} />
@@ -50,6 +59,7 @@ function Home() {
     <>
       <PageHead title={'Welcome, ' + S.user.name} sub={fd(TODAY) + '. ' + k.name + ', ' + c.name + ', roll ' + k.roll} />
       <KidSwitch />
+      <PushPrompt />
       <Ticker />
       <div className="g4" style={{ marginBottom: 16 }}>
         <KpiTile l="Attendance today" v={marked.length ? pres + ' of ' + marked.length : 'Not marked'} vs={22} s={marked.length ? 'lectures present' : 'Teachers are still marking'} ico="check" tone="g" to="att" />
@@ -93,7 +103,7 @@ function Att() {
   const subs = cls(k.cid).subjects.map((sb) => ({ sb, a: agg([k.id], ALLD, sb) }));
   return (
     <>
-      <PageHead title="Attendance" sub={k.name + ', ' + cls(k.cid).name} />
+      <PageHead title="Attendance" sub={k.name + ', ' + cls(k.cid).name}><Button variant="outlined" onClick={() => printStudentAtt(k.id, month)}>Print this month</Button></PageHead>
       <KidSwitch />
       <div className="g4" style={{ marginBottom: 14 }}>
         <Kpi l="Overall attendance" v={all.pct == null ? '-' : Math.round(all.pct) + '%'} s={DEMO ? 'Since 1 October' : 'Last 5 weeks'} />
@@ -224,7 +234,7 @@ function Res() {
   const trend = avail.map((e) => stuResult(e.id, k).pct), cavg = avail.map((e) => classAvg(e.id, k.cid));
   return (
     <>
-      <PageHead title="Results" sub={k.name + ', ' + cls(k.cid).name} />
+      <PageHead title="Results" sub={k.name + ', ' + cls(k.cid).name}><Button variant="outlined" onClick={() => printReportCard(k.id, ex)}>Print report card</Button></PageHead>
       <KidSwitch />
       <div style={{ maxWidth: 360 }}><FSel k="rexam" def={ex} list={avail.map((e) => [e.id, e.name])} label="Exam" /></div>
       <div className="g4" style={{ margin: '14px 0' }}>
@@ -274,7 +284,7 @@ function Sheet() {
   const groups = {}; list.forEach((d) => { (groups[d.exam] = groups[d.exam] || []).push(d); });
   return (
     <>
-      <PageHead title="Date sheet" sub={k.name + ', ' + cls(k.cid).name} />
+      <PageHead title="Date sheet" sub={k.name + ', ' + cls(k.cid).name}>{list.length ? <Button variant="outlined" onClick={() => printDateSheet(k.cid)}>Print date sheet</Button> : null}</PageHead>
       <KidSwitch />
       {Object.keys(groups).length ? Object.keys(groups).map((g) => (
         <Card key={g} title={g}><DT cols={['Date', 'Subject', 'Time', 'Room']} rows={groups[g].map((d) => [fd(d.date), subName(d.sub), d.time, d.room])} /></Card>
@@ -296,4 +306,4 @@ function Tt() {
 }
 import { ttCell as ttCellOf } from '../core/data';
 
-export const parentViews = { home: Home, att: Att, hw: Hw, leave: Leave, res: Res, notices: Notices, sheet: Sheet, tt: Tt };
+export const parentViews = { fees: Fees, home: Home, att: Att, hw: Hw, leave: Leave, res: Res, notices: Notices, sheet: Sheet, tt: Tt };

@@ -4,6 +4,7 @@ import { CLASSES, DB, S, audLabel, byName, uid } from '../core/data';
 import { DAYN, PT, TODAY, dow, fd, fs, isSchool, nowHM } from '../core/dates';
 import { ask, render, toast } from '../core/store';
 import { useAI } from './useai';
+import { alertNotice } from '../core/push';
 import { Empty, Item, Modal, PageHead, Sel, TF, DateF, CheckGroup, Tag, TypeTag } from '../ui';
 
 /* ---- weekly timetable grid (read-only views) ---- */
@@ -43,6 +44,7 @@ export function AnnDialog({ kind, ann, onClose }) {
     const aud = { kind: ak, cids: ak === 'classes' ? cids : [], sids: [] };
     if (ann) { ann.title = t; ann.body = b; ann.type = type; ann.aud = aud; ann.publish = pub; }
     else DB.anns.unshift({ id: 'a' + uid(), kind, type, title: t, body: b, aud, by: S.role === 'admin' ? S.user.id : 'p0', ts: TODAY + 'T' + nowHM(), publish: pub });
+    if (!ann && pub <= TODAY) alertNotice(DB.anns[0]);
     onClose(); render();
     toast(pub > TODAY ? 'Saved. It will appear on ' + fs(pub) + '.' : 'Published. ' + audLabel(aud) + ' can see it now.');
   };

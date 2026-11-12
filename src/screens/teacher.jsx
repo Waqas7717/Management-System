@@ -1,4 +1,5 @@
 import { CommentsDialog, useAI } from './aiparts';
+import { alertAbsent, alertNotice } from '../core/push';
 import { AttnRow, Attention, DCard, KpiTile, Ticker, dayCounts } from '../ui/dash';
 import { BarRows } from '../ui/Charts';
 import { useState } from 'react';
@@ -93,6 +94,7 @@ function Att() {
       rec[s.id] = S.work[s.id];
       if (d === TODAY && rec[s.id] === 'A' && old[s.id] !== 'A') parentsOf(s.id).forEach((pr) => ev({ role: 'parent', id: pr.id }, 'Absent in ' + subName(sub), s.name + ' was marked absent in ' + subName(sub) + ' (lecture ' + p + ') today.', 'event'));
     });
+    if (d === TODAY) alertAbsent(st.filter((s) => rec[s.id] === 'A' && old[s.id] !== 'A').map((s) => s.id), subName(sub));
     DB.att[key] = rec; render(); toast('Attendance saved for ' + cls(cid).name + ', ' + subName(sub) + '.');
   };
   return (
@@ -302,6 +304,7 @@ function SendForm({ cids }) {
     if (tgt.length && noP.length === tgt.length) return setErr('No parent is linked to ' + (tgt.length > 1 ? 'these students' : 'this student') + ' yet, so nobody would receive it. Ask the Admin to link parents.');
     const ss = aud === 'sel' ? sids : [];
     DB.anns.unshift({ id: 'a' + uid(), kind: 'announcement', type, title: title.trim(), body: body.trim(), aud: { kind: 'classes', cids: [cid], sids: ss }, by: t.id, ts: TODAY + 'T' + nowHM(), publish: TODAY });
+    alertNotice(DB.anns[0]);
     setErr(''); setTitle(''); setBody(''); setSids([]); render();
     toast((noP.length ? noP.length + ' of ' + tgt.length + ' student' + (tgt.length > 1 ? 's have' : ' has') + ' no parent linked yet. ' : '') + 'Notification sent to ' + (ss.length ? ss.length + ' selected student' + (ss.length > 1 ? 's' : '') + '’ parents' : 'parents of ' + cls(cid).name) + '.');
   };

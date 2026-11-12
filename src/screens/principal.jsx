@@ -219,4 +219,6 @@ function Leave() {
   );
 }
 
-export const principalViews = { dash: Dash, att: Att, ann: () => <AnnScreen kind="announcement" />, notice: () => <AnnScreen kind="notice" />, users: Users, res: Res, leave: Leave };
+import { StaffFees } from './fees';
+import { Reports } from './reports';
+export const principalViews = { fees: StaffFees, rep: Reports, dash: Dash, att: Att, ann: () => <AnnScreen kind="announcement" />, notice: () => <AnnScreen kind="notice" />, users: Users, res: Res, leave: Leave };
