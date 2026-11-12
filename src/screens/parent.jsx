@@ -240,7 +240,7 @@ function Res() {
         </Card>
         <Card title="Progress across exams">
           {avail.length > 1
-            ? <LineChart labels={avail.map((e) => e.name.replace('Monthly Test ', 'Test ').replace('First Term ', 'Term '))} series={[{ name: k.name.split(' ')[0], color: COLORS[0], values: trend }, { name: 'Class average', color: COLORS[1], values: cavg }]} min={0} />
+            ? <LineChart labels={avail.map((e) => e.name.replace('Monthly Test ', 'Test ').replace('First Term ', 'Term '))} series={[{ name: k.name.split(' ')[0], color: COLORS[0], values: trend }, { name: 'Class average', color: COLORS[1], values: cavg }]} />
             : <Empty t="One exam so far" s="The chart appears after a second exam." />}
         </Card>
       </div>
