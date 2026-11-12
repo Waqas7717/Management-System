@@ -62,9 +62,9 @@ function Home() {
       <PushPrompt />
       <Ticker />
       <div className="g4" style={{ marginBottom: 16 }}>
-        <KpiTile l="Attendance today" v={marked.length ? pres + ' of ' + marked.length : 'Not marked'} vs={22} s={marked.length ? 'lectures present' : 'Teachers are still marking'} ico="check" tone="g" to="att" />
+        <KpiTile l="Attendance today" v={marked.length ? pres + ' of ' + marked.length : 'Not marked'} s={marked.length ? 'lectures present' : 'Teachers are still marking'} ico="check" tone="g" to="att" />
         <KpiTile l="Homework pending" v={pend.length} s={newHw ? newHw + ' new today' : 'Nothing new today'} ico="book" tone="p" to="hw" />
-        <KpiTile l="Next paper" v={exam ? subName(exam.sub) : 'None yet'} vs={19} s={exam ? fd(exam.date) + ', ' + exam.time : 'No date sheet'} ico="file" tone="o" to="sheet" />
+        <KpiTile l="Next paper" v={exam ? subName(exam.sub) : 'None yet'} s={exam ? fd(exam.date) + ', ' + exam.time : 'No date sheet'} ico="file" tone="o" to="sheet" />
         <KpiTile l="Unread notices" v={unread()} s="Tap the bell to read" ico="mega" tone="b" to="notices" />
       </div>
       <div className="two st">

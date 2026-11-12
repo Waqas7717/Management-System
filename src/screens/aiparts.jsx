@@ -24,7 +24,7 @@ export function Translate({ text }) {
   return (
     <div>
       <Button size="small" variant="text" disabled={busy} onClick={go}>{busy ? 'Translating...' : out ? 'Hide translation' : to === 'ur' ? 'اردو میں دیکھیں' : 'Show in English'}</Button>
-      {out ? <p dir={to === 'ur' ? 'rtl' : 'ltr'} style={{ marginTop: 6, padding: 10, borderRadius: 12, background: 'var(--sf)', border: '1px solid var(--ln)', fontSize: to === 'ur' ? 17 : 14.5, lineHeight: 1.9, whiteSpace: 'pre-wrap' }}>{out}</p> : null}
+      {out ? <p dir={to === 'ur' ? 'rtl' : 'ltr'} style={{ marginTop: 6, padding: 10, borderRadius: 12, background: 'var(--sf)', border: '1px solid var(--ln)', fontSize: to === 'ur' ? 17 : 14, lineHeight: 1.9, whiteSpace: 'pre-wrap' }}>{out}</p> : null}
     </div>
   );
 }
@@ -141,8 +141,8 @@ export function AiFab() {
                 <Button variant="outlined" disabled={busy || !src.trim()} onClick={() => tr('en')}>In English</Button>
               </div>
               {busy ? <p className="mut" style={{ marginTop: 10 }}>Translating...</p> : null}
-              {a ? <p className="aians" dir={rtl ? 'rtl' : 'ltr'} style={{ whiteSpace: 'pre-wrap', fontSize: rtl ? 17 : 14.5, lineHeight: 1.9 }}>{a}</p> : null}
-              {latest.length ? <div style={{ marginTop: 12 }}><b style={{ fontSize: 13.5 }}>Latest from school</b>{latest.map((n, i) => <div className="item" key={i} style={{ marginTop: 6 }}><h4>{n.title}</h4><Translate text={n.title + '. ' + n.text} /></div>)}</div> : null}
+              {a ? <p className="aians" dir={rtl ? 'rtl' : 'ltr'} style={{ whiteSpace: 'pre-wrap', fontSize: rtl ? 17 : 14, lineHeight: 1.9 }}>{a}</p> : null}
+              {latest.length ? <div style={{ marginTop: 12 }}><b style={{ fontSize: 14 }}>Latest from school</b>{latest.map((n, i) => <div className="item" key={i} style={{ marginTop: 6 }}><h4>{n.title}</h4><Translate text={n.title + '. ' + n.text} /></div>)}</div> : null}
             </>
           )}
         </div>

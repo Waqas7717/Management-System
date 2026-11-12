@@ -55,8 +55,8 @@ export function StaffFees() {
         <Button variant="outlined" onClick={csv}>Download for Excel</Button>
       </PageHead>
       <div className="g4" style={{ marginBottom: 14 }}>
-        <KpiTile l={'Collected, ' + ymLabel(ym).split(' ')[0]} v={money(paid.reduce((a, x) => a + x.rec.amt, 0))} vs={22} ico="cash" tone="g" s={paid.length + ' students paid'} />
-        <KpiTile l="Pending" v={money(due.reduce((a, x) => a + x.amt, 0))} vs={22} ico="warn" tone="o" s={due.length + ' students not paid'} />
+        <KpiTile l={'Collected, ' + ymLabel(ym).split(' ')[0]} v={money(paid.reduce((a, x) => a + x.rec.amt, 0))} ico="cash" tone="g" s={paid.length + ' students paid'} />
+        <KpiTile l="Pending" v={money(due.reduce((a, x) => a + x.amt, 0))} ico="warn" tone="o" s={due.length + ' students not paid'} />
         <KpiTile l="Students with dues" v={DB.students.filter((s) => s.active && dueMonths(s.id).length).length} ico="users" tone="r" s="Any unpaid month this year" />
       </div>
       <FeeSetup />
@@ -84,7 +84,7 @@ export function ParentFees({ k }) {
   return (
     <>
       <div className="g4" style={{ marginBottom: 14 }}>
-        <KpiTile l="Monthly fee" v={money(amt)} vs={22} ico="cash" tone="b" />
+        <KpiTile l="Monthly fee" v={money(amt)} ico="cash" tone="b" />
         <KpiTile l="Months unpaid" v={dues.length} ico={dues.length ? 'warn' : 'check'} tone={dues.length ? 'o' : 'g'} s={dues.length ? money(dues.length * amt) + ' due' : 'All paid'} />
       </div>
       <DT minWidth={420} cols={['Month', { h: 'Fee', n: 1 }, 'Status', '']} rows={months.map((m) => { const r = feeRec(k.id, m); return [ymLabel(m), money(amt), r ? <Tag c="ok">{'Paid ' + fs(r.date)}</Tag> : <Tag c="warn">Not paid</Tag>, r ? <Button size="small" variant="outlined" onClick={() => printReceipt(k.id, m)}>Receipt</Button> : null]; })} />

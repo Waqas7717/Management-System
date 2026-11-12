@@ -30,7 +30,7 @@ function Home() {
         <KpiTile l="Classes and subjects" v={t.assign.length} s={tClasses(t).map((c) => cls(c).name).join(', ') || 'None'} ico="book" tone="p" to="att" />
         <KpiTile l="Lectures today" v={lec.length} s={lec.filter(lecMarked).length + ' attendance marked'} ico="clock" tone="b" to="tt" />
         <KpiTile l="Leave requests waiting" v={pl} s={classTeacherOf(t).length ? 'For your class' : 'You are not a class teacher'} ico="cal" tone="o" to="leave" />
-        <KpiTile l="My attendance today" v={own === 'P' ? 'Checked in ' + rec.in : own === 'L' ? 'On leave' : 'Not in yet'} vs={19} s={own === 'P' || own === 'L' ? '' : 'Use My attendance to check in'} ico="check" tone="g" to="me" />
+        <KpiTile l="My attendance today" v={own === 'P' ? 'Checked in ' + rec.in : own === 'L' ? 'On leave' : 'Not in yet'} s={own === 'P' || own === 'L' ? '' : 'Use My attendance to check in'} ico="check" tone="g" to="me" />
       </div>
       <div className="two st" style={{ marginBottom: 16 }}>
         <DCard title="Today’s timetable" ico="clock">
