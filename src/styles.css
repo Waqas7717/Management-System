@@ -388,3 +388,23 @@ html[data-theme=dark] .attn .ar .MuiButton-root{background:transparent;color:#F7
 .attn-b{align-content:start}
 .mainc.hero.sub::before{height:200px}
 .card.dcard>h3{display:none}
+
+/* ---------- gentle motion (switched off for reduced motion) ---------- */
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes bellPulse{0%,100%{box-shadow:0 0 0 0 rgba(214,69,69,.55)}60%{box-shadow:0 0 0 7px rgba(214,69,69,0)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes dotPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.6}}
+@media (prefers-reduced-motion:no-preference){
+  .view .ktile,.view .card,.view .annbar{animation:rise .5s cubic-bezier(.2,.7,.2,1) backwards}
+  .view .g4>:nth-child(2){animation-delay:.06s}.view .g4>:nth-child(3){animation-delay:.12s}.view .g4>:nth-child(4){animation-delay:.18s}.view .g4>:nth-child(5){animation-delay:.24s}
+  .view .two>:nth-child(2){animation-delay:.12s}
+  .view .two+.two .card{animation-delay:.2s}
+  .badge{animation:bellPulse 2s ease-out infinite}
+  .attn-art{animation:floaty 3.6s ease-in-out infinite}
+  .ar-n{animation:dotPulse 1.8s ease-in-out infinite}
+  .ccard,.dcard,.ktile{transition:transform .18s ease,box-shadow .18s ease}
+  .ccard:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(30,60,140,.14)}
+  .MuiButton-root{transition:transform .12s ease,box-shadow .18s ease,background-color .18s ease}
+  .MuiButton-root:active{transform:scale(.96)}
+  .MuiButton-contained:hover{transform:translateY(-1px)}
+}
