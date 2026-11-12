@@ -1,4 +1,4 @@
-import { ButtonBase } from '@mui/material';
+import { Button } from '@mui/material';
 import { DB, S, TYPEC, TYPEL, annVisible, cls, dayStatus, feed, tClasses, tStatus, latestExam, classAvg, classPass } from '../core/data';
 import { TODAY, addDays, fs, isSchool, pd, schoolDays } from '../core/dates';
 import { go } from '../core/actions';
@@ -38,19 +38,17 @@ const TARGET = { admin: 'ann', principal: 'ann', parent: 'notices' };
 export function Ticker() {
   const p = latestPost();
   const to = TARGET[S.role];
-  const body = (
-    <>
-      <span className="tk-ic"><Ico n="mega" s={18} /></span>
-      <b className="tk-l">Announcements</b>
-      {p ? (
-        <span className="tk-t"><Tag c={TYPEC[p.type]}>{TYPEL[p.type] || 'Update'}</Tag> <span className="tk-m">{p.title}</span><span className="tk-d"> {fs(p.ts.slice(0, 10))}</span></span>
-      ) : <span className="tk-t mut">Nothing posted yet</span>}
-      {to ? <span className="tk-go">View all</span> : null}
-    </>
+  return (
+    <section className="annbar" aria-label="Latest announcement">
+      <span className="ab-ic"><Ico n="mega" s={24} /></span>
+      <div className="ab-b">
+        <div className="ab-eye"><span>Latest announcement</span>{p ? <><Tag c={TYPEC[p.type]}>{TYPEL[p.type] || 'Update'}</Tag><span>{fs(p.ts.slice(0, 10))}</span></> : null}</div>
+        <div className="ab-title">{p ? p.title : 'Nothing posted yet'}</div>
+        {p && p.text ? <div className="ab-text">{p.text}</div> : null}
+      </div>
+      {to ? <Button className="ab-btn" variant="contained" size="small" endIcon={<Ico n="chev" s={18} />} onClick={() => go(to)}>View all</Button> : null}
+    </section>
   );
-  return to
-    ? <ButtonBase className="ticker" onClick={() => go(to)} aria-label="Open announcements">{body}</ButtonBase>
-    : <div className="ticker">{body}</div>;
 }
 
 /* ---------- per-class summary cards ---------- */
