@@ -11,7 +11,7 @@ import { scheduleSync } from '../../core/sync';
 import { store } from '../../core/stores';
 import { Card, DT, Empty, FSel, Item, Kpi, PageHead, Tag, TypeTag } from '../../ui';
 import { BarRows, Split } from '../../ui/Charts';
-import { AiHub, InsightsCard } from '../aiparts';
+import { InsightsCard } from '../aiparts';
 import { AttnRow, Attention, ClassCards, DCard, KpiTile, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../../ui/dash';
 import { AnnScreen, TtGrid } from '../common';
 import { UsersList } from './users';
@@ -97,7 +97,6 @@ function Dash() {
         <KpiTile l="Teachers" v={DB.teachers.length} s={DB.teachers.filter((t) => t.active).length + ' active'} ico="book" tone="p" to="teachers" />
         <KpiTile l="Principals" v={DB.principals.length} s={DB.principals.filter((t) => t.active).length + ' active'} ico="award" tone="o" to="principals" />
       </div>
-      <AiHub />
       {steps.some((x) => !x[2]) && (
         <DCard title="Get started" ico="star" style={{ marginBottom: 16 }}>
           <p className="mut" style={{ marginBottom: 10 }}>Set up your school in this order.</p>
