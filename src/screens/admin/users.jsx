@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Button, TextField } from '@mui/material';
+import { TextField } from '@mui/material';
 import { PrintDialog } from '../printables';
 import { CLASSES, DB, S, F, cls, parentsOf, stu, subName } from '../../core/data';
 import { render } from '../../core/store';
 import { Av, DT, Empty, FSel, Item, Tag, Who } from '../../ui';
+import { Button, RowActions } from '../../ui/buttons';
 
 function SearchBar({ tab }) {
   return (
@@ -17,12 +18,9 @@ const Status = ({ on }) => (on ? <Tag c="ok">Active</Tag> : <Tag>Inactive</Tag>)
 
 function Acts({ role, o, act }) {
   return (
-    <div className="row">
-      <Button size="small" variant="outlined" onClick={() => act.acEdit(role, o.id)}>Edit</Button>
-      <Button size="small" variant="outlined" onClick={() => act.pwReset(role, o.id)}>Reset password</Button>
-      <Button size="small" variant="contained" color={o.active ? 'error' : 'success'} onClick={() => act.acToggle(role, o.id)}>{o.active ? 'Deactivate' : 'Activate'}</Button>
-      <Button size="small" variant="contained" color="error" onClick={() => act.acRemove(role, o.id)}>Remove</Button>
-    </div>
+    <RowActions onEdit={() => act.acEdit(role, o.id)} onDelete={() => act.acRemove(role, o.id)} deleteLabel="Remove"
+      more={[{ label: 'Reset password', icon: 'key-round', onClick: () => act.pwReset(role, o.id) },
+        { label: o.active ? 'Deactivate' : 'Activate', icon: o.active ? 'user-x' : 'user-check', onClick: () => act.acToggle(role, o.id) }]} />
   );
 }
 
@@ -64,12 +62,9 @@ export function UsersList({ tab, edit, act }) {
     const cf = F('ucls', 'all'), l = DB.students.filter((s) => (cf === 'all' || s.cid === cf) && (!q || s.name.toLowerCase().indexOf(q) > -1));
     const cols = ['Roll', 'Student', 'Class', 'Parent', 'Status', ''];
     list = l.length ? <DT cols={cols} rows={l.map((s) => [s.roll, <Who o={s}>{s.name}</Who>, cls(s.cid) ? cls(s.cid).name : '', parentsOf(s.id).map((p) => p.name).join(', ') || 'None', <Status on={s.active} />]
-      .concat([<div className="row">
-        <Button size="small" variant="outlined" onClick={() => setPr(s.id)}>Print</Button>
-        {edit && <><Button size="small" variant="outlined" onClick={() => act.sEdit(s.id)}>Edit</Button>
-        <Button size="small" variant="contained" color={s.active ? 'error' : 'success'} onClick={() => act.sToggle(s.id)}>{s.active ? 'Deactivate' : 'Activate'}</Button>
-        <Button size="small" variant="contained" color="error" onClick={() => act.sRemove(s.id)}>Remove</Button></>}
-      </div>]))} /> : <Empty t="No students found" />;
+      .concat([<RowActions onEdit={edit ? () => act.sEdit(s.id) : undefined} onDelete={edit ? () => act.sRemove(s.id) : undefined} deleteLabel="Remove"
+        more={[{ label: 'Print', icon: 'printer', onClick: () => setPr(s.id) },
+          edit ? { label: s.active ? 'Deactivate' : 'Activate', icon: s.active ? 'user-x' : 'user-check', onClick: () => act.sToggle(s.id) } : null]} />]))} /> : <Empty t="No students found" />;
   }
   return <><SearchBar tab={tab} /><div>{list}</div>{pr && <PrintDialog sid={pr} onClose={() => setPr(null)} />}</>;
 }

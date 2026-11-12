@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '@mui/material';
+
 import { DEMO } from '../../core/config';
 import {
   CLASSES, DB, S, F, SUBJ, TYPEL, TYPEC, ROLE_LIST, cap, cleanClass, cls, ev, parentsOf, stu, subName, teacherFor, ttCell, ttDays,
@@ -69,8 +69,8 @@ function Accounts({ tab }) {
   return (
     <>
       <PageHead title={ttl} sub={sub}>
-        {tab === 'students' && <><Button variant="outlined" onClick={exportStudents}>Download list</Button><Button variant="outlined" onClick={() => setDlg({ t: 'imp' })}>Add from Excel</Button></>}
-        <Button variant="contained" onClick={add}>Add {one}</Button></PageHead>
+        {tab === 'students' && <><Button variant="secondary" icon="download" onClick={exportStudents}>Download list</Button><Button variant="secondary" icon="upload" onClick={() => setDlg({ t: 'imp' })}>Add from Excel</Button></>}
+        <Button variant="primary" icon="plus" onClick={add}>Add {one}</Button></PageHead>
       <UsersList tab={tab} edit act={act} />
       {dlg && dlg.t === 'acc' && <AccountDialog role={dlg.role} id={dlg.id} onClose={close} onCreds={(info) => setDlg({ t: 'creds', info })} />}
       {dlg && dlg.t === 'imp' && <ImportStudentsDialog onClose={close} />}
@@ -151,7 +151,7 @@ function Classes() {
   };
   return (
     <>
-      <PageHead title="Classes and subjects" sub="Every class has 5 subjects, one for each daily lecture."><Button variant="contained" onClick={() => editClass('')}>Add class</Button></PageHead>
+      <PageHead title="Classes and subjects" sub="Every class has 5 subjects, one for each daily lecture."><Button variant="primary" icon="plus" onClick={() => editClass('')}>Add class</Button></PageHead>
       {CLASSES.length ? CLASSES.map((c) => {
         const ct = DB.teachers.find((t) => t.id === c.ct);
         return (
@@ -159,15 +159,15 @@ function Classes() {
             <div className="row sp"><h4>{c.name} <small>{c.level === 'college' ? 'College' : 'School'}{c.room ? ', ' + c.room : ''}</small></h4><Tag c="info">{DB.students.filter((s) => s.cid === c.id && s.active).length + ' students'}</Tag></div>
             <div className="meta"><span>Class teacher: {ct ? ct.name : 'Not set'}</span></div>
             <div className="meta">{c.subjects.map((sb) => { const t = teacherFor(c.id, sb); return <Tag key={sb} c={t.id ? 'info' : 'warn'}>{subName(sb) + ' (' + (t.id ? t.name.split(' ')[0] : 'no teacher') + ')'}</Tag>; })}</div>
-            <div className="row"><Button size="small" variant="outlined" onClick={() => editClass(c.id)}>Edit</Button><Button size="small" variant="contained" color="error" onClick={() => rmClass(c)}>Remove</Button></div>
+            <RowActions onEdit={() => editClass(c.id)} onDelete={() => rmClass(c)} deleteLabel="Remove" />
           </Item>
         );
       }) : <Empty t="No classes yet" s="Add your first class with the button above." />}
-      <div className="row sp" style={{ margin: '24px 0 10px' }}><h3>Subjects</h3><Button size="small" variant="contained" onClick={() => setDlg({ t: 'sub', code: '' })}>Add subject</Button></div>
+      <div className="row sp" style={{ margin: '24px 0 10px' }}><h3>Subjects</h3><Button size="sm" variant="primary" icon="plus" onClick={() => setDlg({ t: 'sub', code: '' })}>Add subject</Button></div>
       {codes.length ? codes.map((code) => (
         <Item key={code}>
           <div className="row sp"><h4>{SUBJ[code]} <small>{code}</small></h4>
-            <div className="row"><Button size="small" variant="outlined" onClick={() => setDlg({ t: 'sub', code })}>Rename</Button><Button size="small" variant="contained" color="error" onClick={() => rmSub(code)}>Remove</Button></div></div>
+            <RowActions onEdit={() => setDlg({ t: 'sub', code })} editLabel="Rename" onDelete={() => rmSub(code)} deleteLabel="Remove" /></div>
         </Item>
       )) : <Empty t="No subjects yet" s="Add subjects, then use them in classes." />}
       {dlg && dlg.t === 'cls' && <ClassDialog id={dlg.id} onClose={() => setDlg(null)} />}
@@ -225,10 +225,10 @@ function TtEditor({ cid }) {
         </table>
       </div>
       <div className="meta" style={{ marginTop: 10 }}>{c.subjects.map((sb) => { const t = teacherFor(c.id, sb); return <Tag key={sb} c={t.id ? 'info' : 'warn'}>{subName(sb) + ' (' + (t.id ? t.name : 'no teacher') + ')'}</Tag>; })}</div>
-      <div className="row" style={{ marginTop: 14 }}>
-        <Button variant="contained" onClick={save}>Save timetable</Button>
+      <FormActions>
         {custom ? <Button variant="outlined" onClick={() => ask('Reset the timetable for ' + c.name + ' to the default order?', 'Reset', () => { delete DB.tt[cid]; ttNote(cid, 'Timetable updated'); render(); toast('Timetable reset.'); })}>Reset to default order</Button> : null}
-      </div>
+        <Button variant="primary" onClick={save}>Save timetable</Button>
+      </FormActions>
     </Card>
   );
 }
@@ -254,10 +254,10 @@ function Ds() {
   const f = F('dsf', 'all'), list = DB.datesheet.filter((d) => cls(d.cid) && (f === 'all' || d.cid === f)).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   return (
     <>
-      <PageHead title={ttl} sub={sub}>{f !== 'all' && list.length ? <Button variant="outlined" onClick={() => printDateSheet(f)}>Print this class</Button> : null}<Button variant="contained" onClick={() => setAdd(true)}>Add paper</Button></PageHead>
+      <PageHead title={ttl} sub={sub}>{f !== 'all' && list.length ? <Button variant="secondary" icon="printer" onClick={() => printDateSheet(f)}>Print this class</Button> : null}<Button variant="primary" icon="plus" onClick={() => setAdd(true)}>Add paper</Button></PageHead>
       <div className="g2" style={{ margin: '14px 0' }}><FSel k="dsf" def="all" list={[['all', 'All classes']].concat(CLASSES.map((x) => [x.id, x.name]))} label="Class" /></div>
       {list.length ? <DT cols={['Class', 'Exam', 'Subject', 'Date', 'Time', 'Room', '']} rows={list.map((d) => [cls(d.cid).name, d.exam || '', subName(d.sub), fd(d.date), d.time || '', d.room || '',
-        <Button size="small" variant="contained" color="error" onClick={() => { DB.datesheet = DB.datesheet.filter((x) => x.id !== d.id); render(); toast('Paper removed.'); }}>Remove</Button>])} />
+        <RowActions onDelete={() => ask('Remove this paper from the date sheet?', 'Remove', () => { DB.datesheet = DB.datesheet.filter((x) => x.id !== d.id); render(); toast('Paper removed.'); })} deleteLabel="Remove" />])} />
         : <Empty t="No papers yet" s="Use Add paper to build the date sheet." />}
       {add && <DsDialog onClose={() => setAdd(false)} />}
     </>
@@ -273,12 +273,12 @@ function Evt() {
   const to = (g) => ['parent', 'teacher'].filter((r) => DB.events.some((x) => x.grp === g && x.to.role === r)).map((r) => (r === 'parent' ? 'Parents' : 'Teachers')).join(' and ');
   return (
     <>
-      <PageHead title="Events and holidays" sub="Holidays, meetings and events. They appear in the notifications of parents and teachers."><Button variant="contained" onClick={() => setAdd(true)}>New event or holiday</Button></PageHead>
+      <PageHead title="Events and holidays" sub="Holidays, meetings and events. They appear in the notifications of parents and teachers."><Button variant="primary" icon="plus" onClick={() => setAdd(true)}>New event or holiday</Button></PageHead>
       {list.length ? list.map((e) => (
         <Item key={e.grp}>
           <div className="row sp"><span className="row"><TypeTag t={e.type} fallback="Event" />{e.date ? <Tag c="info">{fd(e.date)}</Tag> : null}</span><small>Posted {fs(e.ts.slice(0, 10))}</small></div>
           <h4>{e.title}</h4><p>{e.text}</p><div className="meta"><span>To {to(e.grp)}</span></div>
-          <div className="row"><Button size="small" variant="contained" color="error" onClick={() => ask('Delete this post?', 'Delete', () => { DB.events = DB.events.filter((x) => x.grp !== e.grp); render(); toast('Deleted.'); })}>Delete</Button></div>
+          <div className="row"><Button size="sm" variant="danger" icon="trash-2" onClick={() => ask('Delete this post?', 'Delete', () => { DB.events = DB.events.filter((x) => x.grp !== e.grp); render(); toast('Deleted.'); })}>Delete</Button></div>
         </Item>
       )) : <Empty t="Nothing posted yet" s="Use the button above to post a holiday or an event." />}
       {add && <EvDialog onClose={() => setAdd(false)} />}
@@ -290,6 +290,7 @@ import { StaffFees } from '../fees';
 import { ImportStudentsDialog, exportStudents } from '../datatools';
 import { printDateSheet } from '../printables';
 import { Reports } from '../reports';
+import { Button, RowActions, FormActions } from '../../ui/buttons';
 export const adminViews = {
   fees: StaffFees, rep: Reports,
   dash: Dash, classes: Classes, tt: Tt, ds: Ds, evt: Evt,
