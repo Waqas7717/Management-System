@@ -1,12 +1,13 @@
 import { createContext, useContext, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  Avatar, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel,
+  Avatar, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, ToggleButton, ToggleButtonGroup,
 } from '@mui/material';
 import { Ico } from './Ico';
 import { Num } from './Num';
-import { F, S, TYPEC, TYPEL } from '../core/data';
+import { F, NAVS, S, TYPEC, TYPEL } from '../core/data';
+import { canBack, go, goBack } from '../core/actions';
 import { render } from '../core/store';
 import { readPhoto } from '../core/photo';
 
@@ -65,9 +66,10 @@ export function Kpi({ l, v, s, vs }) {
 export const SlotCtx = createContext(null);
 export function PageHead({ title, sub, children }) {
   const slot = useContext(SlotCtx);
+  const home = S.role && NAVS[S.role] ? NAVS[S.role].items[0][0] : null;
   const el = (
     <div className="head">
-      <div><h1>{title}</h1>{sub ? <p>{sub}</p> : null}</div>
+      <div>{home && S.view !== home ? <button type="button" className="backbtn" onClick={() => (canBack() ? goBack() : go(home))}><Ico n="back" s={16} /><span>Back</span></button> : null}<h1>{title}</h1>{sub ? <p>{sub}</p> : null}</div>
       {children ? <div className="row">{children}</div> : null}
     </div>
   );
@@ -143,7 +145,7 @@ export function DT({ cols, rows, minWidth = 480, className }) {
 export function Modal({ open = true, title, onClose, children, actions = [], error, cancelLabel = 'Cancel', maxWidth = 'xs' }) {
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth={maxWidth} scroll="paper" aria-label={title}>
-      <DialogTitle>{title}</DialogTitle>
+      <DialogTitle sx={{ pr: 7 }}>{title}<IconButton className="xbtn xmodal" aria-label="Close" onClick={onClose}><Ico n="close" s={18} /></IconButton></DialogTitle>
       <DialogContent sx={{ pt: '10px !important' }}>
         {children}
         {error ? <div className="err" role="alert">{error}</div> : null}
