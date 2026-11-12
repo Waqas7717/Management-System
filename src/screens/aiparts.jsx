@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Button } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Button, TextField } from '@mui/material';
 import { CLASSES, DB, EXAMS, S, feed, classAvg, classPass, dayStatus, latestExam, tStatus, cls, gradeOf } from '../core/data';
 import { TODAY, addDays, schoolDays } from '../core/dates';
 import { useAI } from './useai';
@@ -89,39 +89,65 @@ function facts() {
   return L.join('\n');
 }
 const SAMPLES = ['Which class has the lowest results?', 'Which class has the best attendance this week?', 'How many teachers are not in yet?'];
-export function AiHub() {
+const TCHIPS = ['Write a short lesson plan on fractions for Class 6', 'Write a polite message to parents about a class test', 'Make 5 quiz questions on photosynthesis'];
+
+/* floating AI button on every page. It opens a small panel with tools for the signed-in role. */
+export function AiFab() {
   const role = S.role, staff = role === 'admin' || role === 'principal';
-  const [busy, run] = useAI(); const [q, setQ] = useState(''), [a, setA] = useState(''), [dlg, setDlg] = useState(null);
-  const go2 = async (text) => { const s = (text || q).trim(); if (!s) return; setQ(s); setA(''); const t = await run('ask', { question: s, facts: facts() }); if (t) setA(t); };
-  const latest = role === 'parent' ? feed()[0] : null;
+  const [open, setOpen] = useState(false), [dlg, setDlg] = useState(null);
+  const [busy, run] = useAI(); const [q, setQ] = useState(''), [a, setA] = useState(''), [src, setSrc] = useState(''), [rtl, setRtl] = useState(false);
+  useEffect(() => { if (!open) return; const k = (e) => e.key === 'Escape' && setOpen(false); document.addEventListener('keydown', k); return () => document.removeEventListener('keydown', k); }, [open]);
+  const ask = async (text) => { const s = (text || q).trim(); if (!s) return; setQ(s); setA(''); const t = await run(staff ? 'ask' : 'help', staff ? { question: s, facts: facts() } : { request: s }); if (t) setA(t); };
+  const tr = async (to) => { const s = src.trim(); if (!s) return; setA(''); setRtl(to === 'ur'); const t = await run('translate', { text: s, to }); if (t) setA(t); };
+  const shut = (v) => { setOpen(false); if (v) go(v); };
+  const latest = role === 'parent' ? feed().slice(0, 2) : [];
   return (
-    <DCard title="AI assistant" ico="star" className="aihub" right={<span className="aitag">Free AI</span>} style={{ marginBottom: 16 }}>
-      {staff ? (
-        <>
-          <div className="row" style={{ gap: 8, flexWrap: 'nowrap' }}>
-            <div style={{ flex: 1, minWidth: 0 }}><TF id="ask_q" label="Ask about your school, for example: which class has the lowest results?" value={q} onChange={setQ} onKeyDown={(e) => e.key === 'Enter' && go2()} /></div>
-            <Button variant="contained" disabled={busy} onClick={() => go2()} sx={{ flex: 'none', height: 54 }}>{busy ? 'Thinking...' : 'Ask'}</Button>
-          </div>
-          <div className="row" style={{ marginTop: 10, gap: 6 }}>{SAMPLES.map((s) => <button type="button" key={s} className="chipq" disabled={busy} onClick={() => go2(s)}>{s}</button>)}</div>
-          {a ? <p className="aians"><Ico n="star" s={16} />{a}</p> : null}
-          <div className="aih-acts">
-            <button type="button" onClick={() => setDlg('announcement')}><Ico n="mega" s={20} /><b>Write an announcement</b><small>Type a rough note, AI writes it in English or Urdu</small></button>
-            <button type="button" onClick={() => setDlg('notice')}><Ico n="file" s={20} /><b>Write a notice</b><small>Clear notice for parents and teachers</small></button>
-          </div>
-          {dlg ? <AnnDialog kind={dlg} onClose={() => setDlg(null)} /> : null}
-        </>
-      ) : role === 'teacher' ? (
-        <div className="aih-acts">
-          <button type="button" onClick={() => go('hw')}><Ico n="book" s={20} /><b>Homework helper</b><small>Give a topic, AI drafts the questions</small></button>
-          <button type="button" onClick={() => go('res')}><Ico n="award" s={20} /><b>Report card comments</b><small>Enter marks, AI drafts a comment for each student</small></button>
+    <>
+      {!open && <button type="button" className="aifab" aria-label="Open AI assistant" onClick={() => setOpen(true)}><Ico n="star" s={22} /><span>Ask AI</span></button>}
+      {open && (
+        <div className="aipanel" role="dialog" aria-label="AI assistant">
+          <div className="aip-h"><span className="aip-ic"><Ico n="star" s={18} /></span><b>AI assistant</b><span className="aitag">Free AI</span><button type="button" className="aip-x" aria-label="Close AI assistant" onClick={() => setOpen(false)}>×</button></div>
+          {staff || role === 'teacher' ? (
+            <>
+              <div className="row" style={{ gap: 8, flexWrap: 'nowrap', alignItems: 'flex-start' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <TextField multiline minRows={2} maxRows={5} fullWidth size="small" placeholder={staff ? 'Ask about your school, for example: which class has the lowest results?' : 'Ask for help, for example: write a lesson plan on fractions'} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(); } }} inputProps={{ 'aria-label': 'Ask the AI assistant' }} />
+                </div>
+                <Button variant="contained" disabled={busy} onClick={() => ask()} sx={{ flex: 'none', height: 40 }}>{busy ? '...' : 'Ask'}</Button>
+              </div>
+              <div className="row" style={{ marginTop: 8, gap: 6 }}>{(staff ? SAMPLES : TCHIPS).map((s) => <button type="button" key={s} className="chipq" disabled={busy} onClick={() => ask(s)}>{s}</button>)}</div>
+              {busy ? <p className="mut" style={{ marginTop: 10 }}>Thinking...</p> : null}
+              {a ? <p className="aians" style={{ whiteSpace: 'pre-wrap' }}><Ico n="star" s={16} />{a}</p> : null}
+              <div className="aih-acts">
+                {staff ? (
+                  <>
+                    <button type="button" onClick={() => setDlg('announcement')}><Ico n="mega" s={20} /><b>Write an announcement</b><small>AI writes it in English or Urdu</small></button>
+                    <button type="button" onClick={() => setDlg('notice')}><Ico n="file" s={20} /><b>Write a notice</b><small>For parents and teachers</small></button>
+                  </>
+                ) : (
+                  <>
+                    <button type="button" onClick={() => shut('hw')}><Ico n="book" s={20} /><b>Homework helper</b><small>Give a topic, AI drafts the questions</small></button>
+                    <button type="button" onClick={() => shut('res')}><Ico n="award" s={20} /><b>Report card comments</b><small>AI drafts a comment for each student</small></button>
+                  </>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="mut" style={{ marginBottom: 8 }}>Paste any school message and read it in Urdu or English.</p>
+              <TextField multiline minRows={3} maxRows={6} fullWidth size="small" placeholder="Paste a message here" value={src} onChange={(e) => setSrc(e.target.value)} inputProps={{ 'aria-label': 'Message to translate' }} />
+              <div className="row" style={{ marginTop: 8, gap: 8 }}>
+                <Button variant="contained" disabled={busy || !src.trim()} onClick={() => tr('ur')}>اردو میں</Button>
+                <Button variant="outlined" disabled={busy || !src.trim()} onClick={() => tr('en')}>In English</Button>
+              </div>
+              {busy ? <p className="mut" style={{ marginTop: 10 }}>Translating...</p> : null}
+              {a ? <p className="aians" dir={rtl ? 'rtl' : 'ltr'} style={{ whiteSpace: 'pre-wrap', fontSize: rtl ? 17 : 14.5, lineHeight: 1.9 }}>{a}</p> : null}
+              {latest.length ? <div style={{ marginTop: 12 }}><b style={{ fontSize: 13.5 }}>Latest from school</b>{latest.map((n, i) => <div className="item" key={i} style={{ marginTop: 6 }}><h4>{n.title}</h4><Translate text={n.title + '. ' + n.text} /></div>)}</div> : null}
+            </>
+          )}
         </div>
-      ) : (
-        <>
-          <p className="mut" style={{ marginBottom: 6 }}>Read school notices in Urdu or English with one tap.</p>
-          {latest ? <div className="item" style={{ marginBottom: 8 }}><h4>{latest.title}</h4><p className="mut">{latest.text}</p><Translate text={latest.title + '. ' + latest.text} /></div> : <p className="mut">No notices yet.</p>}
-          <Button size="small" variant="outlined" onClick={() => go('notices')}>All notices</Button>
-        </>
       )}
-    </DCard>
+      {dlg ? <AnnDialog kind={dlg} onClose={() => setDlg(null)} /> : null}
+    </>
   );
 }

@@ -11,7 +11,7 @@ import { BarRows, COLORS, LineChart, Split } from '../ui/Charts';
 import { Av, Card, DT, DateF, Empty, FDate, FSel, Item, Kpi, LeaveChip, PageHead, Pill, Seg, StChip, TF, Tag, Who } from '../ui';
 import { AnnScreen } from './common';
 import { UsersList } from './admin/users';
-import { AiHub, InsightsCard } from './aiparts';
+import { InsightsCard } from './aiparts';
 import { AttnRow, Attention, ClassCards, DCard, KpiTile, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../ui/dash';
 
 const dc = () => (CLASSES.length ? CLASSES[0].id : 'all');
@@ -49,7 +49,6 @@ function Dash() {
         <KpiTile l="Teacher attendance today" v={tp == null ? '-' : Math.round(tp) + '%'} s={ts.P + ' in, ' + ts.N + ' not in yet, ' + ts.L + ' leave'} ico="clock" tone="o" to={{ view: 'att', f: { patab: 'teachers' } }} />
         <KpiTile l="Pending leave requests" v={pend} s="Students and teachers" ico="cal" tone="r" to="leave" />
       </div>
-      <AiHub />
       <div className="two st wide" style={{ marginBottom: 16 }}>
         <ClassCards classes={cl} range={rng} />
         <DCard title={rng.today ? 'Students today' : 'Students, ' + rng.label.toLowerCase()} ico="check">
