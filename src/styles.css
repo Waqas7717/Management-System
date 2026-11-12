@@ -458,3 +458,13 @@ html[data-theme=dark] .tw .MuiTableBody-root .MuiTableRow-root:hover{background:
 .aians svg{flex:none;margin-top:3px;color:#7C4DD6}
 html[data-theme=dark] .aians{background:rgba(120,160,255,.12);border-color:rgba(120,160,255,.25);color:var(--ink)}
 html[data-theme=dark] .chipq:hover{background:rgba(255,255,255,.08)}
+.aihub{border:1px solid #D9D2F5;background:linear-gradient(135deg,#F7F3FF 0%,#EEF4FF 55%,var(--cardbg) 100%)}
+.aihub .dc-ic{background:linear-gradient(135deg,#7C4DD6,#2F6FDE);color:#fff}
+.aitag{padding:3px 10px;border-radius:999px;background:linear-gradient(90deg,#7C4DD6,#2F6FDE);color:#fff;font-size:11.5px;font-weight:800}
+.aih-acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:12px}
+.aih-acts button{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;padding:12px 14px;border:1px solid var(--ln);border-radius:16px;background:var(--cardbg);color:var(--ink);font:inherit;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.aih-acts button svg{grid-row:1 / 3;color:#7C4DD6;background:#EEE6FB;padding:8px;border-radius:12px;box-sizing:content-box}
+.aih-acts button small{color:var(--mut);font-size:12.5px}
+.aih-acts button:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(80,60,170,.14)}
+html[data-theme=dark] .aihub{background:linear-gradient(135deg,rgba(124,77,214,.16),rgba(47,111,222,.1));border-color:rgba(124,77,214,.35)}
+html[data-theme=dark] .aih-acts button svg{background:rgba(124,77,214,.2);color:#C9B2FF}
