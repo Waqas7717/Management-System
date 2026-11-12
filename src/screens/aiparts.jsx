@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { TextField } from '@mui/material';
 import { CLASSES, DB, EXAMS, S, feed, classAvg, classPass, dayStatus, latestExam, tStatus, cls, gradeOf } from '../core/data';
 import { TODAY, addDays, schoolDays } from '../core/dates';
 import { useAI } from './useai';
@@ -110,9 +109,9 @@ export function AiFab() {
           <div className="aip-h"><span className="aip-ic"><Ico n="star" s={18} /></span><b>AI assistant</b><span className="aitag">Free AI</span><IconBtn size="sm" icon="x" label="Close AI assistant" onClick={() => setOpen(false)} /></div>
           {staff || role === 'teacher' ? (
             <>
-              <div className="row" style={{ gap: 8, flexWrap: 'nowrap', alignItems: 'flex-start' }}>
+              <div className="row" style={{ gap: 8, flexWrap: 'nowrap', alignItems: 'flex-end' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <TextField multiline minRows={2} maxRows={5} fullWidth size="small" placeholder={staff ? 'Ask about your school, for example: which class has the lowest results?' : 'Ask for help, for example: write a lesson plan on fractions'} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(); } }} inputProps={{ 'aria-label': 'Ask the AI assistant' }} />
+                  <TF label="Your question" multiline minRows={2} maxRows={5} placeholder={staff ? 'Ask about your school, for example: which class has the lowest results?' : 'Ask for help, for example: write a lesson plan on fractions'} value={q} onChange={setQ} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(); } }} />
                 </div>
                 <Button variant="contained" disabled={busy} onClick={() => ask()} sx={{ flex: 'none', height: 40 }}>{busy ? '...' : 'Ask'}</Button>
               </div>
@@ -136,7 +135,7 @@ export function AiFab() {
           ) : (
             <>
               <p className="mut" style={{ marginBottom: 8 }}>Paste any school message and read it in Urdu or English.</p>
-              <TextField multiline minRows={3} maxRows={6} fullWidth size="small" placeholder="Paste a message here" value={src} onChange={(e) => setSrc(e.target.value)} inputProps={{ 'aria-label': 'Message to translate' }} />
+              <TF label="Message to translate" multiline minRows={3} maxRows={6} placeholder="Paste a message here" value={src} onChange={setSrc} />
               <div className="row" style={{ marginTop: 8, gap: 8 }}>
                 <Button variant="contained" disabled={busy || !src.trim()} onClick={() => tr('ur')}>اردو میں</Button>
                 <Button variant="outlined" disabled={busy || !src.trim()} onClick={() => tr('en')}>In English</Button>

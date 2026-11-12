@@ -52,8 +52,8 @@ export function AnnDialog({ kind, ann, onClose }) {
   return (
     <Modal title={ann ? 'Edit ' + ann.kind : 'New ' + (kind === 'notice' ? 'notice' : 'announcement')} onClose={onClose} error={err}
       actions={[{ label: ann ? 'Save changes' : 'Publish', onClick: save }]}>
-      <TF label="Title" value={title} onChange={setTitle} />
-      <div className="field"><TF label="Message" value={body} onChange={setBody} multiline minRows={3} /></div>
+      <TF label="Title" required value={title} onChange={setTitle} />
+      <div className="field"><TF label="Message" required value={body} onChange={setBody} multiline minRows={3} /></div>
       <div className="row" style={{ marginTop: 8 }}>
         <Button size="sm" variant="secondary" disabled={aiBusy} onClick={async () => { const t = await aiRun('notice', { text: (body.trim() || title.trim()), lang: aiLang }); if (t) setBody(t); }}>{aiBusy ? 'Writing...' : 'Write with AI'}</Button>
         <div style={{ width: 130 }}><Sel label="Language" value={aiLang} onChange={setAiLang} list={[['en', 'English'], ['ur', 'Urdu']]} /></div>
@@ -61,7 +61,7 @@ export function AnnDialog({ kind, ann, onClose }) {
       </div>
       <div className="g2 field">
         <Sel label="Type" value={type} onChange={setType} list={types} />
-        <DateF label="Publish date" value={pub} onChange={setPub} min={TODAY} />
+        <DateF label="Publish date" required value={pub} onChange={setPub} min={TODAY} />
       </div>
       <div className="field"><Sel label="Send to" value={ak} onChange={setAk} list={[['all', 'Whole school and college'], ['teachers', 'Teachers only'], ['parents', 'Parents only'], ['classes', 'Selected classes']]} /></div>
       {ak === 'classes' && <><label className="flabel">Classes</label><CheckGroup items={CLASSES.map((c) => ({ value: c.id, label: c.name }))} checked={cids} onChange={setCids} /></>}

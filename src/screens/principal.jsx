@@ -8,7 +8,7 @@ import {
 import { ALLD, CM, WEEKS, TODAY, fd, fs, isSchool, monthOptions, schoolDays } from '../core/dates';
 import { render, toast } from '../core/store';
 import { BarRows, COLORS, LineChart, Split } from '../ui/Charts';
-import { Av, Card, DT, DateF, Empty, FDate, FSel, Item, Kpi, LeaveChip, PageHead, Pill, Seg, StChip, TF, Tag, Who } from '../ui';
+import { Av, Card, DT, DateF, SearchF, Empty, FDate, FSel, Item, Kpi, LeaveChip, PageHead, Pill, Seg, StChip, TF, Tag, Who } from '../ui';
 import { AnnScreen } from './common';
 import { UsersList } from './admin/users';
 import { InsightsCard } from './aiparts';
@@ -144,7 +144,7 @@ function Att() {
         <div className="g3" style={{ margin: '14px 0' }}>
           <FSel k="pcls" def={dc()} list={[['all', 'All classes'], ...CLASSES.map((c) => [c.id, c.name])]} label="Class" />
           <div>{mode === 'daily' ? <FDate k="pdate" def={TODAY} label="Date" max={TODAY} /> : monthSel}</div>
-          <TextField id="psq" type="search" label="Search student" value={F('psq', '')} placeholder="Type a name" onChange={(e) => { S.f.psq = e.target.value; render(); }} />
+          <SearchF id="psq" label="Search student" value={F('psq', '')} placeholder="Type a name" onChange={(v) => { S.f.psq = v; render(); }} />
         </div>
         <div style={{ marginBottom: 12 }}>{modeSeg}</div>
         <AttTable />

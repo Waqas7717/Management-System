@@ -11,7 +11,7 @@ import {
 import { ALLD, CM, PT, TODAY, addDays, fd, fs, isSchool, monthOptions, nextSchool, nowHM, schoolDays } from '../core/dates';
 import { go } from '../core/actions';
 import { ask, render, toast } from '../core/store';
-import { Card, CheckGroup, DT, DateF, Empty, Err, FSel, FileBox, Item, Kpi, LeaveChip, Modal, PageHead, Sel, Seg, StChip, TF, Tag, TypeTag, Av, Who, FDate } from '../ui';
+import { Card, CheckGroup, RadioField, DT, DateF, Empty, Err, FSel, FileBox, Item, Kpi, LeaveChip, Modal, PageHead, Sel, Seg, StChip, TF, Tag, TypeTag, Av, Who, FDate } from '../ui';
 import { TtGrid } from './common';
 import { Button, RowActions, FormActions } from '../ui/buttons';
 
@@ -138,9 +138,9 @@ function HwForm() {
   };
   return (
     <Card title="Add homework">
-      <Sel id="hw_a" label="Class and subject" value={a} onChange={setA} list={asgList()} />
-      <div className="field"><TF id="hw_t" label="Title" value={title} onChange={setTitle} placeholder="For example, Exercise 5.2, Q1 to Q8" /></div>
-      <div className="field"><TF id="hw_d" label="Details" value={desc} onChange={setDesc} multiline minRows={3} placeholder="What should students do?" /></div>
+      <Sel id="hw_a" label="Class and subject" required value={a} onChange={setA} list={asgList()} />
+      <div className="field"><TF id="hw_t" label="Title" required value={title} onChange={setTitle} placeholder="For example, Exercise 5.2, Q1 to Q8" /></div>
+      <div className="field"><TF id="hw_d" label="Details" required value={desc} onChange={setDesc} multiline minRows={3} placeholder="What should students do?" /></div>
       <div className="row" style={{ margin: '8px 0 12px' }}>
         <Button size="sm" variant="outlined" disabled={aiBusy} onClick={async () => {
           if (title.trim().length < 3) return toast('Write the topic in Title first, then tap Suggest with AI.');
@@ -150,7 +150,7 @@ function HwForm() {
         }}>{aiBusy ? 'Writing...' : 'Suggest with AI'}</Button>
         <small className="mut">Write the topic in Title, then let AI draft the details. Edit before posting.</small>
       </div>
-      <div className="g2"><DateF id="hw_due" label="Due date" value={due} onChange={setDue} min={TODAY} /><FileBox key={fk} id="hw_f" label="Attachment (optional)" onChange={setFile} /></div>
+      <div className="g2"><DateF id="hw_due" label="Due date" required value={due} onChange={setDue} min={TODAY} /><FileBox key={fk} id="hw_f" label="Attachment (optional)" onChange={setFile} /></div>
       <FormActions><Button fullWidth variant="primary" onClick={add}>Post homework</Button></FormActions>
     </Card>
   );
@@ -164,9 +164,9 @@ function HwEdit({ w, onClose }) {
   };
   return (
     <Modal title="Edit homework" onClose={onClose} error={err} actions={[{ label: 'Save changes', onClick: save }]}>
-      <TF label="Title" value={title} onChange={setTitle} />
-      <div className="field"><TF label="Details" value={desc} onChange={setDesc} multiline minRows={3} /></div>
-      <div className="field"><DateF label="Due date" value={due} onChange={setDue} /></div>
+      <TF label="Title" required value={title} onChange={setTitle} />
+      <div className="field"><TF label="Details" required value={desc} onChange={setDesc} multiline minRows={3} /></div>
+      <div className="field"><DateF label="Due date" required value={due} onChange={setDue} /></div>
     </Modal>
   );
 }
@@ -243,8 +243,8 @@ function ResBody({ i, ex, cid, sub, rkey }) {
       <DT cols={['Roll', 'Student', { h: 'Marks /100', n: 1 }, 'Grade']} rows={st.map((s) => {
         const v = marks[s.id], g = v === '' || v == null || isNaN(+v) ? null : Math.max(0, Math.min(100, +v));
         return [s.roll, <Who o={s}>{s.name}</Who>,
-          <input type="number" min="0" max="100" value={v} disabled={pb} aria-label={'Marks for ' + s.name} id={'mk_' + s.id} onChange={(e) => set(s.id, e.target.value)}
-            style={{ width: 90, textAlign: 'right', padding: '8px 10px', border: '1.5px solid var(--chromeln)', borderRadius: 10, background: 'var(--chrome)', color: 'var(--ink)', font: 'inherit' }} />,
+          <input type="number" inputMode="numeric" min="0" max="100" value={v} disabled={pb} aria-label={'Marks for ' + s.name} id={'mk_' + s.id} onChange={(e) => set(s.id, e.target.value)}
+            className="cell-in" style={{ width: 90, textAlign: 'right' }} />,
           g == null ? '' : <Tag c={gcls(g)}>{gradeOf(g)}</Tag>];
       })} />
     </>
@@ -310,15 +310,12 @@ function SendForm({ cids }) {
   };
   return (
     <Card title="New notification">
-      <Sel id="f_ntc" label="Class" value={cid} onChange={(v) => { setCid(v); setSids([]); }} list={cids.map((c) => [c, cls(c).name])} />
-      <label className="flabel">Send to</label>
-      <RadioGroup row value={aud} onChange={(e) => setAud(e.target.value)} name="nt_aud">
-        <FormControlLabel value="all" control={<Radio />} label="Whole class" /><FormControlLabel value="sel" control={<Radio />} label="Selected students" />
-      </RadioGroup>
+      <Sel id="f_ntc" label="Class" required value={cid} onChange={(v) => { setCid(v); setSids([]); }} list={cids.map((c) => [c, cls(c).name])} />
+      <div className="fld" style={{ marginTop: 16 }}><RadioField label="Send to" row name="nt_aud" value={aud} onChange={setAud} options={[['all', 'Whole class'], ['sel', 'Selected students']]} /></div>
       {aud === 'sel' && <CheckGroup cols checked={sids} onChange={setSids} items={st.map((s) => ({ value: s.id, label: s.name }))} />}
       <div className="field"><Sel id="nt_type" label="Type" value={type} onChange={setType} list={[['test', 'Test'], ['reminder', 'Reminder'], ['notice', 'Notice']]} /></div>
-      <div className="field"><TF id="nt_t" label="Title" value={title} onChange={setTitle} placeholder="For example, Maths test tomorrow" /></div>
-      <div className="field"><TF id="nt_b" label="Message" value={body} onChange={setBody} multiline minRows={3} placeholder="Write the message for parents" /></div>
+      <div className="field"><TF id="nt_t" label="Title" required value={title} onChange={setTitle} placeholder="For example, Maths test tomorrow" /></div>
+      <div className="field"><TF id="nt_b" label="Message" required value={body} onChange={setBody} multiline minRows={3} placeholder="Write the message for parents" /></div>
       <Err>{err}</Err>
       <FormActions><Button fullWidth variant="primary" onClick={send}>Send notification</Button></FormActions>
     </Card>
@@ -387,8 +384,8 @@ function LeaveApply() {
   return (
     <Card title="Apply for leave">
       <Sel id="tl_type" label="Type" value={type} onChange={setType} list={['Casual', 'Medical', 'Official duty', 'Half day'].map((x) => [x, x])} />
-      <div className="g2 field"><DateF id="tl_from" label="From" value={from} onChange={setFrom} min={TODAY} /><DateF id="tl_to" label="To" value={to} onChange={setTo} min={TODAY} /></div>
-      <div className="field"><TF id="tl_reason" label="Reason" value={reason} onChange={setReason} multiline minRows={3} placeholder="Reason for leave" /></div>
+      <div className="g2 field"><DateF id="tl_from" label="From" required value={from} onChange={setFrom} min={TODAY} /><DateF id="tl_to" label="To" required value={to} onChange={setTo} min={TODAY} /></div>
+      <div className="field"><TF id="tl_reason" label="Reason" required value={reason} onChange={setReason} multiline minRows={3} placeholder="Reason for leave" /></div>
       <Err>{err}</Err>
       <FormActions><Button fullWidth variant="primary" onClick={submit}>Send to principal</Button></FormActions>
     </Card>

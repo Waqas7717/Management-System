@@ -184,13 +184,13 @@ function LeaveForm({ k }) {
   const ctOk = DB.teachers.some((x) => x.id === cls(k.cid).ct && x.active);
   return (
     <Card title={'Apply for leave for ' + k.name.split(' ')[0]}>
-      <Sel id="lv_type" label="Type of leave" value={type} onChange={setType} list={[['full', 'Full day'], ['half1', 'Half day, first half (lectures 1 to 3)'], ['half2', 'Half day, second half (lectures 4 and 5)'], ['lectures', 'Specific lectures'], ['multi', 'Multiple days']]} />
+      <Sel id="lv_type" label="Type of leave" required value={type} onChange={setType} list={[['full', 'Full day'], ['half1', 'Half day, first half (lectures 1 to 3)'], ['half2', 'Half day, second half (lectures 4 and 5)'], ['lectures', 'Specific lectures'], ['multi', 'Multiple days']]} />
       <div className="g2 field">
-        <DateF id="lv_from" label="From date" value={from} onChange={setFrom} min={TODAY} />
-        {type === 'multi' && <DateF id="lv_to" label="To date" value={to} onChange={setTo} min={TODAY} />}
+        <DateF id="lv_from" label="From date" required value={from} onChange={setFrom} min={TODAY} />
+        {type === 'multi' && <DateF id="lv_to" label="To date" required value={to} onChange={setTo} min={TODAY} />}
       </div>
       {type === 'lectures' && <><label className="flabel">Lectures</label><CheckGroup cols checked={lec} onChange={setLec} items={[1, 2, 3, 4, 5].map((p) => ({ value: String(p), label: 'Lecture ' + p, small: PT[p - 1] }))} /></>}
-      <div className="field"><TF id="lv_reason" label="Reason" value={reason} onChange={setReason} multiline minRows={3} placeholder="Please explain why your child needs leave" /></div>
+      <div className="field"><TF id="lv_reason" label="Reason" required value={reason} onChange={setReason} multiline minRows={3} placeholder="Please explain why your child needs leave" /></div>
       <FileBox id="lv_file" label="Attachment (optional, for example a medical note)" onChange={setFile} />
       <Err>{err}</Err>
       <FormActions><Button fullWidth variant="primary" onClick={submit}>Send to class teacher</Button></FormActions>

@@ -5,7 +5,7 @@ import { TODAY, fs } from '../core/dates';
 import { feeAmt, feeRec, feeMonths, ymLabel, dueMonths, payFee, unpayFee } from '../core/fees';
 import { printDoc, letterhead, esc, downloadCSV } from '../core/tools';
 import { KpiTile, DCard } from '../ui/dash';
-import { PageHead, FSel, DT, Tag, Who, Empty } from '../ui';
+import { PageHead, FSel, DT, Tag, Who, Empty, SearchF, TF } from '../ui';
 import { Button, IconBtn } from '../ui/buttons';
 
 export function printReceipt(sid, ym) {
@@ -31,7 +31,7 @@ function FeeSetup() {
     <DCard title="Monthly fee per class" ico="cash">
       <div className="g3" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', display: 'grid', gap: 12 }}>
         {CLASSES.map((c) => (
-          <TextField key={c.id} label={c.name + ' (PKR per month)'} type="number" size="small" defaultValue={feeAmt(c.id) || ''} inputProps={{ min: 0 }}
+          <TF key={c.id} label={c.name + ' (PKR per month)'} type="number" defaultValue={feeAmt(c.id) || ''} inputProps={{ min: 0 }}
             onBlur={(e) => { const v = Math.max(0, Math.round(+e.target.value || 0)); if (v !== feeAmt(c.id)) { DB.feeCfg[c.id] = { amt: v }; toast('Fee saved for ' + c.name); render(); } }} />
         ))}
       </div>
@@ -65,7 +65,7 @@ export function StaffFees() {
         <FSel k="fmon" def={ym} list={months.map((m) => [m, ymLabel(m)])} label="Month" />
         <FSel k="fcls" def="all" list={[['all', 'All classes'], ...CLASSES.map((c) => [c.id, c.name])]} label="Class" />
         <FSel k="fst" def="all" list={[['all', 'All'], ['paid', 'Paid'], ['due', 'Not paid']]} label="Status" />
-        <TextField label="Search" type="search" size="small" value={F('fq', '')} onChange={(e) => { S.f.fq = e.target.value; render(); }} />
+        <SearchF label="Search" value={F('fq', '')} placeholder="Type a name" onChange={(v) => { S.f.fq = v; render(); }} />
       </div>
       {shown.length ? (
         <DT minWidth={620} cols={['Roll', 'Student', 'Class', { h: 'Fee', n: 1 }, 'Status', { h: 'Months due', n: 1 }, '']} rows={shown.map((x) => [x.s.roll, <Who o={x.s}>{x.s.name}</Who>, cls(x.s.cid).name, x.amt ? money(x.amt) : '-',
