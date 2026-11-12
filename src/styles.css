@@ -424,3 +424,25 @@ html[data-theme=dark] .ktile{background-image:none}html[data-theme=dark] .ktile:
 .side nav button[aria-current="page"]{box-shadow:0 6px 18px rgba(36,71,174,.55),inset 0 1px 0 rgba(255,255,255,.18)}
 .side nav button[aria-current="page"] svg{filter:drop-shadow(0 0 6px rgba(255,255,255,.55))}
 .ktile>.kt-go{position:absolute;z-index:2}
+
+/* ---------- tables, empty states, avatars, login, toasts ---------- */
+.empty{display:grid;justify-items:center;gap:2px;background:linear-gradient(180deg,var(--sf),transparent)}
+.empty .em-ic{display:grid;place-items:center;width:56px;height:56px;margin-bottom:8px;border-radius:50%;background:linear-gradient(135deg,#E3EDFD,#CFE0FB);color:#2F6FDE}
+html[data-theme=dark] .empty .em-ic{background:rgba(120,160,255,.16);color:#BFD2FF}
+.tw .MuiTableBody-root .MuiTableRow-root:nth-of-type(even){background:rgba(47,111,222,.035)}
+.tw .MuiTableBody-root .MuiTableRow-root:hover{background:rgba(47,111,222,.08)}
+html[data-theme=dark] .tw .MuiTableBody-root .MuiTableRow-root:nth-of-type(even){background:rgba(255,255,255,.03)}
+html[data-theme=dark] .tw .MuiTableBody-root .MuiTableRow-root:hover{background:rgba(255,255,255,.07)}
+.tw .MuiTableHead-root .MuiTableCell-root{position:sticky;top:0;z-index:1}
+.av{background:linear-gradient(135deg,color-mix(in srgb,var(--info) 12%,var(--sf)),color-mix(in srgb,var(--info) 30%,var(--sf)))}
+@keyframes popIn{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
+@keyframes shine{0%{transform:translateX(-120%)}100%{transform:translateX(220%)}}
+@media (prefers-reduced-motion:no-preference){
+  .MuiAlert-icon{animation:popIn .45s ease-out both}
+  .login .lhero h1{animation:rise .8s cubic-bezier(.2,.7,.2,1) both}
+  .login .lhero p{animation:rise .8s .15s cubic-bezier(.2,.7,.2,1) both}
+  .login .lhero .fts span{animation:rise .6s .3s cubic-bezier(.2,.7,.2,1) both}
+  .login .lbg svg.sw{animation:rise 1s .1s cubic-bezier(.2,.7,.2,1) both}
+  .gobtn{position:relative;overflow:hidden}
+  .gobtn::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shine 3.2s ease-in-out infinite;pointer-events:none}
+}
