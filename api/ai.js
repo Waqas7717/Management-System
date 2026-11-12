@@ -8,7 +8,7 @@
 const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
-const MODELS = process.env.AI_MODEL ? [process.env.AI_MODEL] : ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-lite-latest'];
+const MODELS = process.env.AI_MODEL ? [process.env.AI_MODEL] : ['gemini-flash-lite-latest', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
 const LIMIT = Math.max(5, Number(process.env.AI_DAILY_LIMIT) || 40);
 
 const used = new Map(); // best-effort daily counter per user (resets when the server instance restarts)
@@ -80,17 +80,22 @@ export default async (req, res) => {
     used.set(key, n + 1);
     if (used.size > 2000) for (const k of used.keys()) if (!k.endsWith(day)) used.delete(k);
 
-    const reqBody = JSON.stringify({
+    const mkBody = (think) => JSON.stringify({
       systemInstruction: { parts: [{ text: SYS[action] }] },
       contents: [{ role: 'user', parts: [{ text: buildPrompt(action, b) }] }],
-      generationConfig: { temperature: action === 'ask' ? 0.2 : 0.6, maxOutputTokens: action === 'comments' ? 2200 : 900 },
+      generationConfig: {
+        temperature: action === 'ask' ? 0.2 : 0.6,
+        maxOutputTokens: action === 'comments' ? 2200 : action === 'notice' ? 500 : 900,
+        ...(think ? { thinkingConfig: { thinkingBudget: 0 } } : {}), // no "thinking" pause: much faster for short tasks
+      },
+    });
+    const call = (m, think) => fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(m) + ':generateContent', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY }, body: mkBody(think),
     });
     let r = null, j = null;
     for (const m of MODELS) {
-      r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(m) + ':generateContent', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY }, body: reqBody,
-      });
-      j = await r.json().catch(() => null);
+      r = await call(m, true); j = await r.json().catch(() => null);
+      if (r.status === 400 && j && j.error && /think/i.test(j.error.message || '')) { r = await call(m, false); j = await r.json().catch(() => null); }
       if (r.ok || (r.status !== 404 && r.status !== 429 && r.status !== 503)) break; // try the next model only if this one is missing or busy
     }
     if (!r.ok) {
