@@ -11,6 +11,7 @@ import { scheduleSync } from '../../core/sync';
 import { store } from '../../core/stores';
 import { Card, DT, Empty, FSel, Item, Kpi, PageHead, Tag, TypeTag } from '../../ui';
 import { BarRows, Split } from '../../ui/Charts';
+import { AskCard, InsightsCard } from '../aiparts';
 import { AttnRow, Attention, ClassCards, DCard, KpiTile, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../../ui/dash';
 import { AnnScreen, TtGrid } from '../common';
 import { UsersList } from './users';
@@ -119,6 +120,10 @@ function Dash() {
             </>
           ) : <p>Everything is set up. No student, class or subject is missing a link.</p>}
         </Attention>
+      </div>
+      <div className="two st" style={{ marginBottom: 16 }}>
+        <InsightsCard />
+        <AskCard />
       </div>
       {CLASSES.length ? (
         <DCard title="Attendance by class" ico="check" right={<span>{rng.label}. Hover a bar for details.</span>}>
