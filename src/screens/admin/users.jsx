@@ -3,13 +3,13 @@ import { TextField } from '@mui/material';
 import { PrintDialog } from '../printables';
 import { CLASSES, DB, S, F, cls, parentsOf, stu, subName } from '../../core/data';
 import { render } from '../../core/store';
-import { Av, DT, Empty, FSel, Item, Tag, Who } from '../../ui';
+import { Av, DT, Empty, FSel, SearchF, Item, Tag, Who } from '../../ui';
 import { Button, RowActions } from '../../ui/buttons';
 
 function SearchBar({ tab }) {
   return (
     <div className="g2" style={{ margin: '14px 0' }}>
-      <TextField id="uq" type="search" label="Search" value={F('uq', '')} placeholder="Type a name" onChange={(e) => { S.f.uq = e.target.value; render(); }} />
+      <SearchF id="uq" label="Search" value={F('uq', '')} placeholder="Type a name" onChange={(v) => { S.f.uq = v; render(); }} />
       {tab === 'students' && <FSel k="ucls" def="all" list={[['all', 'All classes'], ...CLASSES.map((c) => [c.id, c.name])]} label="Class" />}
     </div>
   );

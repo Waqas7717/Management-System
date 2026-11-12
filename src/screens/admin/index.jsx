@@ -214,7 +214,7 @@ function TtEditor({ cid }) {
                 {[0, 1, 2, 3, 4].map((i) => (
                   <td key={i}>
                     <select id={`tt_${i}_${p}`} aria-label={`${DAYN[i]} lecture ${p}`} value={grid[i][p - 1]} onChange={(e) => set(i, p, e.target.value)}
-                      style={{ padding: '8px 10px', border: '1.5px solid var(--chromeln)', borderRadius: 10, background: 'var(--chrome)', color: 'var(--ink)', font: 'inherit', minWidth: 110 }}>
+                      className="cell-in" style={{ minWidth: 110 }}>
                       {c.subjects.map((sb) => <option key={sb} value={sb}>{subName(sb)}</option>)}
                     </select>
                   </td>

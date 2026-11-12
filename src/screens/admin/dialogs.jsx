@@ -75,15 +75,15 @@ export function AccountDialog({ role, id, onClose, onCreds }) {
 
   return (
     <Modal title={(o ? 'Edit ' : 'Add ') + roleLabel[role]} onClose={onClose} error={err} actions={[{ label: o ? 'Save changes' : 'Add ' + roleLabel[role], onClick: save, disabled: busy }]}>
-      <TF id="ma_n" label="Full name" value={name} onChange={setName} autoComplete="off" />
+      <TF id="ma_n" label="Full name" required value={name} onChange={setName} autoComplete="off" />
       <div className="g2 field">
-        <TF id="ma_p" label="Phone" value={phone} onChange={setPhone} placeholder="0300-1234567" autoComplete="off" />
+        <TF id="ma_p" label="Phone" required value={phone} onChange={setPhone} placeholder="0300-1234567" autoComplete="off" />
         {role === 'parent' ? <Sel id="ma_r" label="Relation" value={rel} onChange={setRel} list={[['Father', 'Father'], ['Mother', 'Mother'], ['Guardian', 'Guardian']]} /> : <div />}
       </div>
       <PhotoField person={o} value={photo} onChange={setPhoto} onError={setErr} />
       <div className="g2 field">
-        <TF id="ma_u" label="Username" value={user} onChange={setUser} placeholder="Made from the name" autoComplete="off" inputProps={{ autoCapitalize: 'none', spellCheck: 'false' }} />
-        {o ? <div /> : <TF id="ma_pw" label="Password" value={pw} onChange={setPw} autoComplete="off" inputProps={{ spellCheck: 'false' }} />}
+        <TF id="ma_u" label="Username" required value={user} onChange={setUser} placeholder="Made from the name" autoComplete="off" inputProps={{ autoCapitalize: 'none', spellCheck: 'false' }} />
+        {o ? <div /> : <TF id="ma_pw" label="Password" required value={pw} onChange={setPw} autoComplete="off" inputProps={{ spellCheck: 'false' }} />}
       </div>
       {role === 'teacher' && (
         <>
@@ -116,7 +116,7 @@ export function PwDialog({ role, id, onClose, onCreds }) {
   };
   return (
     <Modal title={'Reset password for ' + o.name} onClose={onClose} error={err} actions={[{ label: 'Set password', onClick: save, disabled: busy }]}>
-      <TF id="rp_pw" label="New password" value={pw} onChange={setPw} autoComplete="off" inputProps={{ spellCheck: 'false' }} />
+      <TF id="rp_pw" label="New password" required value={pw} onChange={setPw} autoComplete="off" inputProps={{ spellCheck: 'false' }} />
       <p className="mut" style={{ marginTop: 8 }}>Give them the new password. It works straight away.</p>
     </Modal>
   );
@@ -137,10 +137,10 @@ export function StudentDialog({ id, onClose }) {
   };
   return (
     <Modal title={s ? 'Edit student' : 'Add student'} onClose={onClose} error={err} actions={[{ label: s ? 'Save changes' : 'Add student', onClick: save, disabled: busy }]}>
-      <TF id="ms_n" label="Full name" value={name} onChange={setName} autoComplete="off" />
+      <TF id="ms_n" label="Full name" required value={name} onChange={setName} autoComplete="off" />
       <div className="g2 field">
-        <Sel id="ms_c" label="Class" value={cid} onChange={setCid} list={CLASSES.map((c) => [c.id, c.name])} />
-        <TF id="ms_r" label="Roll number" type="number" value={roll} onChange={setRoll} inputProps={{ min: 1 }} />
+        <Sel id="ms_c" label="Class" required value={cid} onChange={setCid} list={CLASSES.map((c) => [c.id, c.name])} />
+        <TF id="ms_r" label="Roll number" required type="number" value={roll} onChange={setRoll} inputProps={{ min: 1 }} />
       </div>
       <PhotoField person={s} value={photo} onChange={setPhoto} onError={setErr} />
     </Modal>
@@ -164,7 +164,7 @@ export function ClassDialog({ id, onClose }) {
   };
   return (
     <Modal title={c ? 'Edit class' : 'Add class'} onClose={onClose} error={err} actions={[{ label: c ? 'Save changes' : 'Add class', onClick: save, disabled: busy }]}>
-      <TF id="mc_n" label="Class name" value={name} onChange={setName} placeholder="For example, Class 9-A" autoComplete="off" />
+      <TF id="mc_n" label="Class name" required value={name} onChange={setName} placeholder="For example, Class 9-A" autoComplete="off" />
       <div className="g2 field">
         <Sel id="mc_l" label="Level" value={level} onChange={setLevel} list={[['school', 'School'], ['college', 'College']]} />
         <TF id="mc_r" label="Room" value={room} onChange={setRoom} autoComplete="off" />
@@ -191,7 +191,7 @@ export function SubjectDialog({ code, onClose }) {
   };
   return (
     <Modal title={code ? 'Rename subject' : 'Add subject'} onClose={onClose} error={err} actions={[{ label: code ? 'Save' : 'Add subject', onClick: save, disabled: busy }]}>
-      <TF id="sj_n" label="Subject name" value={name} onChange={setName} placeholder="For example, Pak Studies" autoComplete="off" />
+      <TF id="sj_n" label="Subject name" required value={name} onChange={setName} placeholder="For example, Pak Studies" autoComplete="off" />
     </Modal>
   );
 }
@@ -214,10 +214,10 @@ export function DsDialog({ onClose }) {
   };
   return (
     <Modal title="Add exam paper" onClose={onClose} error={err} actions={[{ label: 'Add paper', onClick: save }]}>
-      <Sel id="dsa_c" label="Class" value={cid} onChange={pick} list={CLASSES.map((x) => [x.id, x.name])} />
-      <div className="field"><TF id="dsa_e" label="Exam" value={exam} onChange={setExam} placeholder="For example, First Term" /></div>
-      <div className="field"><Sel id="dsa_s" label="Subject" value={sb} onChange={setSb} list={c.subjects.map((k) => [k, subName(k)])} /></div>
-      <div className="g2 field"><DateF id="dsa_d" label="Date" value={date} onChange={setDate} min={TODAY} /><TF id="dsa_t" label="Time" value={time} onChange={setTime} /></div>
+      <Sel id="dsa_c" label="Class" required value={cid} onChange={pick} list={CLASSES.map((x) => [x.id, x.name])} />
+      <div className="field"><TF id="dsa_e" label="Exam" required value={exam} onChange={setExam} placeholder="For example, First Term" /></div>
+      <div className="field"><Sel id="dsa_s" label="Subject" required value={sb} onChange={setSb} list={c.subjects.map((k) => [k, subName(k)])} /></div>
+      <div className="g2 field"><DateF id="dsa_d" label="Date" required value={date} onChange={setDate} min={TODAY} /><TF id="dsa_t" label="Time" required value={time} onChange={setTime} /></div>
       <div className="field"><TF id="dsa_r" label="Room" value={room} onChange={setRoom} /></div>
     </Modal>
   );
@@ -234,8 +234,8 @@ export function EvDialog({ onClose }) {
   };
   return (
     <Modal title="New event or holiday" onClose={onClose} error={err} actions={[{ label: 'Post', onClick: save }]}>
-      <TF id="ev_t" label="Title" value={title} onChange={setTitle} placeholder="For example, Winter holiday" />
-      <div className="field"><TF id="ev_b" label="Details" value={body} onChange={setBody} multiline minRows={3} placeholder="What should parents and teachers know?" /></div>
+      <TF id="ev_t" label="Title" required value={title} onChange={setTitle} placeholder="For example, Winter holiday" />
+      <div className="field"><TF id="ev_b" label="Details" required value={body} onChange={setBody} multiline minRows={3} placeholder="What should parents and teachers know?" /></div>
       <div className="g2 field">
         <Sel id="ev_type" label="Type" value={type} onChange={setType} list={[['holiday', 'Holiday'], ['event', 'Event'], ['ptm', 'PTM'], ['urgent', 'Urgent']]} />
         <DateF id="ev_d" label="Date (optional)" value={date} onChange={setDate} min={TODAY} />
