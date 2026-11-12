@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, IconButton, InputAdornment, TextField } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { ARTS } from './core/arts';
@@ -38,6 +38,23 @@ export const Crest = ({ light }) => (
     </>}
   </svg>
 );
+
+/* "Install app" help: a button where the browser allows it, a how-to on iPhone, nothing once installed */
+function InstallApp() {
+  const [ev, setEv] = useState(null), [done, setDone] = useState(false);
+  useEffect(() => {
+    const on = (e) => { e.preventDefault(); setEv(e); };
+    const ok = () => setDone(true);
+    window.addEventListener('beforeinstallprompt', on); window.addEventListener('appinstalled', ok);
+    return () => { window.removeEventListener('beforeinstallprompt', on); window.removeEventListener('appinstalled', ok); };
+  }, []);
+  const standalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (standalone || done) return null;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (ev) return <Button size="small" variant="outlined" sx={{ mt: 1.25 }} onClick={async () => { ev.prompt(); try { await ev.userChoice; } catch (e) { /* ignore */ } setEv(null); }}>Install app on this device</Button>;
+  if (ios) return <p className="mut" style={{ marginTop: 12, fontSize: 12.5 }}>Install: tap the Share button, then Add to Home Screen.</p>;
+  return null;
+}
 
 const Brand = () => (
   <>
@@ -113,6 +130,7 @@ export default function Login() {
         )}
         <p className="mut" style={{ marginTop: 14, fontSize: 12.5 }}>Demo mode: pick a name and press Sign in. The password is filled in for you.</p>
         <Button size="small" variant="outlined" sx={{ mt: 1 }} onClick={() => { S.pwMode = true; render(); }}>Sign in with a password instead</Button>
+        <InstallApp />
       </Shell>
     );
   }
@@ -148,6 +166,7 @@ export default function Login() {
           <p className="mut" style={{ marginTop: 14, fontSize: 12.5 }}>Demo with sample data for Class 9-A, Class 10-A and FSc Part 1. Nothing is saved or sent.</p>
         </>
       ) : <p className="linfo"><I k="info" /><span>Use the username and password given to you by the school office.</span></p>}
+      <InstallApp />
     </Shell>
   );
 }
