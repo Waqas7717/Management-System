@@ -381,3 +381,5 @@ html[data-theme=dark] .attn .ar .MuiButton-root{background:transparent;color:#F7
 .mainc.hero .deco .art{display:none}
 .ktile.go .kt-b b{padding-right:26px}
 .attn-b{align-content:start}
+.mainc.hero.sub::before{height:200px}
+.card.dcard>h3{display:none}
