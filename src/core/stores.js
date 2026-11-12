@@ -34,6 +34,7 @@ const liveStore = {
     dbErr(id ? await sb.from('students').update(row).eq('id', id) : await sb.from('students').insert(row), { 23505: 'This roll number is already used in that class.' });
     await loadCore();
   },
+  async addStudents(rows) { dbErr(await sb.from('students').insert(rows.map((v) => ({ full_name: v.name, class_id: v.cid, roll: v.roll }))), { 23505: 'A roll number is already used in that class.' }); await loadCore(); },
   async setStudentActive(id, on) { dbErr(await sb.from('students').update({ active: on }).eq('id', id)); await loadCore(); },
   async removeStudent(id) {
     dbErr(await sb.from('students').delete().eq('id', id));
@@ -101,6 +102,7 @@ const demoStore = {
     if (id) { const s = stu(id); s.name = v.name; s.cid = v.cid; s.roll = v.roll; if (v.photo !== undefined) s.photo = v.photo; }
     else DB.students.push({ id: 's' + uid(), name: v.name, roll: v.roll, cid: v.cid, active: true, ab: 0.05, skill: 0.6, photo: v.photo || '' });
   },
+  async addStudents(rows) { rows.forEach((v) => DB.students.push({ id: 's' + uid(), name: v.name, roll: v.roll, cid: v.cid, active: true, ab: 0.05, skill: 0.6, photo: '' })); },
   async setStudentActive(id, on) { stu(id).active = on; },
   async removeStudent(id) { DB.students = DB.students.filter((s) => s.id !== id); DB.parents.forEach((p) => { p.kids = p.kids.filter((k) => k !== id); }); DB.leaves = DB.leaves.filter((l) => l.sid !== id); },
   async saveAccount(role, id, v) {

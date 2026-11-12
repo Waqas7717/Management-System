@@ -226,7 +226,17 @@ DB.events = !DEMO ? [] : [
   { id: 'ev6', ts: '2026-11-05T20:00', title: 'Leave declined', text: 'Hamna Khan: leave on 6 Nov was declined. Please apply in advance.', type: 'leave', to: { role: 'parent', id: 'par1' } },
   { id: 'ev7', ts: '2026-11-09T08:05', title: 'New homework', text: 'Mathematics: Exercise 5.2, Q1 to Q8 (due 11 Nov).', type: 'homework', to: { role: 'parent', cids: ['9A'] } },
 ];
-DB.feeDue = { s2: true };
+DB.feeCfg = !DEMO ? {} : { '9A': { amt: 1200 }, '10A': { amt: 1200 }, FSC1: { amt: 2000 } };
+DB.fees = {};
+if (DEMO) {
+  const yms = ['2026-04', '2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10', '2026-11'];
+  DB.students.forEach((s, i) => yms.forEach((m, j) => {
+    if (m === '2026-11' && i % 3 !== 0) return;
+    if (m === '2026-10' && i % 7 === 0) return;
+    if (s.id === 's2' && j > 5) return;
+    DB.fees[s.id + '|' + m] = { amt: DB.feeCfg[s.cid].amt, date: m + '-0' + (3 + (i % 5)), by: 'ad1', no: 'FG-' + (100000 + i * 10 + j) };
+  }));
+}
 
 /* ---------- session state ---------- */
 export const S = {
@@ -285,10 +295,10 @@ export function markWork(cid, d, p) {
 
 /* ---------- roles ---------- */
 export const NAVS = {
-  admin: { items: [['dash', 'Dashboard', 'dash'], ['students', 'Students', 'cap'], ['parents', 'Parents', 'users'], ['teachers', 'Teachers', 'book'], ['principals', 'Principals', 'award'], ['classes', 'Classes and subjects', 'cal'], ['tt', 'Timetable', 'clock'], ['ds', 'Date sheet', 'file'], ['ann', 'Announcements', 'mega'], ['notice', 'Notices', 'bell'], ['evt', 'Events and holidays', 'star']], bottom: ['dash', 'students', 'tt', 'ann'] },
-  principal: { items: [['dash', 'Dashboard', 'dash'], ['att', 'Attendance', 'check'], ['ann', 'Announcements', 'mega'], ['notice', 'Notices', 'file'], ['users', 'Users', 'users'], ['res', 'Results', 'award'], ['leave', 'Teacher leaves', 'cal']], bottom: ['dash', 'att', 'ann', 'res'] },
+  admin: { items: [['dash', 'Dashboard', 'dash'], ['students', 'Students', 'cap'], ['parents', 'Parents', 'users'], ['teachers', 'Teachers', 'book'], ['principals', 'Principals', 'award'], ['classes', 'Classes and subjects', 'cal'], ['tt', 'Timetable', 'clock'], ['ds', 'Date sheet', 'file'], ['ann', 'Announcements', 'mega'], ['notice', 'Notices', 'bell'], ['evt', 'Events and holidays', 'star'], ['fees', 'Fees', 'cash'], ['rep', 'Reports', 'chart']], bottom: ['dash', 'students', 'fees', 'ann'] },
+  principal: { items: [['dash', 'Dashboard', 'dash'], ['att', 'Attendance', 'check'], ['ann', 'Announcements', 'mega'], ['notice', 'Notices', 'file'], ['users', 'Users', 'users'], ['res', 'Results', 'award'], ['leave', 'Teacher leaves', 'cal'], ['fees', 'Fees', 'cash'], ['rep', 'Reports', 'chart']], bottom: ['dash', 'att', 'ann', 'res'] },
   teacher: { items: [['home', 'Dashboard', 'dash'], ['att', 'Attendance', 'check'], ['hw', 'Homework', 'book'], ['res', 'Results', 'award'], ['leave', 'Leave requests', 'cal'], ['tt', 'Timetable', 'clock'], ['notify', 'Notify and date sheet', 'paper'], ['parents', 'Parents', 'users'], ['me', 'My attendance', 'user']], bottom: ['home', 'att', 'hw', 'leave'] },
-  parent: { items: [['home', 'Dashboard', 'dash'], ['att', 'Attendance', 'check'], ['hw', 'Homework', 'book'], ['leave', 'Leave', 'cal'], ['res', 'Results', 'award'], ['notices', 'Notices', 'file'], ['tt', 'Timetable', 'clock'], ['sheet', 'Date sheet', 'file']], bottom: ['home', 'att', 'hw', 'leave'] },
+  parent: { items: [['home', 'Dashboard', 'dash'], ['att', 'Attendance', 'check'], ['hw', 'Homework', 'book'], ['leave', 'Leave', 'cal'], ['res', 'Results', 'award'], ['notices', 'Notices', 'file'], ['tt', 'Timetable', 'clock'], ['sheet', 'Date sheet', 'file'], ['fees', 'Fees', 'cash']], bottom: ['home', 'att', 'hw', 'leave'] },
 };
 export const ROLE_LIST = { teacher: () => DB.teachers, parent: () => DB.parents, principal: () => DB.principals };
 export const allUsers = () => DB.teachers.concat(DB.parents, DB.principals, DB.admins || []);

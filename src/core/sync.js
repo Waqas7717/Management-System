@@ -7,7 +7,7 @@ import { paint, render, setSyncHook, toast } from './store';
 export const sb = LIVE ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 export const SYNC = { last: {}, busy: false, again: false, failed: false, timer: null, poll: null, refreshing: false };
-export const DICT = ['att', 'tatt', 'res', 'pub', 'hwSub', 'tt'];
+export const DICT = ['att', 'tatt', 'res', 'pub', 'hwSub', 'tt', 'fees', 'feeCfg'];
 export const LISTS = ['leaves', 'tleaves', 'hw', 'datesheet', 'anns', 'events'];
 const sigOf = (v) => JSON.stringify(v);
 
