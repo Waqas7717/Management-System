@@ -517,3 +517,18 @@ html[data-theme=dark] .aipanel{background:#161D30}
   .view .two{gap:10px}
   .view{padding-bottom:84px}
 }
+/* phone header: floating rounded bar */
+.menubtn,.mcrest{display:none}
+@media (max-width:899px){
+  .top{position:relative;margin:8px 10px 0;padding:6px 8px;min-height:60px;gap:6px;border-radius:22px;border:1px solid var(--cardln);background:color-mix(in srgb,var(--cardbg) 92%,transparent);backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(40,50,140,.12)}
+  .menubtn{display:grid;place-items:center;flex:none;width:38px;height:38px;border:0;border-radius:12px;background:#E8EEFD;color:var(--ink);cursor:pointer}
+  .mcrest{display:grid;flex:none;width:30px;height:34px;padding-right:8px;margin-right:2px;border-right:1px solid var(--cardln);align-items:center}
+  .mcrest svg{width:26px;height:auto}
+  .top .ttl{display:block;line-height:1.15;overflow:hidden}
+  .top .ttl b{display:block;font-size:15.5px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .top .ttl small{display:block;font-size:10.5px;color:var(--mut);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .top .iconbtn{width:36px;height:36px}
+  .top .toplo{display:inline-flex}
+}
+@media (min-width:900px){.top .ttl small{display:none}}
+html[data-theme=dark] .menubtn{background:rgba(120,160,255,.16)}
