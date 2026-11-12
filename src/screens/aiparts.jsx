@@ -1,22 +1,15 @@
 import { useState } from 'react';
 import { Button } from '@mui/material';
-import { CLASSES, DB, EXAMS, classAvg, classPass, dayStatus, latestExam, tStatus, cls, gradeOf } from '../core/data';
+import { CLASSES, DB, EXAMS, S, feed, classAvg, classPass, dayStatus, latestExam, tStatus, cls, gradeOf } from '../core/data';
 import { TODAY, addDays, schoolDays } from '../core/dates';
-import { askAI } from '../core/ai';
+import { useAI } from './useai';
+import { AnnDialog } from './common';
+import { go } from '../core/actions';
 import { toast } from '../core/store';
 import { Ico, Modal, TF } from '../ui';
 import { DCard, dayCounts } from '../ui/dash';
 
-/* run an AI action with a busy flag. Shows the error as a toast and returns the text or null. */
-export function useAI() {
-  const [busy, setBusy] = useState(false);
-  const run = async (action, body) => {
-    setBusy(true); const r = await askAI(action, body); setBusy(false);
-    if (!r.ok) { toast(r.error); return null; }
-    return r.text;
-  };
-  return [busy, run];
-}
+export { useAI };
 
 /* "Show in Urdu / English" under a notice */
 const cache = new Map();
@@ -96,17 +89,39 @@ function facts() {
   return L.join('\n');
 }
 const SAMPLES = ['Which class has the lowest results?', 'Which class has the best attendance this week?', 'How many teachers are not in yet?'];
-export function AskCard() {
-  const [busy, run] = useAI(); const [q, setQ] = useState(''), [a, setA] = useState('');
-  const go = async (text) => { const s = (text || q).trim(); if (!s) return; setQ(s); setA(''); const t = await run('ask', { question: s, facts: facts() }); if (t) setA(t); };
+export function AiHub() {
+  const role = S.role, staff = role === 'admin' || role === 'principal';
+  const [busy, run] = useAI(); const [q, setQ] = useState(''), [a, setA] = useState(''), [dlg, setDlg] = useState(null);
+  const go2 = async (text) => { const s = (text || q).trim(); if (!s) return; setQ(s); setA(''); const t = await run('ask', { question: s, facts: facts() }); if (t) setA(t); };
+  const latest = role === 'parent' ? feed()[0] : null;
   return (
-    <DCard title="Ask about your school" ico="search" right={<span className="mut">AI</span>}>
-      <div className="row" style={{ gap: 8, flexWrap: 'nowrap' }}>
-        <div style={{ flex: 1, minWidth: 0 }}><TF id="ask_q" label="Your question" value={q} onChange={setQ} onKeyDown={(e) => e.key === 'Enter' && go()} /></div>
-        <Button variant="contained" disabled={busy} onClick={() => go()} sx={{ flex: 'none', height: 54 }}>{busy ? 'Thinking...' : 'Ask'}</Button>
-      </div>
-      <div className="row" style={{ marginTop: 10, gap: 6 }}>{SAMPLES.map((s) => <button type="button" key={s} className="chipq" disabled={busy} onClick={() => go(s)}>{s}</button>)}</div>
-      {a ? <p className="aians"><Ico n="star" s={16} />{a}</p> : null}
+    <DCard title="AI assistant" ico="star" className="aihub" right={<span className="aitag">Free AI</span>} style={{ marginBottom: 16 }}>
+      {staff ? (
+        <>
+          <div className="row" style={{ gap: 8, flexWrap: 'nowrap' }}>
+            <div style={{ flex: 1, minWidth: 0 }}><TF id="ask_q" label="Ask about your school, for example: which class has the lowest results?" value={q} onChange={setQ} onKeyDown={(e) => e.key === 'Enter' && go2()} /></div>
+            <Button variant="contained" disabled={busy} onClick={() => go2()} sx={{ flex: 'none', height: 54 }}>{busy ? 'Thinking...' : 'Ask'}</Button>
+          </div>
+          <div className="row" style={{ marginTop: 10, gap: 6 }}>{SAMPLES.map((s) => <button type="button" key={s} className="chipq" disabled={busy} onClick={() => go2(s)}>{s}</button>)}</div>
+          {a ? <p className="aians"><Ico n="star" s={16} />{a}</p> : null}
+          <div className="aih-acts">
+            <button type="button" onClick={() => setDlg('announcement')}><Ico n="mega" s={20} /><b>Write an announcement</b><small>Type a rough note, AI writes it in English or Urdu</small></button>
+            <button type="button" onClick={() => setDlg('notice')}><Ico n="file" s={20} /><b>Write a notice</b><small>Clear notice for parents and teachers</small></button>
+          </div>
+          {dlg ? <AnnDialog kind={dlg} onClose={() => setDlg(null)} /> : null}
+        </>
+      ) : role === 'teacher' ? (
+        <div className="aih-acts">
+          <button type="button" onClick={() => go('hw')}><Ico n="book" s={20} /><b>Homework helper</b><small>Give a topic, AI drafts the questions</small></button>
+          <button type="button" onClick={() => go('res')}><Ico n="award" s={20} /><b>Report card comments</b><small>Enter marks, AI drafts a comment for each student</small></button>
+        </div>
+      ) : (
+        <>
+          <p className="mut" style={{ marginBottom: 6 }}>Read school notices in Urdu or English with one tap.</p>
+          {latest ? <div className="item" style={{ marginBottom: 8 }}><h4>{latest.title}</h4><p className="mut">{latest.text}</p><Translate text={latest.title + '. ' + latest.text} /></div> : <p className="mut">No notices yet.</p>}
+          <Button size="small" variant="outlined" onClick={() => go('notices')}>All notices</Button>
+        </>
+      )}
     </DCard>
   );
 }

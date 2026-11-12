@@ -3,7 +3,7 @@ import { Button } from '@mui/material';
 import { CLASSES, DB, S, audLabel, byName, uid } from '../core/data';
 import { DAYN, PT, TODAY, dow, fd, fs, isSchool, nowHM } from '../core/dates';
 import { ask, render, toast } from '../core/store';
-import { useAI } from './aiparts';
+import { useAI } from './useai';
 import { Empty, Item, Modal, PageHead, Sel, TF, DateF, CheckGroup, Tag, TypeTag } from '../ui';
 
 /* ---- weekly timetable grid (read-only views) ---- */

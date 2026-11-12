@@ -1,5 +1,5 @@
 import { DCard, KpiTile, Ticker } from '../ui/dash';
-import { Translate } from './aiparts';
+import { AiHub, Translate } from './aiparts';
 import { useState } from 'react';
 import { Button } from '@mui/material';
 import { DEMO } from '../core/config';
@@ -57,6 +57,7 @@ function Home() {
         <KpiTile l="Next paper" v={exam ? subName(exam.sub) : 'None yet'} vs={19} s={exam ? fd(exam.date) + ', ' + exam.time : 'No date sheet'} ico="file" tone="o" to="sheet" />
         <KpiTile l="Unread notices" v={unread()} s="Tap the bell to read" ico="mega" tone="b" to="notices" />
       </div>
+      <AiHub />
       <div className="two st">
         <div className="stack">
           <DCard title="Today’s lectures" ico="clock">{lec.length ? <LecTable lec={lec} /> : <Empty t="No classes today" />}</DCard>

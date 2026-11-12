@@ -1,4 +1,4 @@
-import { CommentsDialog, useAI } from './aiparts';
+import { AiHub, CommentsDialog, useAI } from './aiparts';
 import { AttnRow, Attention, DCard, KpiTile, Ticker, dayCounts } from '../ui/dash';
 import { BarRows } from '../ui/Charts';
 import { useState } from 'react';
@@ -31,6 +31,7 @@ function Home() {
         <KpiTile l="Leave requests waiting" v={pl} s={classTeacherOf(t).length ? 'For your class' : 'You are not a class teacher'} ico="cal" tone="o" to="leave" />
         <KpiTile l="My attendance today" v={own === 'P' ? 'Checked in ' + rec.in : own === 'L' ? 'On leave' : 'Not in yet'} vs={19} s={own === 'P' || own === 'L' ? '' : 'Use My attendance to check in'} ico="check" tone="g" to="me" />
       </div>
+      <AiHub />
       <div className="two st" style={{ marginBottom: 16 }}>
         <DCard title="Today’s timetable" ico="clock">
           {lec.length ? <DT cols={['Lecture', 'Class', 'Subject', 'Attendance']} rows={lec.map((l) => [<>{l.p} <small>{PT[l.p - 1]}</small></>, cls(l.cid).name, subName(l.sub),
