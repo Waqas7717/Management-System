@@ -11,7 +11,7 @@ import { scheduleSync } from '../../core/sync';
 import { store } from '../../core/stores';
 import { Card, DT, Empty, FSel, Item, Kpi, PageHead, Tag, TypeTag } from '../../ui';
 import { BarRows, Split } from '../../ui/Charts';
-import { ClassCards, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../../ui/dash';
+import { AttnRow, Attention, ClassCards, DCard, KpiTile, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../../ui/dash';
 import { AnnScreen, TtGrid } from '../common';
 import { UsersList } from './users';
 import { AccountDialog, ClassDialog, CredsDialog, DsDialog, EvDialog, PwDialog, StudentDialog, SubjectDialog } from './dialogs';
@@ -90,42 +90,41 @@ function Dash() {
     <>
       <PageHead title="Admin overview" sub={(DEMO ? 'Demo with sample data. ' : '') + 'FG Public School and College'}><RangeChips /></PageHead>
       <Ticker />
-      <div className="g4" style={{ marginBottom: 14 }}>
-        <Kpi l="Students" v={act.length} s={CLASSES.length + (CLASSES.length === 1 ? ' class' : ' classes')} />
-        <Kpi l="Parents" v={DB.parents.length} s="With a login" />
-        <Kpi l="Teachers" v={DB.teachers.length} s={DB.teachers.filter((t) => t.active).length + ' active'} />
-        <Kpi l="Principals" v={DB.principals.length} s={DB.principals.filter((t) => t.active).length + ' active'} />
+      <div className="g4" style={{ marginBottom: 16 }}>
+        <KpiTile l="Students" v={act.length} s={CLASSES.length + (CLASSES.length === 1 ? ' class' : ' classes')} ico="cap" tone="b" to="students" />
+        <KpiTile l="Parents" v={DB.parents.length} s="With a login" ico="users" tone="g" to="parents" />
+        <KpiTile l="Teachers" v={DB.teachers.length} s={DB.teachers.filter((t) => t.active).length + ' active'} ico="book" tone="p" to="teachers" />
+        <KpiTile l="Principals" v={DB.principals.length} s={DB.principals.filter((t) => t.active).length + ' active'} ico="award" tone="o" to="principals" />
       </div>
-      <ClassCards classes={CLASSES} range={rng} />
-      {CLASSES.length ? (
-        <div className="two eq" style={{ marginTop: 18 }}>
-          <Card title="Attendance by class">
-            <p className="mut" style={{ marginBottom: 10 }}>{rng.label}. Hover a bar for details.</p>
-            <BarRows items={CLASSES.map((c) => { const a = dayCounts(act.filter((s) => s.cid === c.id).map((s) => s.id), rng.dates); return { label: c.name, val: a.pct, cls: a.pct == null ? '' : a.pct >= 92 ? 'g' : a.pct >= 85 ? 'y' : 'r' }; })} />
-          </Card>
-          <Card title="Students by class">
-            <p className="mut" style={{ marginBottom: 10 }}>Active students in each class.</p>
-            <Split items={CLASSES.map((c) => ({ label: c.name, value: act.filter((s) => s.cid === c.id).length }))} centerTop={String(act.length)} centerBottom="students" />
-          </Card>
-        </div>
-      ) : null}
-      <StaffCheckin />
       {steps.some((x) => !x[2]) && (
-        <Card title="Get started" style={{ marginTop: 18, marginBottom: 14 }}>
+        <DCard title="Get started" ico="star" style={{ marginBottom: 16 }}>
           <p className="mut" style={{ marginBottom: 10 }}>Set up your school in this order.</p>
           <div className="stack">{steps.map((x) => <div className="row sp" key={x[0]}><span>{x[2] ? <><Tag c="ok">Done</Tag> </> : null}{x[1]}</span><Button size="small" variant={x[2] ? 'outlined' : 'contained'} onClick={() => go(x[0])}>Open</Button></div>)}</div>
-        </Card>
+        </DCard>
       )}
-      <div style={{ height: 18 }} />
-      <Card title="Needs attention">
-        {issues ? (
-          <div className="stack">
-            {noPar.length ? <Item><div className="row sp"><b>Students with no parent linked</b><Tag c="warn">{String(noPar.length)}</Tag></div><List arr={noPar.map((s) => s.name + ' (' + cls(s.cid).name + ')')} max={6} /><div className="row"><Button size="small" variant="outlined" onClick={() => go('parents')}>Open Parents</Button></div></Item> : null}
-            {noCt.length ? <Item><div className="row sp"><b>Classes with no active class teacher</b><Tag c="warn">{String(noCt.length)}</Tag></div><List arr={noCt.map((c) => c.name)} max={6} /><div className="row"><Button size="small" variant="outlined" onClick={() => go('classes')}>Open Classes</Button></div></Item> : null}
-            {gaps.length ? <Item><div className="row sp"><b>Subjects with no active teacher</b><Tag c="warn">{String(gaps.length)}</Tag></div><List arr={gaps} max={6} /><div className="row"><Button size="small" variant="outlined" onClick={() => go('teachers')}>Open Teachers</Button></div></Item> : null}
-          </div>
-        ) : <p className="mut">Everything is set up. No student, class or subject is missing a link.</p>}
-      </Card>
+      <div className="two st wide" style={{ marginBottom: 16 }}>
+        <ClassCards classes={CLASSES} range={rng} />
+        <DCard title="Students by class" ico="chart">
+          {CLASSES.length ? <Split items={CLASSES.map((c) => ({ label: c.name, value: act.filter((s) => s.cid === c.id).length }))} centerTop={String(act.length)} centerBottom="students" /> : <Empty t="No classes yet" />}
+        </DCard>
+      </div>
+      <div className="two st" style={{ marginBottom: 16 }}>
+        <StaffCheckin to="teachers" />
+        <Attention>
+          {issues ? (
+            <>
+              {noPar.length ? <AttnRow n={noPar.length} t="Students with no parent linked" sub={noPar.slice(0, 3).map((s) => s.name).join(', ') + (noPar.length > 3 ? ' and more' : '')} to="parents" /> : null}
+              {noCt.length ? <AttnRow n={noCt.length} t="Classes with no active class teacher" sub={noCt.map((c) => c.name).join(', ')} to="classes" /> : null}
+              {gaps.length ? <AttnRow n={gaps.length} t="Subjects with no active teacher" sub={gaps.slice(0, 2).join('; ') + (gaps.length > 2 ? ' and more' : '')} to="teachers" /> : null}
+            </>
+          ) : <p>Everything is set up. No student, class or subject is missing a link.</p>}
+        </Attention>
+      </div>
+      {CLASSES.length ? (
+        <DCard title="Attendance by class" ico="check" right={<span>{rng.label}. Hover a bar for details.</span>}>
+          <BarRows items={CLASSES.map((c) => { const a = dayCounts(act.filter((s) => s.cid === c.id).map((s) => s.id), rng.dates); return { label: c.name, val: a.pct, cls: a.pct == null ? '' : a.pct >= 92 ? 'g' : a.pct >= 85 ? 'y' : 'r' }; })} />
+        </DCard>
+      ) : null}
     </>
   );
 }
