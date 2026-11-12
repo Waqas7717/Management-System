@@ -480,10 +480,11 @@ html[data-theme=dark] .aih-acts button svg{background:rgba(124,77,214,.2);color:
 .aip-x{width:32px;height:32px;border:0;border-radius:50%;background:var(--sf);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
 .aipanel .aih-acts{grid-template-columns:1fr}
 @media(max-width:900px){
- .aifab{right:14px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:54px;padding:0;justify-content:center}
- .aifab span{display:none}
+ .aifab{right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));height:40px;padding:0 14px 0 11px;gap:6px;font-size:13.5px}
+ .aifab svg{width:18px;height:18px}
  .aipanel{right:8px;left:8px;width:auto;max-width:none;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 110px - env(safe-area-inset-bottom,0px))}
 }
 @media(prefers-reduced-motion:reduce){.aifab{animation:none}}
 html[data-theme=dark] .aipanel{border-color:rgba(124,77,214,.4)}
 html[data-theme=dark] .aipanel{background:#161D30}
+@media (max-width:899px){.top{position:relative;background:transparent;border:0;backdrop-filter:none}}
