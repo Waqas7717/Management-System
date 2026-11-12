@@ -20,6 +20,7 @@ const ROLES = {
   comments: ['teacher', 'admin', 'principal'],
   homework: ['teacher', 'admin', 'principal'],
   ask: ['admin', 'principal'],
+  help: ['teacher', 'admin', 'principal'],
 };
 
 const SYS = {
@@ -27,6 +28,7 @@ const SYS = {
   translate: 'You translate school messages between English and Urdu for parents. Keep the meaning, names, dates and numbers exactly. Use simple, polite Urdu (Nastaliq script) or simple English. Output only the translation.',
   comments: 'You help teachers write report card comments. For each student write one kind, specific, professional sentence (max 25 words) based on the marks given. Be encouraging for low marks and never harsh. Output exactly one line per student in the form: number|comment. No other text.',
   homework: 'You help school teachers in Pakistan prepare homework. Follow the request and keep it practical, age appropriate and short. Plain text only, no markdown symbols.',
+  help: 'You help school staff in Pakistan with school work: lesson plans, notes, letters, parent messages, quiz questions and similar. Keep it practical, short and polite. Plain text only, no markdown symbols. If the request is not about school work, politely say you can only help with school work.',
   ask: 'You are an assistant for a school principal. Answer the question using ONLY the school facts provided. If the facts do not contain the answer, say so. Be brief (max 4 sentences), use plain words and include the numbers.',
 };
 
@@ -53,6 +55,7 @@ function buildPrompt(action, b) {
   if (action === 'notice') return 'Language: ' + (b.lang === 'ur' ? 'Urdu' : 'English') + '\nRough note:\n' + clip(b.text, 1200);
   if (action === 'translate') return 'Translate into ' + (b.to === 'ur' ? 'Urdu' : 'English') + ':\n' + clip(b.text, 2000);
   if (action === 'homework') return clip(b.request, 800);
+  if (action === 'help') return clip(b.request, 800);
   if (action === 'ask') return 'School facts:\n' + clip(b.facts, 6000) + '\n\nQuestion: ' + clip(b.question, 300);
   if (action === 'comments') {
     const list = Array.isArray(b.students) ? b.students.slice(0, 60) : [];
