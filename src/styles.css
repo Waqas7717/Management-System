@@ -593,3 +593,14 @@ img,svg,video,canvas{max-width:100%}
 .kt-b b.txt{font-size:var(--fs-card)!important;white-space:normal!important}
 @media (min-width:1024px){.kt-b b.txt{font-size:var(--fs-sub)!important}}
 .MuiTableCell-root .btn-row,.MuiTableCell-root .row{flex-wrap:nowrap}
+
+/* back button and close (X) buttons */
+.backbtn{display:inline-flex;align-items:center;gap:var(--sp-2);height:32px;padding:0 var(--sp-3) 0 var(--sp-2);margin:0 0 var(--sp-2);border:1.5px solid var(--chromeln);border-radius:var(--r-ctl);background:var(--chrome);color:var(--ink);font:var(--fw-semibold) var(--fs-sm)/1 var(--font);cursor:pointer}
+.backbtn:hover{border-color:var(--pri2);color:var(--pri2)}
+.xbtn.MuiIconButton-root{width:32px;height:32px;border-radius:50%;color:var(--mut);background:transparent;flex:none}
+.xbtn.MuiIconButton-root:hover{background:var(--sf2);color:var(--ink)}
+.xmodal.MuiIconButton-root{position:absolute;right:var(--sp-3);top:var(--sp-3)}
+.sheethd{display:flex;justify-content:space-between;align-items:center;font-size:var(--fs-card)}
+.pan .ph .row{gap:var(--sp-2)}
+html[dir=rtl] .xmodal.MuiIconButton-root{right:auto;left:var(--sp-3)}
+html[dir=rtl] .backbtn svg{transform:scaleX(-1)}

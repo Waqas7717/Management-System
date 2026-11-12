@@ -49,10 +49,10 @@ function GlobalSearch() {
   }, []);
   const pick = (x) => {
     setQ(''); close(); setOpen(false);
-    S.view = x.v; S.f.uq = ''; S.f.psq = '';
+    go(x.v); S.f.psq = '';
     if (x.tab) S.f.utab = x.tab;
     if (x.q) { if (S.role === 'teacher') S.f.psq = x.q; else S.f.uq = x.q; }
-    render(); toTop();
+    render();
   };
   const onChange = (v) => { setQ(v); setHits(v.trim() ? findHits(v) : []); };
   return (
@@ -82,7 +82,7 @@ function Bell({ anchor, onClose }) {
     <Popover open={!!anchor} anchorEl={anchor} onClose={onClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       slotProps={{ paper: { sx: { width: 'min(420px, calc(100vw - 20px))', maxHeight: '70vh', mt: 1 } } }}>
       <div className="pan" role="dialog" aria-label="Notifications">
-        <div className="ph"><b>Notifications</b><Button size="small" variant="outlined" onClick={() => { feed().forEach((x) => { S.reads[S.user.id][x.id] = true; }); saveReads(); render(); }}>Mark all read</Button></div>
+        <div className="ph"><b>Notifications</b><span className="row" style={{ flexWrap: 'nowrap' }}><Button size="small" variant="outlined" onClick={() => { feed().forEach((x) => { S.reads[S.user.id][x.id] = true; }); saveReads(); render(); }}>Mark all read</Button><IconButton className="xbtn" aria-label="Close notifications" onClick={onClose}><Ico n="close" s={18} /></IconButton></span></div>
         {f.length ? f.map((x) => (
           <button type="button" key={x.id} className={'pi ' + (isRead(x.id) ? '' : 'u')} onClick={() => mark(x.id)}>
             <span className="row"><Tag c={TYPEC[x.type]}>{TYPEL[x.type] || 'Update'}</Tag><small>{fs(x.ts.slice(0, 10))}</small></span>
@@ -154,6 +154,7 @@ export default function Shell({ dark, toggleDark }) {
         </nav>
         {S.role !== 'admin' && <Bell anchor={bell} onClose={() => setBell(null)} />}
         <Drawer anchor="bottom" open={more} onClose={() => setMore(false)} PaperProps={{ sx: { borderRadius: '26px 26px 0 0', p: 2, display: 'grid', gap: .75, pb: 'calc(18px + env(safe-area-inset-bottom,0px))' } }}>
+          <div className="sheethd"><b>Menu</b><IconButton className="xbtn" aria-label="Close menu" onClick={() => setMore(false)}><Ico n="close" s={18} /></IconButton></div>
           <LangBtn sheet />
           <button type="button" className="sheetbtn" onClick={openProfile}><Av o={u} /><span>My profile photo</span></button>
           {items.map((i) => (
