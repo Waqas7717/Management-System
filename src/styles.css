@@ -533,3 +533,4 @@ html[data-theme=dark] .aipanel{background:#161D30}
 @media (min-width:900px){.top .ttl small{display:none}}
 html[data-theme=dark] .menubtn{background:rgba(120,160,255,.16)}
 @media (max-width:899px){.top .srch{width:36px;height:36px}.top .srch .si{width:36px;height:36px}.top .srch.open{height:46px}.top .srch.open .si{width:36px;height:36px}}
+@media (max-width:899px){.top .srch.open{width:auto;height:46px;top:7px;left:8px;right:8px}}
