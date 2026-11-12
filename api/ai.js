@@ -11,6 +11,7 @@ const GEMINI_KEY = process.env.GEMINI_API_KEY || '';
 const MODELS = process.env.AI_MODEL ? [process.env.AI_MODEL] : ['gemini-flash-lite-latest', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
 const LIMIT = Math.max(5, Number(process.env.AI_DAILY_LIMIT) || 40);
 
+const noThink = new Set(); // models that rejected the no-thinking setting (remembered while the server instance lives)
 const used = new Map(); // best-effort daily counter per user (resets when the server instance restarts)
 
 const ROLES = {
@@ -94,8 +95,8 @@ export default async (req, res) => {
     });
     let r = null, j = null;
     for (const m of MODELS) {
-      r = await call(m, true); j = await r.json().catch(() => null);
-      if (r.status === 400 && j && j.error && /think/i.test(j.error.message || '')) { r = await call(m, false); j = await r.json().catch(() => null); }
+      r = await call(m, !noThink.has(m)); j = await r.json().catch(() => null);
+      if (r.status === 400 && !noThink.has(m)) { noThink.add(m); r = await call(m, false); j = await r.json().catch(() => null); } // this model does not accept the no-thinking setting
       if (r.ok || (r.status !== 404 && r.status !== 429 && r.status !== 503)) break; // try the next model only if this one is missing or busy
     }
     if (!r.ok) {
