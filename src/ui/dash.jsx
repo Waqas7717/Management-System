@@ -60,7 +60,7 @@ export function KpiTile({ l, v, s, ico, tone = 'b', to, vs }) {
   const inner = (
     <>
       <span className="kt-ic" style={{ color: c[0], background: c[1] }}><Ico n={ico} s={24} /></span>
-      <span className="kt-b"><b style={vs ? { fontSize: vs } : undefined}><Num v={v} /></b><span className="kt-l">{l}</span>{s != null && s !== '' ? <small>{s}</small> : null}</span>
+      <span className="kt-b"><b className={typeof v === 'string' && v.length > 6 ? 'txt' : undefined}><Num v={v} /></b><span className="kt-l">{l}</span>{s != null && s !== '' ? <small>{s}</small> : null}</span>
       {to ? <span className="kt-go" style={{ color: c[0], background: c[1] }}><Ico n="chev" s={18} /></span> : null}
     </>
   );
