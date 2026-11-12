@@ -163,7 +163,7 @@ export async function enterApp(expect) {
   await loadCore(); await loadRecords();
   const u = pickUser(me);
   if (!u) { S.me = null; return 'Your account could not be loaded. Please try again.'; }
-  S.user = u; S.role = me.role; S.lrole = me.role; S.view = NAVS[me.role].items[0][0]; S.f = {}; S.child = null; S.workKey = '';
+  S.user = u; S.role = me.role; S.lrole = me.role; S.view = NAVS[me.role].items[0][0]; S.nav = []; S.f = {}; S.child = null; S.workKey = '';
   S.reads[u.id] = loadReads(u.id);
   startPolling(); render();
   return true;
@@ -184,7 +184,7 @@ export async function login(role, username, password) {
     const m = pool.find((x) => x.user === u && x.pass === password);
     if (!m) return 'Wrong username or password for the ' + role + ' login.';
     if (m.active === false) return 'This account is inactive. Please contact the school office.';
-    S.user = role === 'principal' ? Object.assign({}, m, { id: 'p0' }) : m; S.role = role; S.view = NAVS[role].items[0][0]; S.f = {}; S.child = null; S.workKey = '';
+    S.user = role === 'principal' ? Object.assign({}, m, { id: 'p0' }) : m; S.role = role; S.view = NAVS[role].items[0][0]; S.nav = []; S.f = {}; S.child = null; S.workKey = '';
     S.reads[S.user.id] = S.reads[S.user.id] || {}; render(); return '';
   }
   try {
