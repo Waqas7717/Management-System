@@ -124,7 +124,7 @@ export default function Shell({ dark, toggleDark }) {
             <button type="button" className="out" aria-label="Log out" onClick={out}><Ico n="out" s={19} /></button>
           </div>
         </aside>
-        <div className="mainc">
+        <div className={'mainc' + (cur === items[0] ? ' hero' : '')}>
           <header className="top">
             <div className="ttl">{cur[1]}</div>
             <GlobalSearch />
