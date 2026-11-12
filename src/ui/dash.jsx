@@ -40,13 +40,11 @@ export function Ticker() {
   const to = TARGET[S.role];
   return (
     <section className="annbar" aria-label="Latest announcement">
-      <span className="ab-ic"><Ico n="mega" s={24} /></span>
-      <div className="ab-b">
-        <div className="ab-eye"><span>Latest announcement</span>{p ? <><Tag c={TYPEC[p.type]}>{TYPEL[p.type] || 'Update'}</Tag><span>{fs(p.ts.slice(0, 10))}</span></> : null}</div>
-        <div className="ab-title">{p ? p.title : 'Nothing posted yet'}</div>
-        {p && p.text ? <div className="ab-text">{p.text}</div> : null}
-      </div>
-      {to ? <Button className="ab-btn" variant="contained" size="small" endIcon={<Ico n="chev" s={18} />} onClick={() => go(to)}>View all</Button> : null}
+      <span className="ab-ic"><Ico n="mega" s={22} /></span>
+      <span className="ab-pill">Latest announcement</span>
+      <span className="ab-title" title={p ? p.title : ''}>{p ? p.title : 'Nothing posted yet'}</span>
+      {p ? <span className="ab-date"><Ico n="cal" s={16} />{fs(p.ts.slice(0, 10))}</span> : null}
+      {to ? <Button className="ab-btn" variant="contained" size="small" endIcon={<Ico n="chev" s={16} />} onClick={() => go(to)}>View all</Button> : null}
     </section>
   );
 }
