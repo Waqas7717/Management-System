@@ -47,8 +47,8 @@ code{background:var(--infobg);color:var(--info);padding:1px 8px;border-radius:6p
 /* helpers */
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .row.sp{justify-content:space-between}
-.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:stretch}
-.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;align-items:stretch}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px 20px;align-items:stretch}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px 20px;align-items:stretch}
 .g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:stretch}
 .two{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);align-items:start}
 @media (min-width:1024px){.two{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}.two.eq{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch}}
@@ -56,9 +56,9 @@ code{background:var(--infobg);color:var(--info);padding:1px 8px;border-radius:6p
 .stack>*,.two>*,.g2>*,.g3>*,.g4>*,.card,.item{min-width:0}
 .err{color:var(--bad);font-size:var(--fs-sm);margin-top:8px;min-height:18px;font-weight:600}
 .err:empty{display:none}
-.field{margin-top:12px}
+.field{margin-top:16px}
 .g2>.field,.g3>.field{margin-top:0}
-.flabel{display:block;font-size:var(--fs-sm);font-weight:700;color:var(--mut);margin:12px 0 4px}
+.flabel{display:block;font-size:var(--fs-sm);font-weight:500;color:var(--ink);margin:0 0 6px;line-height:1.3}
 .chks{display:grid;gap:8px;max-height:240px;overflow:auto;padding:2px}
 .chks.cols{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
 .chk{display:flex;align-items:center;gap:4px;padding:0 12px;border:1px solid var(--ln);border-radius:var(--r-card);margin:0!important;font-weight:600;color:var(--ink);font-size:var(--fs-body);background:var(--sf)}
@@ -655,3 +655,92 @@ html[dir=rtl] .backbtn svg{transform:scaleX(-1)}
   .head>.row{justify-content:flex-start}
   .xmodal{top:var(--sp-2);right:var(--sp-2)}
 }
+
+
+/* ===== Global form controls (src/ui/fields.jsx) ===== */
+:root{--fh:40px;--fpy:8px;--fpx:12px;--ffs:14px;--frad:8px;--fbd:var(--chromeln);--fring:rgba(36,71,174,.16)}
+.fld{display:block;min-width:0}
+.fld.fs-sm{--fh:32px;--fpy:7px;--fpx:10px;--ffs:12px}
+.fld.fs-md{--fh:40px;--fpy:8px;--fpx:12px;--ffs:14px}
+.fld.fs-lg{--fh:48px;--fpy:12px;--fpx:14px;--ffs:14px}
+.fld .MuiTextField-root,.fld .MuiAutocomplete-root{width:100%}
+.fld .MuiOutlinedInput-root{min-height:var(--fh);border-radius:var(--frad);background:var(--chrome);font-size:var(--ffs);transition:border-color var(--ease),box-shadow var(--ease),background var(--ease)}
+.fld .MuiOutlinedInput-input{padding:var(--fpy) var(--fpx);font-size:var(--ffs);height:calc(var(--fh) - 2 * var(--fpy));box-sizing:content-box;color:var(--ink)}
+.fld .MuiInputBase-multiline{padding:0}
+.fld .MuiInputBase-inputMultiline{height:auto;min-height:0}
+.fld .MuiOutlinedInput-input::placeholder{color:var(--mut);opacity:.85}
+.fld .MuiOutlinedInput-notchedOutline{border-width:1px;border-color:var(--fbd)}
+.fld .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline{border-color:var(--mut)}
+.fld .MuiOutlinedInput-root.Mui-focused{box-shadow:0 0 0 3px var(--fring)}
+.fld .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline{border-width:1px;border-color:var(--pri2)}
+.fld.is-err .MuiOutlinedInput-notchedOutline,.fld.is-err .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline{border-color:var(--bad)}
+.fld.is-err .MuiOutlinedInput-root.Mui-focused{box-shadow:0 0 0 3px rgba(200,40,40,.14)}
+.fld.is-ok .MuiOutlinedInput-notchedOutline,.fld.is-ok .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline{border-color:var(--ok)}
+.fld.is-dis .MuiOutlinedInput-root{background:var(--sf2);cursor:not-allowed}
+.fld.is-dis .MuiOutlinedInput-input{color:var(--mut);-webkit-text-fill-color:var(--mut);cursor:not-allowed}
+.fld.is-dis .flabel{color:var(--mut)}
+.fld .MuiNativeSelect-select{padding-right:32px}
+.fld .MuiSelect-icon{right:8px;color:var(--mut)}
+.fld input[type=number]::-webkit-outer-spin-button,.fld input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.fld input[type=number]{-moz-appearance:textfield}
+.fld input[type=search]::-webkit-search-cancel-button{display:none}
+.fld .MuiInputAdornment-root{color:var(--mut);margin-left:0}
+.fld .MuiInputAdornment-positionStart{margin-right:0;margin-left:2px}
+.fld .MuiInputAdornment-positionEnd{margin-right:4px}
+.fld .MuiInputAdornment-positionStart+.MuiOutlinedInput-input{padding-left:8px}
+.fld .MuiAutocomplete-inputRoot{padding:0 8px!important;gap:4px}
+.fld .MuiAutocomplete-inputRoot .MuiAutocomplete-input{padding:var(--fpy) 4px!important;min-width:60px}
+.fld .MuiAutocomplete-inputRoot .MuiChip-root{height:24px;margin:2px 0;font-size:12px}
+.fld .MuiAutocomplete-endAdornment{right:6px!important}
+.fld .MuiAutocomplete-tag{max-width:calc(100% - 8px)}
+.fend{display:grid;place-items:center}.fend.bad{color:var(--bad)}.fend.ok{color:var(--ok)}
+.req{color:var(--bad);font-weight:600}
+.fhelp{font-size:var(--fs-xs);line-height:1.4;margin-top:6px;color:var(--mut)}
+.fhelp.bad{color:var(--bad)}.fhelp.ok{color:var(--ok)}
+.fld>.flabel+.fhelp{margin-top:0}
+.fld+.fld{margin-top:16px}
+.stack>.fld+.fld,.g2>.fld+.fld,.g3>.fld+.fld,.g4>.fld+.fld,.row>.fld+.fld,.fgrid>.fld+.fld{margin-top:0}
+.fld-menu,.MuiAutocomplete-paper{border-radius:var(--frad)!important;font-size:var(--fs-body)!important}
+.MuiAutocomplete-popper{z-index:1500}
+.MuiAutocomplete-option{min-height:40px!important}
+/* checkbox / radio / switch */
+.fopt{margin:0!important;min-height:var(--h-ctl);gap:2px;font-size:var(--fs-body);color:var(--ink)}
+.fopt .MuiFormControlLabel-label{font-size:var(--fs-body);font-weight:400}
+.fld .MuiCheckbox-root,.fld .MuiRadio-root{padding:8px}
+.fld .MuiSwitch-root{margin-right:4px}
+.fld.fld-opt .fhelp{margin:-4px 0 0 44px}
+.fld:focus-within .flabel{color:var(--ink)}
+.fld .Mui-focusVisible{outline:2px solid var(--pri2);outline-offset:1px;border-radius:6px}
+/* file upload */
+.uploadbox{position:relative;display:flex;align-items:center;gap:8px;width:100%;min-height:var(--h-ctl);padding:0 12px;border:1px dashed var(--fbd);border-radius:var(--frad);background:var(--sf2);font-size:var(--fs-body);color:var(--mut);cursor:pointer;transition:border-color var(--ease),background var(--ease)}
+.uploadbox:hover{border-color:var(--pri2);background:var(--chrome)}
+.uploadbox:focus-within{border-color:var(--pri2);box-shadow:0 0 0 3px var(--fring)}
+.uploadbox.has{color:var(--ink);border-style:solid}
+.uploadbox .un{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uploadbox svg{flex:none}
+input.uploadbox{display:block;padding:8px 12px;min-height:var(--h-ctl);height:auto}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.chk{border-radius:var(--frad);min-height:var(--h-ctl)}
+/* raw input used inside tables (marks, timetable) */
+.cell-in{width:100%;min-width:64px;height:32px;padding:0 8px;border:1px solid var(--fbd);border-radius:6px;background:var(--chrome);color:var(--ink);font:inherit;font-size:var(--fs-sm)}
+.cell-in:hover{border-color:var(--mut)}
+.cell-in:focus{outline:0;border-color:var(--pri2);box-shadow:0 0 0 3px var(--fring)}
+.cell-in:disabled{background:var(--sf2);color:var(--mut);cursor:not-allowed}
+/* form layout */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px 20px;align-items:start}
+.fsect{margin-top:24px}
+.fsect>h4{margin:0 0 12px;font-size:var(--fs-card);font-weight:600}
+@media (max-width:767px){
+  :root{--fh:44px;--fpy:10px}
+  .fld.fs-sm{--fh:44px;--fpy:10px;--fpx:12px}
+  .fld.fs-md{--fh:44px;--fpy:10px}
+  .fld.fs-lg{--fh:48px;--fpy:12px}
+  .MuiDialogContent-root .g2,.MuiDialogContent-root .g3,.fgrid{grid-template-columns:1fr}
+  .fopt{min-height:44px}
+  .cell-in{height:40px}
+}
+
+:not(.fld):not(.field)>.flabel{margin-top:16px}
+.field+.fld,.fld+.field,div+.fld.fld-up{margin-top:16px}
+.field>.flabel:first-child{margin-top:0}
+.fld .fopt:first-child{margin-left:-8px!important}

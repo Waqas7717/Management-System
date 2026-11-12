@@ -46,7 +46,7 @@ export function makeTheme(mode) {
       MuiTextField: { defaultProps: { variant: 'outlined', fullWidth: true, InputLabelProps: { shrink: true } } },
       MuiOutlinedInput: {
         styleOverrides: {
-          root: { borderRadius: 10, background: t.chrome, minHeight: 40, fontSize: 14, '& fieldset': { borderColor: t.chromeln, borderWidth: 1.5 } },
+          root: { borderRadius: 8, background: t.chrome, minHeight: 40, fontSize: 14, '& fieldset': { borderColor: t.chromeln, borderWidth: 1 } },
           input: { padding: '8px 12px', fontSize: 14, height: 24, boxSizing: 'content-box' },
           inputMultiline: { height: 'auto' },
           multiline: { padding: 0 },

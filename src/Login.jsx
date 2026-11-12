@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { IconButton, InputAdornment, TextField } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { ARTS } from './core/arts';
 import { LIVE, DEMO } from './core/config';
@@ -8,7 +7,7 @@ import { render } from './core/store';
 import { demoLogin, login } from './core/sync';
 import { LangBtn } from './ui/LangBtn';
 import { makeTheme } from './theme';
-import { Err } from './ui';
+import { Err, Sel, TF } from './ui';
 import { Button } from './ui/buttons';
 
 const lightTheme = makeTheme('light');
@@ -92,7 +91,7 @@ const Shell = ({ children }) => (
 
 export default function Login() {
   const r = S.lrole, roles = ['admin', 'principal', 'teacher', 'parent'];
-  const [u, setU] = useState(''), [p, setP] = useState(''), [show, setShow] = useState(false), [err, setErr] = useState(''), [busy, setBusy] = useState(false);
+  const [u, setU] = useState(''), [p, setP] = useState(''), [err, setErr] = useState(''), [busy, setBusy] = useState(false);
   const [du, setDu] = useState('');
 
   if (S.booting) return <Shell><Brand /><p className="mut" role="status">Loading your account…</p></Shell>;
@@ -116,12 +115,9 @@ export default function Login() {
         <Brand />{tabs}
         {list.length ? (
           <>
-            <label className="flab" htmlFor="du"><I k="user" />Username</label>
-            <TextField select id="du" value={who} onChange={(e) => setDu(e.target.value)} SelectProps={{ native: true }} InputLabelProps={{ shrink: false }} label="">
-              {list.map((x) => <option key={x.username} value={x.username}>{x.name} ({x.username})</option>)}
-            </TextField>
-            <label className="flab" htmlFor="dp"><I k="lock" />Password</label>
-            <TextField id="dp" type="password" value="demo-password" InputProps={{ readOnly: true }} InputLabelProps={{ shrink: false }} label="" />
+            <Sel id="du" label="Username" size="lg" value={who} onChange={setDu} list={list.map((x) => [x.username, x.name + ' (' + x.username + ')'])} />
+            <div style={{ height: 16 }} />
+            <TF id="dp" label="Password" size="lg" type="password" noToggle value="demo-password" InputProps={{ readOnly: true }} />
           </>
         ) : <p className="mut" style={{ margin: '12px 0' }}>No {r} accounts yet. The Admin adds them first.</p>}
         <Err>{err}</Err>
@@ -142,13 +138,11 @@ export default function Login() {
   return (
     <Shell>
       <Brand />{tabs}
-      <label className="flab" htmlFor="lu"><I k="user" />Username</label>
-      <TextField id="lu" value={u} placeholder="Enter your username" onChange={(e) => setU(e.target.value)} autoComplete="username"
-        inputProps={{ autoCapitalize: 'none', spellCheck: 'false' }} InputLabelProps={{ shrink: false }} label="" onKeyDown={(e) => e.key === 'Enter' && submit()} />
-      <label className="flab" htmlFor="lp"><I k="lock" />Password</label>
-      <TextField id="lp" type={show ? 'text' : 'password'} value={p} placeholder="Enter your password" onChange={(e) => setP(e.target.value)} autoComplete="current-password"
-        InputLabelProps={{ shrink: false }} label="" onKeyDown={(e) => e.key === 'Enter' && submit()}
-        InputProps={{ endAdornment: <InputAdornment position="end"><IconButton className="eye" aria-label="Show or hide password" onClick={() => setShow(!show)}><I k={show ? 'eye' : 'eyeoff'} /></IconButton></InputAdornment> }} />
+      <TF id="lu" label="Username" size="lg" required value={u} placeholder="Enter your username" onChange={setU} autoComplete="username"
+        inputProps={{ autoCapitalize: 'none', spellCheck: 'false' }} onKeyDown={(e) => e.key === 'Enter' && submit()} />
+      <div style={{ height: 16 }} />
+      <TF id="lp" label="Password" size="lg" required type="password" value={p} placeholder="Enter your password" onChange={setP} autoComplete="current-password"
+        onKeyDown={(e) => e.key === 'Enter' && submit()} />
       <Err>{err}</Err>
       <Button block variant="accent" size="lg" className="gobtn" disabled={busy} sx={{ mt: 1.5 }} onClick={submit}>
         <I k="go" />Sign in as {cap(r)}
