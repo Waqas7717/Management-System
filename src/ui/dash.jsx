@@ -65,8 +65,8 @@ export function KpiTile({ l, v, s, ico, tone = 'b', to, vs }) {
     </>
   );
   return to
-    ? <button type="button" className="ktile go" aria-label={l + ', ' + v + '. Open'} onClick={() => open(to)}>{inner}</button>
-    : <div className="ktile">{inner}</div>;
+    ? <button type="button" className="ktile go" style={{ '--tc': c[0], '--tb': c[1] }} aria-label={l + ', ' + v + '. Open'} onClick={() => open(to)}>{inner}</button>
+    : <div className="ktile" style={{ '--tc': c[0], '--tb': c[1] }}>{inner}</div>;
 }
 
 export const LinkBtn = ({ children, onClick }) => <button type="button" className="lnk" onClick={onClick}>{children}<Ico n="chev" s={16} /></button>;

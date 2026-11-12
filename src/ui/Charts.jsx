@@ -34,6 +34,7 @@ export function BarRows({ items }) {
       series={[{ data: items.map((i) => i.val || 0), valueFormatter: (v, ctx) => (items[ctx.dataIndex] && items[ctx.dataIndex].val == null ? 'Not marked' : pct(v)) }]}
       barLabel={(it) => (it.value >= 12 ? Math.round(it.value) + '%' : null)}
       grid={{ vertical: true }}
+      borderRadius={8}
       slotProps={{ legend: { hidden: true } }}
       sx={axisSx(th)}
     />
@@ -99,10 +100,10 @@ export function LineChart({ labels, series, min: minProp }) {
         margin={{ left: 46, right: 36, top: 16, bottom: 36 }}
         xAxis={[{ scaleType: 'point', data: labels.map((l) => String(l).replace(/\((\w{3})\w*\)/, '($1)')) }]}
         yAxis={[{ min, max: 100, tickNumber: 5 }]}
-        series={series.map((s) => ({ data: s.values.map((v) => (v == null ? null : Math.max(min, v))), label: s.name, color: s.color, curve: 'monotoneX', showMark: true, valueFormatter: pct }))}
+        series={series.map((s) => ({ data: s.values.map((v) => (v == null ? null : Math.max(min, v))), label: s.name, color: s.color, curve: 'monotoneX', showMark: true, area: series.length === 1, valueFormatter: pct }))}
         grid={{ horizontal: true }}
         slotProps={{ legend: { hidden: true } }}
-        sx={{ ...axisSx(th), '& .MuiLineElement-root': { strokeWidth: 3 }, '& .MuiMarkElement-root': { strokeWidth: 2, fill: th.palette.background.paper } }}
+        sx={{ ...axisSx(th), '& .MuiLineElement-root': { strokeWidth: 3.5, filter: 'drop-shadow(0 4px 6px rgba(47,111,237,.25))' }, '& .MuiAreaElement-root': { fillOpacity: 0.12 }, '& .MuiMarkElement-root': { strokeWidth: 2, fill: th.palette.background.paper } }}
       />
       <div className="lg">{series.map((s, i) => <span key={i}><i style={{ background: s.color }} />{s.name}</span>)}</div>
     </>

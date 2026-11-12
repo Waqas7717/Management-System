@@ -54,7 +54,7 @@ function kpiIcon(l) {
 export function Kpi({ l, v, s, vs }) {
   const [n, c] = kpiIcon(l);
   return (
-    <div className="ktile">
+    <div className="ktile" style={{ '--tc': c[0], '--tb': c[1] }}>
       <span className="kt-ic" style={{ color: c[0], background: c[1] }} aria-hidden="true"><Ico n={n} s={24} /></span>
       <span className="kt-b"><b style={vs ? { fontSize: vs } : undefined}><Num v={v} /></b><span className="kt-l">{l}</span>{s != null && s !== '' ? <small>{s}</small> : null}</span>
     </div>
