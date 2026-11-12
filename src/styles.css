@@ -446,3 +446,15 @@ html[data-theme=dark] .tw .MuiTableBody-root .MuiTableRow-root:hover{background:
   .gobtn{position:relative;overflow:hidden}
   .gobtn::after{content:"";position:absolute;top:0;bottom:0;width:40%;left:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:shine 3.2s ease-in-out infinite;pointer-events:none}
 }
+
+/* ---------- AI helpers ---------- */
+.ins{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--ln);font-size:14.5px;line-height:1.45}
+.ins:last-child{border-bottom:0}
+.ins-d{flex:none;width:10px;height:10px;border-radius:50%;margin-top:6px;background:#2F6FDE}
+.ins-d.r{background:#D64545}.ins-d.g{background:#17936A}
+.chipq{border:1px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:12.5px;cursor:pointer;text-align:left}
+.chipq:hover{background:#E8EFFE}.chipq:disabled{opacity:.6;cursor:default}
+.aians{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,#EEF3FF,#F6F0FF);border:1px solid #D7E2FB;font-size:14.5px;line-height:1.55;color:#1c2a55}
+.aians svg{flex:none;margin-top:3px;color:#7C4DD6}
+html[data-theme=dark] .aians{background:rgba(120,160,255,.12);border-color:rgba(120,160,255,.25);color:var(--ink)}
+html[data-theme=dark] .chipq:hover{background:rgba(255,255,255,.08)}
