@@ -468,3 +468,22 @@ html[data-theme=dark] .chipq:hover{background:rgba(255,255,255,.08)}
 .aih-acts button:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(80,60,170,.14)}
 html[data-theme=dark] .aihub{background:linear-gradient(135deg,rgba(124,77,214,.16),rgba(47,111,222,.1));border-color:rgba(124,77,214,.35)}
 html[data-theme=dark] .aih-acts button svg{background:rgba(124,77,214,.2);color:#C9B2FF}
+.aifab{position:fixed;right:22px;bottom:22px;z-index:1250;display:flex;align-items:center;gap:8px;height:54px;padding:0 20px 0 16px;border:0;border-radius:999px;background:linear-gradient(135deg,#7C4DD6,#2F6FDE);color:#fff;font:inherit;font-weight:800;font-size:15px;cursor:pointer;box-shadow:0 10px 26px rgba(70,50,190,.38);animation:aipulse 3s ease-in-out infinite;transition:transform .15s}
+.aifab:hover{transform:translateY(-2px) scale(1.03)}
+.aifab:active{transform:scale(.96)}
+@keyframes aipulse{0%,100%{box-shadow:0 10px 26px rgba(70,50,190,.38),0 0 0 0 rgba(124,77,214,.4)}50%{box-shadow:0 10px 26px rgba(70,50,190,.38),0 0 0 11px rgba(124,77,214,0)}}
+.aipanel{position:fixed;right:22px;bottom:22px;z-index:1250;width:410px;max-width:calc(100vw - 20px);max-height:min(680px,calc(100vh - 44px));overflow:auto;padding:14px;border:1px solid #D9D2F5;border-radius:22px;background:#fff;box-shadow:0 26px 64px rgba(30,20,80,.3);animation:aipop .22s ease-out}
+@keyframes aipop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.aip-h{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.aip-h b{flex:1;font-size:16.5px}
+.aip-ic{display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#7C4DD6,#2F6FDE);color:#fff}
+.aip-x{width:32px;height:32px;border:0;border-radius:50%;background:var(--sf);color:var(--ink);font-size:22px;line-height:1;cursor:pointer}
+.aipanel .aih-acts{grid-template-columns:1fr}
+@media(max-width:900px){
+ .aifab{right:14px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:54px;padding:0;justify-content:center}
+ .aifab span{display:none}
+ .aipanel{right:8px;left:8px;width:auto;max-width:none;bottom:calc(76px + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 110px - env(safe-area-inset-bottom,0px))}
+}
+@media(prefers-reduced-motion:reduce){.aifab{animation:none}}
+html[data-theme=dark] .aipanel{border-color:rgba(124,77,214,.4)}
+html[data-theme=dark] .aipanel{background:#161D30}

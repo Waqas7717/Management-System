@@ -1,4 +1,5 @@
 import { Component, useEffect, useRef, useState } from 'react';
+import { AiFab } from './screens/aiparts';
 import { Badge, Button, Drawer, IconButton, Popover } from '@mui/material';
 import { ARTS } from './core/arts';
 import { DEMO } from './core/config';
@@ -157,6 +158,7 @@ export default function Shell({ dark, toggleDark }) {
             </button>
           ))}
         </Drawer>
+        <AiFab />
         {profile && <ProfileDialog onClose={() => setProfile(false)} />}
       </div>
     </SlotCtx.Provider>
