@@ -127,7 +127,6 @@ export default function Shell({ dark, toggleDark }) {
         </aside>
         <div className={'mainc role-' + S.role + (cur === items[0] ? ' hero' : ' hero sub')}>
           <header className="top">
-            <button type="button" className="menubtn" aria-label="Open menu" onClick={() => setMore(true)}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M4 7h16M4 12h16M4 17h16" /></svg></button>
             <div className="mcrest"><Crest /></div>
             <div className="ttl"><b>{cur[1]}</b><small>FG Public School and College</small></div>
             <GlobalSearch />
