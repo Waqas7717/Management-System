@@ -5,6 +5,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, ToggleButton, ToggleButtonGroup,
 } from '@mui/material';
 import { Ico } from './Ico';
+import { Num } from './Num';
 import { F, S, TYPEC, TYPEL } from '../core/data';
 import { render } from '../core/store';
 import { readPhoto } from '../core/photo';
@@ -55,7 +56,7 @@ export function Kpi({ l, v, s, vs }) {
   return (
     <div className="ktile">
       <span className="kt-ic" style={{ color: c[0], background: c[1] }} aria-hidden="true"><Ico n={n} s={24} /></span>
-      <span className="kt-b"><b style={vs ? { fontSize: vs } : undefined}>{v}</b><span className="kt-l">{l}</span>{s != null && s !== '' ? <small>{s}</small> : null}</span>
+      <span className="kt-b"><b style={vs ? { fontSize: vs } : undefined}><Num v={v} /></b><span className="kt-l">{l}</span>{s != null && s !== '' ? <small>{s}</small> : null}</span>
     </div>
   );
 }

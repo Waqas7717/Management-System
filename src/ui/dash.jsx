@@ -3,6 +3,7 @@ import { DB, S, TYPEC, TYPEL, annVisible, cls, dayStatus, feed, tClasses, tStatu
 import { TODAY, addDays, fs, isSchool, pd, schoolDays } from '../core/dates';
 import { go } from '../core/actions';
 import { Av, Ico, Seg, Tag } from './index';
+import { Num } from './Num';
 
 /* ---------- date range chips (Today, 7, 30, 90 days) ---------- */
 export const RANGES = [['1', 'Today'], ['7', '7 days'], ['30', '30 days'], ['90', '90 days']];
@@ -59,7 +60,7 @@ export function KpiTile({ l, v, s, ico, tone = 'b', to, vs }) {
   const inner = (
     <>
       <span className="kt-ic" style={{ color: c[0], background: c[1] }}><Ico n={ico} s={24} /></span>
-      <span className="kt-b"><b style={vs ? { fontSize: vs } : undefined}>{v}</b><span className="kt-l">{l}</span>{s != null && s !== '' ? <small>{s}</small> : null}</span>
+      <span className="kt-b"><b style={vs ? { fontSize: vs } : undefined}><Num v={v} /></b><span className="kt-l">{l}</span>{s != null && s !== '' ? <small>{s}</small> : null}</span>
       {to ? <span className="kt-go" style={{ color: c[0], background: c[1] }}><Ico n="chev" s={18} /></span> : null}
     </>
   );
