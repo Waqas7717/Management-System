@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Button } from '@mui/material';
+
 import { CLASSES, DB, cls } from '../core/data';
 import { store } from '../core/stores';
 import { toast, render } from '../core/store';
 import { downloadCSV, parseCSV } from '../core/tools';
 import { Modal } from '../ui';
+import { Button } from '../ui/buttons';
 
 export const exportStudents = () => downloadCSV('students.csv', [['Roll', 'Name', 'Class', 'Parent', 'Parent phone', 'Status']].concat(
   DB.students.map((s) => { const p = DB.parents.find((x) => x.kids.includes(s.id)); return [s.roll, s.name, cls(s.cid) ? cls(s.cid).name : '', p ? p.name : '', p ? p.phone : '', s.active ? 'Active' : 'Inactive']; })));
@@ -46,8 +47,8 @@ export function ImportStudentsDialog({ onClose }) {
     <Modal title="Add students from Excel" onClose={onClose} maxWidth="sm" actions={[{ label: busy ? 'Adding...' : 'Add ' + (res ? res.rows.length : 0) + ' students', onClick: run, disabled: busy || !res || !res.rows.length }]}>
       <p className="mut" style={{ marginBottom: 10 }}>In Excel, make columns <b>Name</b>, <b>Class</b> and <b>Roll</b> (roll is optional). Save the file as <b>CSV</b>, then choose it here. Parent accounts are added separately under Parents.</p>
       <div className="row" style={{ marginBottom: 12 }}>
-        <Button variant="outlined" onClick={tpl}>Download sample file</Button>
-        <Button variant="contained" component="label">Choose CSV file<input type="file" accept=".csv,text/csv" hidden onChange={pick} /></Button>
+        <Button variant="secondary" icon="download" onClick={tpl}>Download sample file</Button>
+        <Button variant="primary" icon="upload" component="label">Choose CSV file<input type="file" accept=".csv,text/csv" hidden onChange={pick} /></Button>
       </div>
       {res ? (
         <>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, TextField } from '@mui/material';
+import { TextField } from '@mui/material';
 import { CLASSES, DB, EXAMS, S, feed, classAvg, classPass, dayStatus, latestExam, tStatus, cls, gradeOf } from '../core/data';
 import { TODAY, addDays, schoolDays } from '../core/dates';
 import { useAI } from './useai';
@@ -8,6 +8,7 @@ import { go } from '../core/actions';
 import { toast } from '../core/store';
 import { Ico, Modal, TF } from '../ui';
 import { DCard, dayCounts } from '../ui/dash';
+import { Button, IconBtn } from '../ui/buttons';
 
 export { useAI };
 
@@ -23,7 +24,7 @@ export function Translate({ text }) {
   };
   return (
     <div>
-      <Button size="small" variant="text" disabled={busy} onClick={go}>{busy ? 'Translating...' : out ? 'Hide translation' : to === 'ur' ? 'اردو میں دیکھیں' : 'Show in English'}</Button>
+      <Button size="sm" variant="text" disabled={busy} onClick={go}>{busy ? 'Translating...' : out ? 'Hide translation' : to === 'ur' ? 'اردو میں دیکھیں' : 'Show in English'}</Button>
       {out ? <p dir={to === 'ur' ? 'rtl' : 'ltr'} style={{ marginTop: 6, padding: 10, borderRadius: 12, background: 'var(--sf)', border: '1px solid var(--ln)', fontSize: to === 'ur' ? 17 : 14, lineHeight: 1.9, whiteSpace: 'pre-wrap' }}>{out}</p> : null}
     </div>
   );
@@ -106,7 +107,7 @@ export function AiFab() {
       {!open && <button type="button" className="aifab" aria-label="Open AI assistant" onClick={() => setOpen(true)}><Ico n="star" s={22} /><span>Ask AI</span></button>}
       {open && (
         <div className="aipanel" role="dialog" aria-label="AI assistant">
-          <div className="aip-h"><span className="aip-ic"><Ico n="star" s={18} /></span><b>AI assistant</b><span className="aitag">Free AI</span><button type="button" className="aip-x" aria-label="Close AI assistant" onClick={() => setOpen(false)}>×</button></div>
+          <div className="aip-h"><span className="aip-ic"><Ico n="star" s={18} /></span><b>AI assistant</b><span className="aitag">Free AI</span><IconBtn size="sm" icon="x" label="Close AI assistant" onClick={() => setOpen(false)} /></div>
           {staff || role === 'teacher' ? (
             <>
               <div className="row" style={{ gap: 8, flexWrap: 'nowrap', alignItems: 'flex-start' }}>

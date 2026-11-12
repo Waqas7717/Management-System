@@ -5,7 +5,7 @@ import { PushPrompt } from '../ui/PushPrompt';
 import { printReportCard, printDateSheet, printStudentAtt } from './printables';
 import { feeAmt, feeRec, feeMonths, dueMonths } from '../core/fees';
 import { useState } from 'react';
-import { Button } from '@mui/material';
+
 import { DEMO } from '../core/config';
 import {
   CLASSES, DB, EXAMS, S, F, byName, cls, classAvg, agg, dayStatus, ev, feed, gcls, gradeOf, isPub, isRead, kidsOf, leaveDates, leaveLabel, lectures,
@@ -70,13 +70,13 @@ function Home() {
       <div className="two st">
         <div className="stack">
           <DCard title="Today’s lectures" ico="clock">{lec.length ? <LecTable lec={lec} /> : <Empty t="No classes today" />}</DCard>
-          <DCard title="Homework to do" ico="book" right={<Button size="small" onClick={() => go('hw')}>View all</Button>}>
+          <DCard title="Homework to do" ico="book" right={<Button size="sm" variant="text" onClick={() => go('hw')}>View all</Button>}>
             {pend.length ? pend.slice(0, 4).map((w) => <Item key={w.id}><div className="row sp"><b>{w.title}</b><Tag c="info">{subName(w.sub)}</Tag></div><div className="meta">Due {fd(w.due)}</div></Item>) : <Empty t="All caught up" s="No pending homework." />}
           </DCard>
         </div>
         <div className="stack">
           <DCard title="Fee voucher" ico="file"><FeeBox k={k} /></DCard>
-          <DCard title="Latest from school" ico="mega" right={<Button size="small" onClick={() => go('notices')}>View all</Button>}>
+          <DCard title="Latest from school" ico="mega" right={<Button size="sm" variant="text" onClick={() => go('notices')}>View all</Button>}>
             {f.length ? f.map((x) => <Item key={x.id} unread={!isRead(x.id)}><div className="row"><TypeTag t={x.type} /><small>{fs(x.ts.slice(0, 10))}</small></div><h4>{x.title}</h4><p className="mut">{x.text}</p><Translate text={x.title + '. ' + x.text} /></Item>) : <Empty t="No notices yet" />}
           </DCard>
         </div>
@@ -103,7 +103,7 @@ function Att() {
   const subs = cls(k.cid).subjects.map((sb) => ({ sb, a: agg([k.id], ALLD, sb) }));
   return (
     <>
-      <PageHead title="Attendance" sub={k.name + ', ' + cls(k.cid).name}><Button variant="outlined" onClick={() => printStudentAtt(k.id, month)}>Print this month</Button></PageHead>
+      <PageHead title="Attendance" sub={k.name + ', ' + cls(k.cid).name}><Button variant="secondary" icon="printer" onClick={() => printStudentAtt(k.id, month)}>Print this month</Button></PageHead>
       <KidSwitch />
       <div className="g4" style={{ marginBottom: 14 }}>
         <Kpi l="Overall attendance" v={all.pct == null ? '-' : Math.round(all.pct) + '%'} s={DEMO ? 'Since 1 October' : 'Last 5 weeks'} />
@@ -155,7 +155,7 @@ function Hw() {
               <div className="row sp"><h4>{w.title}</h4>{dn ? <Tag c="ok">Submitted</Tag> : late ? <Tag c="bad">Overdue</Tag> : <Tag c="warn">Pending</Tag>}</div>
               <p className="mut">{w.desc}</p>
               <div className="meta"><Tag c="info">{subName(w.sub)}</Tag><span>Due {fd(w.due)}</span><span>{byName(w.tid)}</span>{w.file ? <span>Attachment: {w.file}</span> : null}</div>
-              <div><Button size="small" variant={dn ? 'outlined' : 'contained'} onClick={() => toggle(w.id)}>{dn ? 'Undo submitted' : 'Mark as submitted'}</Button></div>
+              <div><Button size="sm" variant={dn ? 'outlined' : 'contained'} onClick={() => toggle(w.id)}>{dn ? 'Undo submitted' : 'Mark as submitted'}</Button></div>
             </Item>
           );
         }) : <Empty t="Nothing here" s="No homework matches this filter." />}
@@ -193,7 +193,7 @@ function LeaveForm({ k }) {
       <div className="field"><TF id="lv_reason" label="Reason" value={reason} onChange={setReason} multiline minRows={3} placeholder="Please explain why your child needs leave" /></div>
       <FileBox id="lv_file" label="Attachment (optional, for example a medical note)" onChange={setFile} />
       <Err>{err}</Err>
-      <Button fullWidth variant="contained" onClick={submit}>Send to class teacher</Button>
+      <FormActions><Button fullWidth variant="primary" onClick={submit}>Send to class teacher</Button></FormActions>
       <p className="mut" style={{ marginTop: 10, fontSize: 13 }}>
         {ctOk ? 'Your request goes to ' + byName(cls(k.cid).ct) + ', the class teacher.' : <b>This class has no active class teacher right now. Please contact the school office.</b>} Approved leave shows as “Leave” in attendance.
       </p>
@@ -216,7 +216,7 @@ function Leave() {
               <div className="meta">{leaveDates(l)}</div><p>{l.reason}</p>
               {l.attach ? <div className="meta">Attachment: {l.attach}</div> : null}
               {l.remark ? <div className="meta"><b>Teacher’s remark:</b> {l.remark}</div> : null}
-              {l.status === 'pending' ? <div><Button size="small" variant="outlined" onClick={() => { l.status = 'cancelled'; render(); toast('Leave request cancelled.'); }}>Cancel request</Button></div> : null}
+              {l.status === 'pending' ? <div><Button size="sm" variant="outlined" onClick={() => { l.status = 'cancelled'; render(); toast('Leave request cancelled.'); }}>Cancel request</Button></div> : null}
             </Item>
           )) : <Empty t="No leave requests yet" />}
         </Card>
@@ -234,7 +234,7 @@ function Res() {
   const trend = avail.map((e) => stuResult(e.id, k).pct), cavg = avail.map((e) => classAvg(e.id, k.cid));
   return (
     <>
-      <PageHead title="Results" sub={k.name + ', ' + cls(k.cid).name}><Button variant="outlined" onClick={() => printReportCard(k.id, ex)}>Print report card</Button></PageHead>
+      <PageHead title="Results" sub={k.name + ', ' + cls(k.cid).name}><Button variant="secondary" icon="printer" onClick={() => printReportCard(k.id, ex)}>Print report card</Button></PageHead>
       <KidSwitch />
       <div style={{ maxWidth: 360 }}><FSel k="rexam" def={ex} list={avail.map((e) => [e.id, e.name])} label="Exam" /></div>
       <div className="g4" style={{ margin: '14px 0' }}>
@@ -270,7 +270,7 @@ function Notices() {
             <h4>{x.title}</h4><p>{x.text}</p>
             <Translate text={x.title + '. ' + x.text} />
             {x.by ? <div className="meta">From {byName(x.by)}</div> : null}
-            {isRead(x.id) ? null : <div><Button size="small" variant="outlined" onClick={() => { S.reads[S.user.id][x.id] = true; saveReads(); render(); }}>Mark as read</Button></div>}
+            {isRead(x.id) ? null : <div><Button size="sm" variant="outlined" onClick={() => { S.reads[S.user.id][x.id] = true; saveReads(); render(); }}>Mark as read</Button></div>}
           </Item>
         )) : <Empty t="Nothing here" s="No notices match this filter." />}
       </div>
@@ -284,7 +284,7 @@ function Sheet() {
   const groups = {}; list.forEach((d) => { (groups[d.exam] = groups[d.exam] || []).push(d); });
   return (
     <>
-      <PageHead title="Date sheet" sub={k.name + ', ' + cls(k.cid).name}>{list.length ? <Button variant="outlined" onClick={() => printDateSheet(k.cid)}>Print date sheet</Button> : null}</PageHead>
+      <PageHead title="Date sheet" sub={k.name + ', ' + cls(k.cid).name}>{list.length ? <Button variant="secondary" icon="printer" onClick={() => printDateSheet(k.cid)}>Print date sheet</Button> : null}</PageHead>
       <KidSwitch />
       {Object.keys(groups).length ? Object.keys(groups).map((g) => (
         <Card key={g} title={g}><DT cols={['Date', 'Subject', 'Time', 'Room']} rows={groups[g].map((d) => [fd(d.date), subName(d.sub), d.time, d.room])} /></Card>
@@ -305,5 +305,6 @@ function Tt() {
   );
 }
 import { ttCell as ttCellOf } from '../core/data';
+import { Button, FormActions } from '../ui/buttons';
 
 export const parentViews = { fees: Fees, home: Home, att: Att, hw: Hw, leave: Leave, res: Res, notices: Notices, sheet: Sheet, tt: Tt };

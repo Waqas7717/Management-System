@@ -1,4 +1,4 @@
-import { Button, TextField } from '@mui/material';
+import { TextField } from '@mui/material';
 import { CLASSES, DB, S, F, cls, stu, money, parentsOf } from '../core/data';
 import { render, ask, toast } from '../core/store';
 import { TODAY, fs } from '../core/dates';
@@ -6,6 +6,7 @@ import { feeAmt, feeRec, feeMonths, ymLabel, dueMonths, payFee, unpayFee } from 
 import { printDoc, letterhead, esc, downloadCSV } from '../core/tools';
 import { KpiTile, DCard } from '../ui/dash';
 import { PageHead, FSel, DT, Tag, Who, Empty } from '../ui';
+import { Button, IconBtn } from '../ui/buttons';
 
 export function printReceipt(sid, ym) {
   const s = stu(sid), r = feeRec(sid, ym); if (!s || !r) return;
@@ -52,7 +53,7 @@ export function StaffFees() {
   return (
     <>
       <PageHead title="Fees" sub="Record monthly fees, see who owes, print receipts.">
-        <Button variant="outlined" onClick={csv}>Download for Excel</Button>
+        <Button variant="secondary" icon="download" onClick={csv}>Download for Excel</Button>
       </PageHead>
       <div className="g4" style={{ marginBottom: 14 }}>
         <KpiTile l={'Collected, ' + ymLabel(ym).split(' ')[0]} v={money(paid.reduce((a, x) => a + x.rec.amt, 0))} ico="cash" tone="g" s={paid.length + ' students paid'} />
@@ -69,8 +70,8 @@ export function StaffFees() {
       {shown.length ? (
         <DT minWidth={620} cols={['Roll', 'Student', 'Class', { h: 'Fee', n: 1 }, 'Status', { h: 'Months due', n: 1 }, '']} rows={shown.map((x) => [x.s.roll, <Who o={x.s}>{x.s.name}</Who>, cls(x.s.cid).name, x.amt ? money(x.amt) : '-',
           !x.amt ? <Tag>Fee not set</Tag> : x.rec ? <Tag c="ok">{'Paid ' + fs(x.rec.date)}</Tag> : <Tag c="warn">Not paid</Tag>, x.dues,
-          x.rec ? <div className="row"><Button size="small" variant="outlined" onClick={() => printReceipt(x.s.id, ym)}>Receipt</Button><Button size="small" color="error" onClick={() => undo(x)}>Undo</Button></div>
-            : x.amt ? <Button size="small" variant="contained" onClick={() => mark(x)}>Mark paid</Button> : null])} />
+          x.rec ? <div className="row acts"><IconBtn size="sm" icon="receipt" label="Receipt" onClick={() => printReceipt(x.s.id, ym)} /><IconBtn size="sm" icon="undo-2" tone="danger" label="Undo payment" onClick={() => undo(x)} /></div>
+            : x.amt ? <Button size="xs" variant="success" onClick={() => mark(x)}>Mark paid</Button> : null])} />
       ) : <Empty t="No students found" s="Set the monthly fee for each class above to start." />}
       <p className="mut" style={{ marginTop: 10 }}>Today is {fs(TODAY)}. School year runs April to March.</p>
     </>

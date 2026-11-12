@@ -3,7 +3,7 @@ import { alertAbsent, alertNotice } from '../core/push';
 import { AttnRow, Attention, DCard, KpiTile, Ticker, dayCounts } from '../ui/dash';
 import { BarRows } from '../ui/Charts';
 import { useState } from 'react';
-import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
+import { FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import {
   CLASSES, DB, EXAMS, S, F, agg, audLabel, classTeacherOf, coversL, cls, effStatus, ev, feed, gcls, gradeOf, isPub, leaveDates, leaveLabel,
   lecMarked, markWork, latestExam, classAvg, myLectures, myPendingLeaves, parentsOf, stu, subName, subjAt, tClasses, tStatus, ttCell, uid,
@@ -13,6 +13,7 @@ import { go } from '../core/actions';
 import { ask, render, toast } from '../core/store';
 import { Card, CheckGroup, DT, DateF, Empty, Err, FSel, FileBox, Item, Kpi, LeaveChip, Modal, PageHead, Sel, Seg, StChip, TF, Tag, TypeTag, Av, Who, FDate } from '../ui';
 import { TtGrid } from './common';
+import { Button, RowActions, FormActions } from '../ui/buttons';
 
 const NoAsg = () => <Empty t="No classes assigned" s="The Admin can assign classes and subjects to you." />;
 const asgList = () => S.user.assign.map((a, i) => [String(i), cls(a[0]).name + ', ' + subName(a[1])]);
@@ -35,7 +36,7 @@ function Home() {
       <div className="two st" style={{ marginBottom: 16 }}>
         <DCard title="Today’s timetable" ico="clock">
           {lec.length ? <DT cols={['Lecture', 'Class', 'Subject', 'Attendance']} rows={lec.map((l) => [<>{l.p} <small>{PT[l.p - 1]}</small></>, cls(l.cid).name, subName(l.sub),
-            lecMarked(l) ? <Tag c="ok">Marked</Tag> : <Button size="small" variant="contained" onClick={() => { const i = t.assign.findIndex((a) => a[0] === l.cid && a[1] === l.sub); S.f.tasg = i < 0 ? 0 : i; S.f.tadate = TODAY; go('att'); }}>Mark now</Button>])} />
+            lecMarked(l) ? <Tag c="ok">Marked</Tag> : <Button size="xs" variant="primary" onClick={() => { const i = t.assign.findIndex((a) => a[0] === l.cid && a[1] === l.sub); S.f.tasg = i < 0 ? 0 : i; S.f.tadate = TODAY; go('att'); }}>Mark now</Button>])} />
             : <Empty t="No lectures today" />}
         </DCard>
         <DCard title="My classes" ico="chart">
@@ -53,7 +54,7 @@ function Home() {
         <div className="stack">
           <DCard title="Quick actions" ico="plus">
             <div className="row">
-              <Button variant="contained" onClick={() => go('att')}>Mark attendance</Button>
+              <Button variant="primary" onClick={() => go('att')}>Mark attendance</Button>
               <Button variant="outlined" onClick={() => go('hw')}>Add homework</Button>
               <Button variant="outlined" onClick={() => go('res')}>Upload results</Button>
               <Button variant="outlined" onClick={() => go('notify')}>Send notification</Button>
@@ -101,7 +102,7 @@ function Att() {
     <>
       <PageHead title="Student attendance" sub={cls(cid).name + ', ' + subName(sub) + ', lecture ' + p + ' (' + PT[p - 1] + ')'}>
         <Button variant="outlined" onClick={allP}>Mark all present</Button>
-        <Button variant="contained" onClick={save}>Save attendance</Button>
+        <Button variant="primary" onClick={save}>Save attendance</Button>
       </PageHead>
       {sel}
       <div className="row" style={{ marginBottom: 12 }}>
@@ -141,7 +142,7 @@ function HwForm() {
       <div className="field"><TF id="hw_t" label="Title" value={title} onChange={setTitle} placeholder="For example, Exercise 5.2, Q1 to Q8" /></div>
       <div className="field"><TF id="hw_d" label="Details" value={desc} onChange={setDesc} multiline minRows={3} placeholder="What should students do?" /></div>
       <div className="row" style={{ margin: '8px 0 12px' }}>
-        <Button size="small" variant="outlined" disabled={aiBusy} onClick={async () => {
+        <Button size="sm" variant="outlined" disabled={aiBusy} onClick={async () => {
           if (title.trim().length < 3) return toast('Write the topic in Title first, then tap Suggest with AI.');
           const as = t.assign[+a];
           const r = await aiRun('homework', { request: 'Write homework instructions for ' + cls(as[0]).name + ', subject ' + subName(as[1]) + ', topic: ' + title.trim() + '. Give 4 to 6 short numbered questions or tasks a student can do at home. ' + (desc.trim() ? 'Teacher notes: ' + desc.trim() : '') });
@@ -150,7 +151,7 @@ function HwForm() {
         <small className="mut">Write the topic in Title, then let AI draft the details. Edit before posting.</small>
       </div>
       <div className="g2"><DateF id="hw_due" label="Due date" value={due} onChange={setDue} min={TODAY} /><FileBox key={fk} id="hw_f" label="Attachment (optional)" onChange={setFile} /></div>
-      <div style={{ marginTop: 14 }}><Button fullWidth variant="contained" onClick={add}>Post homework</Button></div>
+      <FormActions><Button fullWidth variant="primary" onClick={add}>Post homework</Button></FormActions>
     </Card>
   );
 }
@@ -187,8 +188,7 @@ function Hw() {
                 <p className="mut">{w.desc}</p>
                 <div className="meta"><Tag c="info">{cls(w.cid).name}</Tag><Tag>{subName(w.sub)}</Tag><span>Due {fd(w.due)}</span>{w.file ? <span>Attachment: {w.file}</span> : null}</div>
                 <div className="row">
-                  <Button size="small" variant="outlined" onClick={() => setEdit(w)}>Edit</Button>
-                  <Button size="small" variant="contained" color="error" onClick={() => ask('Delete this homework?', 'Delete', () => { DB.hw = DB.hw.filter((x) => x.id !== w.id); render(); toast('Homework deleted.'); })}>Delete</Button>
+                  <RowActions onEdit={() => setEdit(w)} onDelete={() => ask('Delete this homework?', 'Delete', () => { DB.hw = DB.hw.filter((x) => x.id !== w.id); render(); toast('Homework deleted.'); })} />
                 </div>
               </Item>
             );
@@ -231,14 +231,14 @@ function ResBody({ i, ex, cid, sub, rkey }) {
     <>
       <PageHead title="Upload results" sub="Enter marks out of 100. Parents see them after you publish.">
         {pb ? <Button variant="outlined" onClick={() => { DB.pub[rkey] = false; render(); toast('Unpublished. You can edit the marks now.'); }}>Unpublish to edit</Button>
-          : <><Button variant="outlined" onClick={() => save(false)}>Save draft</Button><Button variant="contained" color="secondary" onClick={() => save(true)}>Publish to parents</Button></>}
+          : <><Button variant="outlined" onClick={() => save(false)}>Save draft</Button><Button variant="primary" onClick={() => save(true)}>Publish to parents</Button></>}
       </PageHead>
       <div className="g2" style={{ marginBottom: 14 }}><AsgSel k="tasg" i={i} /><FSel k="texam" def="e3" list={EXAMS.map((e) => [e.id, e.name])} label="Exam" /></div>
       <div className="row" style={{ marginBottom: 12 }}>
         {pb ? <Tag c="ok">Published</Tag> : <Tag c="warn">Draft, not visible to parents</Tag>}
-        {pb ? null : <><Button size="small" variant="outlined" component="label">Upload CSV<input hidden type="file" accept=".csv,.txt" onChange={(e) => { csv(e.target.files[0]); e.target.value = ''; }} /></Button><small>CSV format: roll,marks</small></>}
+        {pb ? null : <><Button size="sm" variant="secondary" icon="upload" component="label">Upload CSV<input hidden type="file" accept=".csv,.txt" onChange={(e) => { csv(e.target.files[0]); e.target.value = ''; }} /></Button><small>CSV format: roll,marks</small></>}
       </div>
-      <div style={{ marginBottom: 12 }}><Button size="small" variant="outlined" onClick={() => setCmt(true)}>Report card comments (AI)</Button></div>
+      <div style={{ marginBottom: 12 }}><Button size="sm" variant="outlined" onClick={() => setCmt(true)}>Report card comments (AI)</Button></div>
       {cmt ? <CommentsDialog students={st} marks={marks} exam={EXAMS.find((e) => e.id === ex).name} subject={subName(sub)} onClose={() => setCmt(false)} /> : null}
       <DT cols={['Roll', 'Student', { h: 'Marks /100', n: 1 }, 'Grade']} rows={st.map((s) => {
         const v = marks[s.id], g = v === '' || v == null || isNaN(+v) ? null : Math.max(0, Math.min(100, +v));
@@ -272,8 +272,8 @@ function LvItem({ l }) {
         <>
           <TF id={'rm_' + l.id} label="Remark for parent (optional)" value={rm} onChange={setRm} placeholder="For example, Approved. Get well soon." />
           <div className="row" style={{ marginTop: 10 }}>
-            <Button size="small" variant="contained" color="success" onClick={() => decide('approved')}>Approve</Button>
-            <Button size="small" variant="contained" color="error" onClick={() => decide('declined')}>Decline</Button>
+            <Button size="sm" variant="success" onClick={() => decide('approved')}>Approve</Button>
+            <Button size="sm" variant="danger" onClick={() => decide('declined')}>Decline</Button>
           </div>
         </>
       ) : (l.remark ? <div className="meta"><b>Your remark:</b> {l.remark}</div> : null)}
@@ -320,7 +320,7 @@ function SendForm({ cids }) {
       <div className="field"><TF id="nt_t" label="Title" value={title} onChange={setTitle} placeholder="For example, Maths test tomorrow" /></div>
       <div className="field"><TF id="nt_b" label="Message" value={body} onChange={setBody} multiline minRows={3} placeholder="Write the message for parents" /></div>
       <Err>{err}</Err>
-      <Button fullWidth variant="contained" onClick={send}>Send notification</Button>
+      <FormActions><Button fullWidth variant="primary" onClick={send}>Send notification</Button></FormActions>
     </Card>
   );
 }
@@ -390,7 +390,7 @@ function LeaveApply() {
       <div className="g2 field"><DateF id="tl_from" label="From" value={from} onChange={setFrom} min={TODAY} /><DateF id="tl_to" label="To" value={to} onChange={setTo} min={TODAY} /></div>
       <div className="field"><TF id="tl_reason" label="Reason" value={reason} onChange={setReason} multiline minRows={3} placeholder="Reason for leave" /></div>
       <Err>{err}</Err>
-      <Button fullWidth variant="contained" onClick={submit}>Send to principal</Button>
+      <FormActions><Button fullWidth variant="primary" onClick={submit}>Send to principal</Button></FormActions>
     </Card>
   );
 }
@@ -408,8 +408,8 @@ function Me() {
             <div className="row sp">
               <div>{own === 'P' ? <><b>Checked in at {rec.in}</b><div className="mut">{rec.out ? 'Checked out at ' + rec.out : 'Not checked out yet'}</div></> : own === 'L' ? <b>On approved leave</b> : <b>Not checked in yet</b>}</div>
               <div className="row">
-                {own === 'P' ? (rec.out ? <Tag c="ok">Day complete</Tag> : <Button variant="contained" onClick={() => { DB.tatt[t.id + '|' + TODAY].out = nowHM(); render(); toast('Checked out at ' + nowHM() + '.'); }}>Check out</Button>)
-                  : own === 'L' ? null : <Button variant="contained" color="success" onClick={() => { DB.tatt[t.id + '|' + TODAY] = { in: nowHM(), out: '' }; render(); toast('Checked in at ' + nowHM() + '.'); }}>Check in</Button>}
+                {own === 'P' ? (rec.out ? <Tag c="ok">Day complete</Tag> : <Button variant="primary" onClick={() => { DB.tatt[t.id + '|' + TODAY].out = nowHM(); render(); toast('Checked out at ' + nowHM() + '.'); }}>Check out</Button>)
+                  : own === 'L' ? null : <Button variant="success" onClick={() => { DB.tatt[t.id + '|' + TODAY] = { in: nowHM(), out: '' }; render(); toast('Checked in at ' + nowHM() + '.'); }}>Check in</Button>}
               </div>
             </div>
           </Card>

@@ -1,8 +1,9 @@
-import { Button } from '@mui/material';
+
 import { CLASSES, DB, EXAMS, F, agg, cls, classAvg, classPass, dayStatus, gradeOf, stuResult, latestExam } from '../core/data';
 import { ALLD, TODAY, monthLabel, monthOptions, CM } from '../core/dates';
 import { printDoc, letterhead, esc, downloadCSV } from '../core/tools';
 import { Card, DT, Empty, FSel, PageHead, Seg, Tag, Who } from '../ui';
+import { Button } from '../ui/buttons';
 
 const LOW = 75;
 
@@ -47,8 +48,8 @@ function AttTab({ cf, m }) {
   return (
     <>
       <div className="row" style={{ margin: '4px 0 12px' }}>
-        <Button variant="contained" onClick={() => printAtt(cf, m)}>Print or save PDF</Button>
-        <Button variant="outlined" onClick={csv}>Download for Excel</Button>
+        <Button variant="secondary" icon="download" onClick={csv}>Download for Excel</Button>
+        <Button variant="primary" icon="printer" onClick={() => printAtt(cf, m)}>Print or save PDF</Button>
       </div>
       <div className="two st">
         <Card title="Class summary">
@@ -76,8 +77,8 @@ function ResTab({ cf, ex }) {
   return (
     <>
       <div className="row" style={{ margin: '4px 0 12px' }}>
-        <Button variant="contained" onClick={() => printRes(cf, ex)}>Print or save PDF</Button>
-        <Button variant="outlined" onClick={csv}>Download for Excel</Button>
+        <Button variant="secondary" icon="download" onClick={csv}>Download for Excel</Button>
+        <Button variant="primary" icon="printer" onClick={() => printRes(cf, ex)}>Print or save PDF</Button>
       </div>
       <div className="two st">
         <Card title="Top 5 students"><DT minWidth={300} cols={['#', 'Student', 'Class', { h: 'Percent', n: 1 }]} rows={rows.slice(0, 5).map((x, i) => lineRow(x, i, 'ok'))} /></Card>

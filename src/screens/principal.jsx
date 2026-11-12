@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, TextField } from '@mui/material';
+import { TextField } from '@mui/material';
 import { DEMO } from '../core/config';
 import {
   CLASSES, DB, EXAMS, S, F, SUBJ, agg, cls, classAvg, classPass, effStatus, ev, gcls, gradeOf, isPub, latestExam, leaveDates, ord, ranks, stuResult, subName, subjAt,
@@ -201,8 +201,8 @@ function TLeave({ l }) {
         <>
           <TF id={'rm_' + l.id} label="Remark (optional)" value={rm} onChange={setRm} placeholder="For example, Approved. Please arrange a substitute." />
           <div className="row" style={{ marginTop: 10 }}>
-            <Button size="small" variant="contained" color="success" onClick={() => decide('approved')}>Approve</Button>
-            <Button size="small" variant="contained" color="error" onClick={() => decide('declined')}>Decline</Button>
+            <Button size="sm" variant="success" onClick={() => decide('approved')}>Approve</Button>
+            <Button size="sm" variant="danger" onClick={() => decide('declined')}>Decline</Button>
           </div>
         </>
       ) : (l.remark ? <div className="meta"><b>Remark:</b> {l.remark}</div> : null)}
@@ -221,4 +221,5 @@ function Leave() {
 
 import { StaffFees } from './fees';
 import { Reports } from './reports';
+import { Button } from '../ui/buttons';
 export const principalViews = { fees: StaffFees, rep: Reports, dash: Dash, att: Att, ann: () => <AnnScreen kind="announcement" />, notice: () => <AnnScreen kind="notice" />, users: Users, res: Res, leave: Leave };

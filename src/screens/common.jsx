@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Button } from '@mui/material';
+
 import { CLASSES, DB, S, audLabel, byName, uid } from '../core/data';
 import { DAYN, PT, TODAY, dow, fd, fs, isSchool, nowHM } from '../core/dates';
 import { ask, render, toast } from '../core/store';
 import { useAI } from './useai';
 import { alertNotice } from '../core/push';
 import { Empty, Item, Modal, PageHead, Sel, TF, DateF, CheckGroup, Tag, TypeTag } from '../ui';
+import { Button, RowActions } from '../ui/buttons';
 
 /* ---- weekly timetable grid (read-only views) ---- */
 export function TtGrid({ cell, hl }) {
@@ -54,7 +55,7 @@ export function AnnDialog({ kind, ann, onClose }) {
       <TF label="Title" value={title} onChange={setTitle} />
       <div className="field"><TF label="Message" value={body} onChange={setBody} multiline minRows={3} /></div>
       <div className="row" style={{ marginTop: 8 }}>
-        <Button size="small" variant="outlined" disabled={aiBusy} onClick={async () => { const t = await aiRun('notice', { text: (body.trim() || title.trim()), lang: aiLang }); if (t) setBody(t); }}>{aiBusy ? 'Writing...' : 'Write with AI'}</Button>
+        <Button size="sm" variant="secondary" disabled={aiBusy} onClick={async () => { const t = await aiRun('notice', { text: (body.trim() || title.trim()), lang: aiLang }); if (t) setBody(t); }}>{aiBusy ? 'Writing...' : 'Write with AI'}</Button>
         <div style={{ width: 130 }}><Sel label="Language" value={aiLang} onChange={setAiLang} list={[['en', 'English'], ['ur', 'Urdu']]} /></div>
         <small className="mut">Type a rough note, then tap Write with AI. Check the result before publishing.</small>
       </div>
@@ -76,7 +77,7 @@ export function AnnScreen({ kind }) {
   return (
     <>
       <PageHead title={ttl} sub={kind === 'notice' ? 'Official notices such as holidays, fee dates and rules.' : 'Messages for the whole school or for chosen classes.'}>
-        <Button variant="contained" onClick={() => setDlg({ kind })}>New {kind === 'notice' ? 'notice' : 'announcement'}</Button>
+        <Button variant="primary" icon="plus" onClick={() => setDlg({ kind })}>New {kind === 'notice' ? 'notice' : 'announcement'}</Button>
       </PageHead>
       {list.length ? list.map((a) => (
         <Item key={a.id}>
@@ -84,8 +85,7 @@ export function AnnScreen({ kind }) {
           <h4>{a.title}</h4><p>{a.body}</p>
           <div className="meta"><span>To {audLabel(a.aud)}</span><span>From {byName(a.by)}</span></div>
           <div className="row">
-            {(S.role === 'admin' ? a.by === S.user.id : a.by === 'p0') && <Button size="small" variant="outlined" onClick={() => setDlg({ kind: a.kind, ann: a })}>Edit</Button>}
-            <Button size="small" variant="contained" color="error" onClick={() => ask('Delete this item?', 'Delete', () => { DB.anns = DB.anns.filter((x) => x.id !== a.id); render(); toast('Deleted.'); })}>Delete</Button>
+            <RowActions onEdit={(S.role === 'admin' ? a.by === S.user.id : a.by === 'p0') ? () => setDlg({ kind: a.kind, ann: a }) : undefined} onDelete={() => ask('Delete this item?', 'Delete', () => { DB.anns = DB.anns.filter((x) => x.id !== a.id); render(); toast('Deleted.'); })} />
           </div>
         </Item>
       )) : <Empty t="Nothing here yet" s="Use the button above to create one." />}
