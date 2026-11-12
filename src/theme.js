@@ -37,11 +37,9 @@ export function makeTheme(mode) {
       MuiButton: {
         defaultProps: { disableElevation: true },
         styleOverrides: {
-          root: { borderRadius: 10, minHeight: 40, padding: '0 16px', fontWeight: 600, fontSize: 14, gap: 8 },
-          sizeSmall: { minHeight: 32, padding: '0 12px', fontSize: 13, borderRadius: 10 },
-          containedPrimary: { boxShadow: '0 6px 16px rgba(11,33,96,.22)' },
-          containedSecondary: { background: 'linear-gradient(180deg,#FFC93C,#F7B500)', boxShadow: '0 4px 12px rgba(247,181,0,.4)' },
-          outlined: { borderWidth: 1.5, borderRadius: 10, borderColor: t.secln, background: mode === 'dark' ? 'transparent' : 'rgba(255,255,255,.6)', '&:hover': { borderWidth: 1.5 } },
+          root: { borderRadius: 10, fontWeight: 600, textTransform: 'none' },
+          containedSecondary: { background: '#F7B500', color: '#1b1400' },
+          outlined: { borderWidth: 1.5, borderColor: t.secln, background: mode === 'dark' ? 'transparent' : 'rgba(255,255,255,.6)', '&:hover': { borderWidth: 1.5 } },
         },
       },
       MuiIconButton: { styleOverrides: { root: { color: 'inherit' } } },

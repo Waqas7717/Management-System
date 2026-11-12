@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
-import { Alert, Button, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, Snackbar, ThemeProvider } from '@mui/material';
+import { Alert, CssBaseline, Dialog, DialogActions, DialogContent, DialogContentText, Snackbar, ThemeProvider } from '@mui/material';
 import { makeTheme } from './theme';
 import { S } from './core/data';
 import { bus, getVersion, subscribe } from './core/store';
 import { init } from './core/sync';
 import Login from './Login';
 import Shell from './Shell';
+import { Button } from './ui/buttons';
 
 const initialDark = () => {
   try { const v = localStorage.getItem('fg_theme'); if (v) return v === 'dark'; } catch (e) { /* ignore */ }
@@ -38,7 +39,7 @@ export default function App() {
         <DialogContent><DialogContentText sx={{ color: 'text.primary' }}>{conf && conf.message}</DialogContentText></DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button variant="outlined" onClick={() => setConf(null)}>Cancel</Button>
-          <Button variant="contained" onClick={() => { const c = conf; setConf(null); if (c && c.fn) c.fn(); }}>{(conf && conf.yes) || 'Yes'}</Button>
+          <Button variant={conf && /remove|delete|undo|deactivate|decline/i.test(conf.yes || '') ? 'danger' : 'primary'} onClick={() => { const c = conf; setConf(null); if (c && c.fn) c.fn(); }}>{(conf && conf.yes) || 'Yes'}</Button>
         </DialogActions>
       </Dialog>
     </ThemeProvider>

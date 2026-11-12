@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, IconButton, InputAdornment, TextField } from '@mui/material';
+import { IconButton, InputAdornment, TextField } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 import { ARTS } from './core/arts';
 import { LIVE, DEMO } from './core/config';
@@ -9,6 +9,7 @@ import { demoLogin, login } from './core/sync';
 import { LangBtn } from './ui/LangBtn';
 import { makeTheme } from './theme';
 import { Err } from './ui';
+import { Button } from './ui/buttons';
 
 const lightTheme = makeTheme('light');
 
@@ -52,7 +53,7 @@ function InstallApp() {
   const standalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
   if (standalone || done) return null;
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  if (ev) return <Button size="small" variant="outlined" sx={{ mt: 1.25 }} onClick={async () => { ev.prompt(); try { await ev.userChoice; } catch (e) { /* ignore */ } setEv(null); }}>Install app on this device</Button>;
+  if (ev) return <Button size="sm" variant="outlined" sx={{ mt: 1.25 }} onClick={async () => { ev.prompt(); try { await ev.userChoice; } catch (e) { /* ignore */ } setEv(null); }}>Install app on this device</Button>;
   if (ios) return <p className="mut" style={{ marginTop: 12, fontSize: 13 }}>Install: tap the Share button, then Add to Home Screen.</p>;
   return null;
 }
@@ -125,12 +126,12 @@ export default function Login() {
         ) : <p className="mut" style={{ margin: '12px 0' }}>No {r} accounts yet. The Admin adds them first.</p>}
         <Err>{err}</Err>
         {list.length > 0 && (
-          <Button fullWidth variant="contained" color="secondary" className="gobtn" disabled={busy} sx={{ mt: 1.5, height: 40, fontSize: 14, fontWeight: 700 }} onClick={() => run(() => demoLogin(r, who))}>
+          <Button block variant="accent" size="lg" className="gobtn" disabled={busy} sx={{ mt: 1.5 }} onClick={() => run(() => demoLogin(r, who))}>
             <I k="go" />Sign in as {cap(r)}
           </Button>
         )}
         <p className="mut" style={{ marginTop: 14, fontSize: 13 }}>Demo mode: pick a name and press Sign in. The password is filled in for you.</p>
-        <Button size="small" variant="outlined" sx={{ mt: 1 }} onClick={() => { S.pwMode = true; render(); }}>Sign in with a password instead</Button>
+        <Button block size="sm" variant="outlined" sx={{ mt: 1 }} onClick={() => { S.pwMode = true; render(); }}>Sign in with a password instead</Button>
         <InstallApp /><div style={{ marginTop: 10 }}><LangBtn /></div>
       </Shell>
     );
@@ -149,17 +150,17 @@ export default function Login() {
         InputLabelProps={{ shrink: false }} label="" onKeyDown={(e) => e.key === 'Enter' && submit()}
         InputProps={{ endAdornment: <InputAdornment position="end"><IconButton className="eye" aria-label="Show or hide password" onClick={() => setShow(!show)}><I k={show ? 'eye' : 'eyeoff'} /></IconButton></InputAdornment> }} />
       <Err>{err}</Err>
-      <Button fullWidth variant="contained" color="secondary" className="gobtn" disabled={busy} sx={{ mt: 1.5, height: 40, fontSize: 14, fontWeight: 700 }} onClick={submit}>
+      <Button block variant="accent" size="lg" className="gobtn" disabled={busy} sx={{ mt: 1.5 }} onClick={submit}>
         <I k="go" />Sign in as {cap(r)}
       </Button>
-      {LIVE && S.demoUsers && <Button size="small" variant="outlined" sx={{ mt: 1.25 }} onClick={() => { S.pwMode = false; render(); }}>Back to demo sign in</Button>}
+      {LIVE && S.demoUsers && <Button size="sm" variant="outlined" sx={{ mt: 1.25 }} onClick={() => { S.pwMode = false; render(); }}>Back to demo sign in</Button>}
       {DEMO ? (
         <>
           <div className="demo"><b>Demo {r} login</b>
             {hints.map((d) => (
               <div className="row sp" style={{ marginTop: 8 }} key={d[0]}>
                 <span>{d[2]}<br />User <code>{d[0]}</code> Password <code>{d[1]}</code></span>
-                <Button size="small" variant="outlined" onClick={() => { setU(d[0]); setP(d[1]); }}>Fill in</Button>
+                <Button size="sm" variant="outlined" onClick={() => { setU(d[0]); setP(d[1]); }}>Fill in</Button>
               </div>
             ))}
             {r === 'teacher' && <div className="mut" style={{ marginTop: 8 }}>Other teachers: nadeem, rubina, khalid, ayesha. Same password.</div>}

@@ -1,7 +1,7 @@
 import { Component, useEffect, useRef, useState } from 'react';
 import { AiFab } from './screens/aiparts';
 import { LangBtn } from './ui/LangBtn';
-import { Badge, Button, Drawer, IconButton, Popover } from '@mui/material';
+import { Badge, Drawer, Popover } from '@mui/material';
 import { ARTS } from './core/arts';
 import { DEMO } from './core/config';
 import { DB, NAVS, S, TYPEC, TYPEL, cap, feed, isRead, tClasses, unread } from './core/data';
@@ -14,6 +14,7 @@ import { Av, Ico, SlotCtx, Tag } from './ui';
 import { ProfileDialog } from './screens/admin/dialogs';
 import { VIEWS } from './screens';
 import { Empty } from './ui';
+import { Button, IconBtn } from './ui/buttons';
 
 function artFor(role, title) {
   const t = (title || '').toLowerCase();
@@ -82,7 +83,7 @@ function Bell({ anchor, onClose }) {
     <Popover open={!!anchor} anchorEl={anchor} onClose={onClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       slotProps={{ paper: { sx: { width: 'min(420px, calc(100vw - 20px))', maxHeight: '70vh', mt: 1 } } }}>
       <div className="pan" role="dialog" aria-label="Notifications">
-        <div className="ph"><b>Notifications</b><span className="row" style={{ flexWrap: 'nowrap' }}><Button size="small" variant="outlined" onClick={() => { feed().forEach((x) => { S.reads[S.user.id][x.id] = true; }); saveReads(); render(); }}>Mark all read</Button><IconButton className="xbtn" aria-label="Close notifications" onClick={onClose}><Ico n="close" s={18} /></IconButton></span></div>
+        <div className="ph"><b>Notifications</b><span className="row" style={{ flexWrap: 'nowrap' }}><Button size="sm" variant="outlined" onClick={() => { feed().forEach((x) => { S.reads[S.user.id][x.id] = true; }); saveReads(); render(); }}>Mark all read</Button><IconBtn size="sm" icon="x" label="Close notifications" onClick={onClose} /></span></div>
         {f.length ? f.map((x) => (
           <button type="button" key={x.id} className={'pi ' + (isRead(x.id) ? '' : 'u')} onClick={() => mark(x.id)}>
             <span className="row"><Tag c={TYPEC[x.type]}>{TYPEL[x.type] || 'Update'}</Tag><small>{fs(x.ts.slice(0, 10))}</small></span>
@@ -123,7 +124,7 @@ export default function Shell({ dark, toggleDark }) {
             <button type="button" className="mebtn" title="Change my photo" aria-label="My profile and photo" onClick={openProfile}>
               <Av o={u} /><div><b>{u.name}</b><small>{cap(S.role)}{DEMO ? ' (demo)' : ''}</small></div>
             </button>
-            <button type="button" className="out" aria-label="Log out" onClick={out}><Ico n="out" s={19} /></button>
+            <IconBtn size="md" className="out" icon="log-out" label="Log out" onClick={out} />
           </div>
         </aside>
         <div className={'mainc role-' + S.role + (cur === items[0] ? ' hero' : ' hero sub')}>
@@ -132,13 +133,11 @@ export default function Shell({ dark, toggleDark }) {
             <div className="ttl"><b>{cur[1]}</b><small>FG Public School and College</small></div>
             <GlobalSearch />
             <LangBtn />
-            <IconButton className="iconbtn" aria-label="Switch light or dark mode" onClick={toggleDark}><Ico n="moon" s={20} /></IconButton>
+            <IconBtn variant="toolbar" icon="moon" label="Switch light or dark mode" onClick={toggleDark} />
             {S.role === 'admin' ? null : (
-              <IconButton className="iconbtn" aria-label={`Notifications, ${n} unread`} onClick={(e) => setBell(e.currentTarget)}>
-                <Ico n="bell" s={20} />{n ? <span className="badge">{n}</span> : null}
-              </IconButton>
+              <span className="bellwrap"><IconBtn variant="toolbar" icon="bell" label={n ? `Notifications, ${n} unread` : 'Notifications'} onClick={(e) => setBell(e.currentTarget)} />{n ? <span className="badge">{n}</span> : null}</span>
             )}
-            <IconButton className="iconbtn toplo" aria-label="Log out" onClick={out}><Ico n="out" s={20} /></IconButton>
+            <IconBtn variant="toolbar" className="toplo" icon="log-out" label="Log out" onClick={out} />
           </header>
           <div className="pghead" id="pghead" ref={setSlot} />
           <main className="view" id="view">
@@ -154,7 +153,7 @@ export default function Shell({ dark, toggleDark }) {
         </nav>
         {S.role !== 'admin' && <Bell anchor={bell} onClose={() => setBell(null)} />}
         <Drawer anchor="bottom" open={more} onClose={() => setMore(false)} PaperProps={{ sx: { borderRadius: '26px 26px 0 0', p: 2, display: 'grid', gap: .75, pb: 'calc(18px + env(safe-area-inset-bottom,0px))' } }}>
-          <div className="sheethd"><b>Menu</b><IconButton className="xbtn" aria-label="Close menu" onClick={() => setMore(false)}><Ico n="close" s={18} /></IconButton></div>
+          <div className="sheethd"><b>Menu</b><IconBtn size="sm" icon="x" label="Close menu" onClick={() => setMore(false)} /></div>
           <LangBtn sheet />
           <button type="button" className="sheetbtn" onClick={openProfile}><Av o={u} /><span>My profile photo</span></button>
           {items.map((i) => (
