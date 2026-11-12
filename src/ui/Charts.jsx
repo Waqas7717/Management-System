@@ -20,6 +20,7 @@ const axisSx = (th) => ({
 /* horizontal bars, one per item. cls g / y / r picks green, gold or red. */
 export function BarRows({ items }) {
   const th = useTheme();
+  if (!items.length || items.every((i) => i.val == null)) return <p className="mut" style={{ margin: '6px 0' }}>Nothing marked yet.</p>;
   const col = { g: th.palette.success.main, y: GOLD, r: th.palette.error.main };
   const labels = items.map((i, k) => i.label + (items.findIndex((x) => x.label === i.label) < k ? ' ' + (k + 1) : ''));
   const colors = items.map((i) => col[i.cls] || COLORS[0]);
@@ -86,13 +87,15 @@ export function Split({ items, centerTop, centerBottom }) {
   );
 }
 
-export function LineChart({ labels, series, min = 0 }) {
+export function LineChart({ labels, series, min: minProp }) {
   const th = useTheme();
+  const vals = series.flatMap((s) => s.values).filter((v) => v != null);
+  const min = minProp != null ? minProp : Math.max(0, Math.floor((Math.min(...vals, 100) - 10) / 10) * 10);
   return (
     <>
       <XLine
         height={240}
-        margin={{ left: 46, right: 20, top: 16, bottom: 36 }}
+        margin={{ left: 46, right: 36, top: 16, bottom: 36 }}
         xAxis={[{ scaleType: 'point', data: labels.map((l) => String(l).replace(/\((\w{3})\w*\)/, '($1)')) }]}
         yAxis={[{ min, max: 100, tickNumber: 5 }]}
         series={series.map((s) => ({ data: s.values.map((v) => (v == null ? null : Math.max(min, v))), label: s.name, color: s.color, curve: 'monotoneX', showMark: true, valueFormatter: pct }))}
