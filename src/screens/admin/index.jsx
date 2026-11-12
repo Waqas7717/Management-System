@@ -68,9 +68,12 @@ function Accounts({ tab }) {
   const close = () => setDlg(null);
   return (
     <>
-      <PageHead title={ttl} sub={sub}><Button variant="contained" onClick={add}>Add {one}</Button></PageHead>
+      <PageHead title={ttl} sub={sub}>
+        {tab === 'students' && <><Button variant="outlined" onClick={exportStudents}>Download list</Button><Button variant="outlined" onClick={() => setDlg({ t: 'imp' })}>Add from Excel</Button></>}
+        <Button variant="contained" onClick={add}>Add {one}</Button></PageHead>
       <UsersList tab={tab} edit act={act} />
       {dlg && dlg.t === 'acc' && <AccountDialog role={dlg.role} id={dlg.id} onClose={close} onCreds={(info) => setDlg({ t: 'creds', info })} />}
+      {dlg && dlg.t === 'imp' && <ImportStudentsDialog onClose={close} />}
       {dlg && dlg.t === 'stu' && <StudentDialog id={dlg.id} onClose={close} />}
       {dlg && dlg.t === 'pw' && <PwDialog role={dlg.role} id={dlg.id} onClose={close} onCreds={(info) => setDlg({ t: 'creds', info })} />}
       {dlg && dlg.t === 'creds' && <CredsDialog info={dlg.info} onClose={close} />}
@@ -251,7 +254,7 @@ function Ds() {
   const f = F('dsf', 'all'), list = DB.datesheet.filter((d) => cls(d.cid) && (f === 'all' || d.cid === f)).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
   return (
     <>
-      <PageHead title={ttl} sub={sub}><Button variant="contained" onClick={() => setAdd(true)}>Add paper</Button></PageHead>
+      <PageHead title={ttl} sub={sub}>{f !== 'all' && list.length ? <Button variant="outlined" onClick={() => printDateSheet(f)}>Print this class</Button> : null}<Button variant="contained" onClick={() => setAdd(true)}>Add paper</Button></PageHead>
       <div className="g2" style={{ margin: '14px 0' }}><FSel k="dsf" def="all" list={[['all', 'All classes']].concat(CLASSES.map((x) => [x.id, x.name]))} label="Class" /></div>
       {list.length ? <DT cols={['Class', 'Exam', 'Subject', 'Date', 'Time', 'Room', '']} rows={list.map((d) => [cls(d.cid).name, d.exam || '', subName(d.sub), fd(d.date), d.time || '', d.room || '',
         <Button size="small" variant="contained" color="error" onClick={() => { DB.datesheet = DB.datesheet.filter((x) => x.id !== d.id); render(); toast('Paper removed.'); }}>Remove</Button>])} />
@@ -283,7 +286,12 @@ function Evt() {
   );
 }
 
+import { StaffFees } from '../fees';
+import { ImportStudentsDialog, exportStudents } from '../datatools';
+import { printDateSheet } from '../printables';
+import { Reports } from '../reports';
 export const adminViews = {
+  fees: StaffFees, rep: Reports,
   dash: Dash, classes: Classes, tt: Tt, ds: Ds, evt: Evt,
   students: () => <Accounts tab="students" />, parents: () => <Accounts tab="parents" />,
   teachers: () => <Accounts tab="teachers" />, principals: () => <Accounts tab="principals" />,

@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { Button, TextField } from '@mui/material';
+import { PrintDialog } from '../printables';
 import { CLASSES, DB, S, F, cls, parentsOf, stu, subName } from '../../core/data';
 import { render } from '../../core/store';
 import { Av, DT, Empty, FSel, Item, Tag, Who } from '../../ui';
@@ -26,6 +28,7 @@ function Acts({ role, o, act }) {
 
 // tab: teachers | principals | parents | students. act is only passed when the viewer can edit (Admin).
 export function UsersList({ tab, edit, act }) {
+  const [pr, setPr] = useState(null);
   const q = (F('uq', '') || '').toLowerCase();
   let list;
   if (tab === 'teachers') {
@@ -59,13 +62,14 @@ export function UsersList({ tab, edit, act }) {
     )) : <Empty t="No parents found" />;
   } else {
     const cf = F('ucls', 'all'), l = DB.students.filter((s) => (cf === 'all' || s.cid === cf) && (!q || s.name.toLowerCase().indexOf(q) > -1));
-    const cols = ['Roll', 'Student', 'Class', 'Parent', 'Status'].concat(edit ? [''] : []);
+    const cols = ['Roll', 'Student', 'Class', 'Parent', 'Status', ''];
     list = l.length ? <DT cols={cols} rows={l.map((s) => [s.roll, <Who o={s}>{s.name}</Who>, cls(s.cid) ? cls(s.cid).name : '', parentsOf(s.id).map((p) => p.name).join(', ') || 'None', <Status on={s.active} />]
-      .concat(edit ? [<div className="row">
-        <Button size="small" variant="outlined" onClick={() => act.sEdit(s.id)}>Edit</Button>
+      .concat([<div className="row">
+        <Button size="small" variant="outlined" onClick={() => setPr(s.id)}>Print</Button>
+        {edit && <><Button size="small" variant="outlined" onClick={() => act.sEdit(s.id)}>Edit</Button>
         <Button size="small" variant="contained" color={s.active ? 'error' : 'success'} onClick={() => act.sToggle(s.id)}>{s.active ? 'Deactivate' : 'Activate'}</Button>
-        <Button size="small" variant="contained" color="error" onClick={() => act.sRemove(s.id)}>Remove</Button>
-      </div>] : []))} /> : <Empty t="No students found" />;
+        <Button size="small" variant="contained" color="error" onClick={() => act.sRemove(s.id)}>Remove</Button></>}
+      </div>]))} /> : <Empty t="No students found" />;
   }
-  return <><SearchBar tab={tab} /><div>{list}</div></>;
+  return <><SearchBar tab={tab} /><div>{list}</div>{pr && <PrintDialog sid={pr} onClose={() => setPr(null)} />}</>;
 }
