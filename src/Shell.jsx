@@ -37,7 +37,7 @@ function findHits(q) {
 function GlobalSearch() {
   const [q, setQ] = useState(''), [open, setOpen] = useState(false), [hits, setHits] = useState([]);
   const ref = useRef(null), inp = useRef(null);
-  const mobile = () => window.innerWidth < 900;
+  const mobile = () => window.innerWidth < 1024;
   const close = () => { setHits([]); };
   useEffect(() => {
     const key = (e) => {

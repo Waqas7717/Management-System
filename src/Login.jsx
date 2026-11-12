@@ -35,7 +35,7 @@ export const Crest = ({ light }) => (
     <text x="50" y={light ? 72 : 68} textAnchor="middle" fontFamily="Merriweather,serif" fontWeight="900" fontSize={light ? 32 : 31} fill="#0B1F4D">FG</text>
     {!light && <>
       <rect x="22" y="76" width="56" height="13" rx="3" fill="#0B1F4D" />
-      <text x="50" y="85.6" textAnchor="middle" fontFamily="Nunito Sans,sans-serif" fontWeight="700" fontSize="7" letterSpacing="1.4" fill="#F7B500">SAKESAR</text>
+      <text x="50" y="85.6" textAnchor="middle" fontFamily="Inter,sans-serif" fontWeight="700" fontSize="7" letterSpacing="1.4" fill="#F7B500">SAKESAR</text>
     </>}
   </svg>
 );
@@ -53,7 +53,7 @@ function InstallApp() {
   if (standalone || done) return null;
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
   if (ev) return <Button size="small" variant="outlined" sx={{ mt: 1.25 }} onClick={async () => { ev.prompt(); try { await ev.userChoice; } catch (e) { /* ignore */ } setEv(null); }}>Install app on this device</Button>;
-  if (ios) return <p className="mut" style={{ marginTop: 12, fontSize: 12.5 }}>Install: tap the Share button, then Add to Home Screen.</p>;
+  if (ios) return <p className="mut" style={{ marginTop: 12, fontSize: 13 }}>Install: tap the Share button, then Add to Home Screen.</p>;
   return null;
 }
 
@@ -125,11 +125,11 @@ export default function Login() {
         ) : <p className="mut" style={{ margin: '12px 0' }}>No {r} accounts yet. The Admin adds them first.</p>}
         <Err>{err}</Err>
         {list.length > 0 && (
-          <Button fullWidth variant="contained" color="secondary" className="gobtn" disabled={busy} sx={{ mt: 1.5, height: 54, fontSize: 17, fontWeight: 800 }} onClick={() => run(() => demoLogin(r, who))}>
+          <Button fullWidth variant="contained" color="secondary" className="gobtn" disabled={busy} sx={{ mt: 1.5, height: 40, fontSize: 14, fontWeight: 700 }} onClick={() => run(() => demoLogin(r, who))}>
             <I k="go" />Sign in as {cap(r)}
           </Button>
         )}
-        <p className="mut" style={{ marginTop: 14, fontSize: 12.5 }}>Demo mode: pick a name and press Sign in. The password is filled in for you.</p>
+        <p className="mut" style={{ marginTop: 14, fontSize: 13 }}>Demo mode: pick a name and press Sign in. The password is filled in for you.</p>
         <Button size="small" variant="outlined" sx={{ mt: 1 }} onClick={() => { S.pwMode = true; render(); }}>Sign in with a password instead</Button>
         <InstallApp /><div style={{ marginTop: 10 }}><LangBtn /></div>
       </Shell>
@@ -149,7 +149,7 @@ export default function Login() {
         InputLabelProps={{ shrink: false }} label="" onKeyDown={(e) => e.key === 'Enter' && submit()}
         InputProps={{ endAdornment: <InputAdornment position="end"><IconButton className="eye" aria-label="Show or hide password" onClick={() => setShow(!show)}><I k={show ? 'eye' : 'eyeoff'} /></IconButton></InputAdornment> }} />
       <Err>{err}</Err>
-      <Button fullWidth variant="contained" color="secondary" className="gobtn" disabled={busy} sx={{ mt: 1.5, height: 54, fontSize: 17, fontWeight: 800 }} onClick={submit}>
+      <Button fullWidth variant="contained" color="secondary" className="gobtn" disabled={busy} sx={{ mt: 1.5, height: 40, fontSize: 14, fontWeight: 700 }} onClick={submit}>
         <I k="go" />Sign in as {cap(r)}
       </Button>
       {LIVE && S.demoUsers && <Button size="small" variant="outlined" sx={{ mt: 1.25 }} onClick={() => { S.pwMode = false; render(); }}>Back to demo sign in</Button>}
@@ -164,7 +164,7 @@ export default function Login() {
             ))}
             {r === 'teacher' && <div className="mut" style={{ marginTop: 8 }}>Other teachers: nadeem, rubina, khalid, ayesha. Same password.</div>}
           </div>
-          <p className="mut" style={{ marginTop: 14, fontSize: 12.5 }}>Demo with sample data for Class 9-A, Class 10-A and FSc Part 1. Nothing is saved or sent.</p>
+          <p className="mut" style={{ marginTop: 14, fontSize: 13 }}>Demo with sample data for Class 9-A, Class 10-A and FSc Part 1. Nothing is saved or sent.</p>
         </>
       ) : <p className="linfo"><I k="info" /><span>Use the username and password given to you by the school office.</span></p>}
       <InstallApp /><div style={{ marginTop: 10 }}><LangBtn /></div>
