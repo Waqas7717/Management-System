@@ -11,7 +11,7 @@ import { scheduleSync } from '../../core/sync';
 import { store } from '../../core/stores';
 import { Card, DT, Empty, FSel, Item, Kpi, PageHead, Tag, TypeTag } from '../../ui';
 import { BarRows, Split } from '../../ui/Charts';
-import { AskCard, InsightsCard } from '../aiparts';
+import { AiHub, InsightsCard } from '../aiparts';
 import { AttnRow, Attention, ClassCards, DCard, KpiTile, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../../ui/dash';
 import { AnnScreen, TtGrid } from '../common';
 import { UsersList } from './users';
@@ -97,6 +97,7 @@ function Dash() {
         <KpiTile l="Teachers" v={DB.teachers.length} s={DB.teachers.filter((t) => t.active).length + ' active'} ico="book" tone="p" to="teachers" />
         <KpiTile l="Principals" v={DB.principals.length} s={DB.principals.filter((t) => t.active).length + ' active'} ico="award" tone="o" to="principals" />
       </div>
+      <AiHub />
       {steps.some((x) => !x[2]) && (
         <DCard title="Get started" ico="star" style={{ marginBottom: 16 }}>
           <p className="mut" style={{ marginBottom: 10 }}>Set up your school in this order.</p>
@@ -121,10 +122,7 @@ function Dash() {
           ) : <p>Everything is set up. No student, class or subject is missing a link.</p>}
         </Attention>
       </div>
-      <div className="two st" style={{ marginBottom: 16 }}>
-        <InsightsCard />
-        <AskCard />
-      </div>
+      <div style={{ marginBottom: 16 }}><InsightsCard /></div>
       {CLASSES.length ? (
         <DCard title="Attendance by class" ico="check" right={<span>{rng.label}. Hover a bar for details.</span>}>
           <BarRows items={CLASSES.map((c) => { const a = dayCounts(act.filter((s) => s.cid === c.id).map((s) => s.id), rng.dates); return { label: c.name, val: a.pct, cls: a.pct == null ? '' : a.pct >= 92 ? 'g' : a.pct >= 85 ? 'y' : 'r' }; })} />
