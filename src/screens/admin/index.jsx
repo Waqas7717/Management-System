@@ -10,6 +10,7 @@ import { ask, render, toast } from '../../core/store';
 import { scheduleSync } from '../../core/sync';
 import { store } from '../../core/stores';
 import { Card, DT, Empty, FSel, Item, Kpi, PageHead, Tag, TypeTag } from '../../ui';
+import { BarRows, Split } from '../../ui/Charts';
 import { ClassCards, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../../ui/dash';
 import { AnnScreen, TtGrid } from '../common';
 import { UsersList } from './users';
@@ -96,6 +97,18 @@ function Dash() {
         <Kpi l="Principals" v={DB.principals.length} s={DB.principals.filter((t) => t.active).length + ' active'} />
       </div>
       <ClassCards classes={CLASSES} range={rng} />
+      {CLASSES.length ? (
+        <div className="two eq" style={{ marginTop: 18 }}>
+          <Card title="Attendance by class">
+            <p className="mut" style={{ marginBottom: 10 }}>{rng.label}. Hover a bar for details.</p>
+            <BarRows items={CLASSES.map((c) => { const a = dayCounts(act.filter((s) => s.cid === c.id).map((s) => s.id), rng.dates); return { label: c.name, val: a.pct, cls: a.pct == null ? '' : a.pct >= 92 ? 'g' : a.pct >= 85 ? 'y' : 'r' }; })} />
+          </Card>
+          <Card title="Students by class">
+            <p className="mut" style={{ marginBottom: 10 }}>Active students in each class.</p>
+            <Split items={CLASSES.map((c) => ({ label: c.name, value: act.filter((s) => s.cid === c.id).length }))} centerTop={String(act.length)} centerBottom="students" />
+          </Card>
+        </div>
+      ) : null}
       <StaffCheckin />
       {steps.some((x) => !x[2]) && (
         <Card title="Get started" style={{ marginTop: 18, marginBottom: 14 }}>
