@@ -8,6 +8,7 @@ import { canBack, go, goBack } from '../core/actions';
 import { render } from '../core/store';
 import { readPhoto } from '../core/photo';
 import { Button, IconBtn } from './buttons';
+import { DateF, Sel } from './fields';
 
 export { Ico };
 
@@ -83,16 +84,8 @@ export function Av({ o, lg }) {
 export const Who = ({ o, children }) => <span className="who"><Av o={o} />{children}</span>;
 
 /* ---------- form fields ---------- */
-export const Sel = ({ label, value, onChange, list, ...p }) => (
-  <TextField select label={label} value={value} onChange={(e) => onChange(e.target.value)} SelectProps={{ native: true }} {...p}>
-    {list.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-  </TextField>
-);
+export { TF, SearchF, Sel, DateF, TimeF, Combo, MultiSelect, CheckField, SwitchField, RadioField, FileBox, Field } from './fields';
 export const FSel = ({ k, list, def, label, ...p }) => <Sel label={label} value={String(F(k, def))} onChange={(v) => { S.f[k] = v; render(); }} list={list} id={'f_' + k} {...p} />;
-export const TF = ({ label, value, onChange, ...p }) => <TextField label={label} value={value} onChange={(e) => onChange(e.target.value)} {...p} />;
-export const DateF = ({ label, value, onChange, min, max, ...p }) => (
-  <TextField type="date" label={label} value={value} onChange={(e) => onChange(e.target.value)} inputProps={{ min, max }} {...p} />
-);
 export const FDate = ({ k, def, label, max }) => <DateF id={'f_' + k} label={label} value={F(k, def)} max={max} onChange={(v) => { S.f[k] = v; render(); }} />;
 
 export function Seg({ k, list, def, label, value, onChange }) {
@@ -115,13 +108,6 @@ export function CheckGroup({ items, checked, onChange, cols, type = 'checkbox' }
     </div>
   );
 }
-export const FileBox = ({ label, onChange, accept, id }) => (
-  <div className="field">
-    <label className="flabel" htmlFor={id}>{label}</label>
-    <input className="uploadbox" type="file" id={id} accept={accept} onChange={(e) => onChange(e.target.files && e.target.files[0])} />
-  </div>
-);
-
 /* ---------- data table ---------- */
 export function DT({ cols, rows, minWidth = 480, className }) {
   const cs = cols.map((c) => (typeof c === 'string' ? { h: c } : c));
@@ -166,11 +152,14 @@ export function PhotoField({ person, value, onChange, onError }) {
       <label className="flabel">Photo (optional)</label>
       <div className="row" style={{ gap: 12, alignItems: 'center', flexWrap: 'nowrap' }}>
         {shown && shown.photo ? <Av o={shown} lg /> : <span className="av lg" aria-hidden="true">+</span>}
-        <input className="uploadbox" style={{ flex: 1, minWidth: 0 }} type="file" accept="image/*" aria-label="Choose photo"
-          onChange={async (e) => {
-            const f = e.target.files && e.target.files[0]; if (!f) return;
-            try { onChange(await readPhoto(f)); onError(''); } catch (x) { e.target.value = ''; onError(x.message || 'Could not use this image.'); }
-          }} />
+        <label className="uploadbox" style={{ flex: 1, minWidth: 0 }}>
+          <Ico n="upload" s={18} /><span className="un">Choose photo</span>
+          <input className="vh" type="file" accept="image/*" aria-label="Choose photo"
+            onChange={async (e) => {
+              const f = e.target.files && e.target.files[0]; if (!f) return;
+              try { onChange(await readPhoto(f)); onError(''); } catch (x) { e.target.value = ''; onError(x.message || 'Could not use this image.'); }
+            }} />
+        </label>
         <Button size="sm" variant="outlined" onClick={() => onChange('')}>Remove</Button>
       </div>
     </div>
