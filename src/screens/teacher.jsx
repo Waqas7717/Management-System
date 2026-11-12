@@ -1,3 +1,4 @@
+import { Ticker } from '../ui/dash';
 import { useState } from 'react';
 import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import {
@@ -20,6 +21,7 @@ function Home() {
   return (
     <>
       <PageHead title={'Good morning, ' + t.name.split(' ')[0]} sub={fd(TODAY)} />
+      <Ticker />
       <div className="g4" style={{ marginBottom: 14 }}>
         <Kpi l="Classes and subjects" v={t.assign.length} s={tClasses(t).map((c) => cls(c).name).join(', ') || 'None'} />
         <Kpi l="Lectures today" v={lec.length} s={lec.filter(lecMarked).length + ' attendance marked'} />

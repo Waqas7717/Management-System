@@ -11,6 +11,7 @@ import { BarRows, COLORS, Donut, LineChart } from '../ui/Charts';
 import { Av, Card, DT, DateF, Empty, FDate, FSel, Item, Kpi, LeaveChip, PageHead, Pill, Seg, StChip, TF, Tag, Who } from '../ui';
 import { AnnScreen } from './common';
 import { UsersList } from './admin/users';
+import { ClassCards, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../ui/dash';
 
 const dc = () => (CLASSES.length ? CLASSES[0].id : 'all');
 const lvOpts = [['all', 'All'], ['school', 'Schools'], ['college', 'College']];
@@ -18,7 +19,8 @@ const col = (i) => COLORS[i % COLORS.length];
 
 function Dash() {
   const lv = F('dlevel', 'all'), cl = CLASSES.filter((c) => lv === 'all' || c.level === lv), cids = cl.map((c) => c.id);
-  const studs = DB.students.filter((s) => s.active && cids.includes(s.cid)), tod = agg(studs.map((s) => s.id), [TODAY]);
+  const rng = rangeInfo();
+  const studs = DB.students.filter((s) => s.active && cids.includes(s.cid)), tod = dayCounts(studs.map((s) => s.id), rng.dates);
   const ts = { P: 0, A: 0, L: 0, N: 0 }; DB.teachers.filter((t) => t.active).forEach((t) => { ts[tStatus(t.id, TODAY) || 'N']++; });
   const tp = (ts.P + ts.A) ? ts.P / (ts.P + ts.A) * 100 : null;
   const pend = DB.tleaves.filter((l) => l.status === 'pending').length + DB.leaves.filter((l) => l.status === 'pending').length;
@@ -34,15 +36,19 @@ function Dash() {
     <>
       <PageHead title="Principal’s dashboard" sub={fd(TODAY) + '. FG Public School and College' + (DEMO ? ' (demo)' : '')}>
         <Seg k="dlevel" def="all" list={lvOpts} label="Level" />
+        <RangeChips />
       </PageHead>
+      <Ticker />
       <div className="g4" style={{ marginBottom: 14 }}>
         <Kpi l="Total students" v={studs.length} s={cl.length + (cl.length > 1 ? ' classes' : ' class')} />
         <Kpi l="Teachers" v={nAct} s={ts.L + ' on leave today'} />
-        <Kpi l="Student attendance today" v={tod.pct == null ? '-' : Math.round(tod.pct) + '%'} s={tod.P + tod.A + tod.L ? 'From ' + (tod.P + tod.A + tod.L) + ' marked entries' : 'Not marked yet'} />
+        <Kpi l={rng.today ? 'Student attendance today' : 'Student attendance, ' + rng.label.toLowerCase()} v={tod.pct == null ? '-' : Math.round(tod.pct) + '%'} s={tod.P + tod.A + tod.L ? tod.P + ' present, ' + tod.A + ' absent, ' + tod.L + ' leave' : 'Not marked yet'} />
         <Kpi l="Teacher attendance today" v={tp == null ? '-' : Math.round(tp) + '%'} s={ts.P + ' in, ' + ts.N + ' not in yet, ' + ts.L + ' leave'} />
         <Kpi l="Pending leave requests" v={pend} s="Students and teachers" />
       </div>
-      <div className="two eq">
+      <ClassCards classes={cl} range={rng} />
+      <StaffCheckin />
+      <div className="two eq" style={{ marginTop: 18 }}>
         <Card title="Class-wise results">
           <p className="mut" style={{ marginBottom: 10 }}>{exn}, average percentage</p>
           {avgs.length ? <BarRows items={avgs.map((x) => ({ label: x.c.name, val: x.a, cls: x.a >= 60 ? 'g' : x.a >= 45 ? 'y' : 'r' }))} /> : <Empty t="No results yet" />}
@@ -53,7 +59,7 @@ function Dash() {
           <p className="mut" style={{ marginBottom: 10 }}>{DEMO ? 'Since 1 October' : 'Last 5 weeks'}. Approved leave is not counted against attendance.</p>
           <BarRows items={attc.map((x) => ({ label: x.c.name, val: x.a.pct, cls: x.a.pct >= 92 ? 'g' : x.a.pct >= 85 ? 'y' : 'r' }))} />
           <div className="row" style={{ marginTop: 16, gap: 22 }}>
-            <Donut p={tod.pct} label="Students today" sub={tod.pct == null ? 'Not marked' : tod.P + ' present, ' + tod.A + ' absent, ' + tod.L + ' leave'} />
+            <Donut p={tod.pct} label={rng.today ? 'Students today' : 'Students, ' + rng.label.toLowerCase()} sub={tod.pct == null ? 'Not marked' : tod.P + ' present, ' + tod.A + ' absent, ' + tod.L + ' leave'} />
             <Donut p={tp} label="Teachers today" sub={ts.P + ' present, ' + ts.L + ' leave'} />
           </div>
         </Card>

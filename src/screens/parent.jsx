@@ -1,3 +1,4 @@
+import { Ticker } from '../ui/dash';
 import { useState } from 'react';
 import { Button } from '@mui/material';
 import { DEMO } from '../core/config';
@@ -48,6 +49,7 @@ function Home() {
     <>
       <PageHead title={'Welcome, ' + S.user.name} sub={fd(TODAY) + '. ' + k.name + ', ' + c.name + ', roll ' + k.roll} />
       <KidSwitch />
+      <Ticker />
       <div className="g4" style={{ marginBottom: 14 }}>
         <Kpi l="Attendance today" v={marked.length ? pres + ' of ' + marked.length : 'Not marked'} vs={22} s={marked.length ? 'lectures present' : 'Teachers are still marking'} />
         <Kpi l="Homework pending" v={pend.length} s={newHw ? newHw + ' new today' : 'Nothing new today'} />
