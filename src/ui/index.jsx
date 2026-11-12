@@ -1,15 +1,13 @@
 import { createContext, useContext, useState } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  Avatar, Button, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, IconButton,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, ToggleButton, ToggleButtonGroup,
-} from '@mui/material';
+import { Avatar, Checkbox, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { Ico } from './Ico';
 import { Num } from './Num';
 import { F, NAVS, S, TYPEC, TYPEL } from '../core/data';
 import { canBack, go, goBack } from '../core/actions';
 import { render } from '../core/store';
 import { readPhoto } from '../core/photo';
+import { Button, IconBtn } from './buttons';
 
 export { Ico };
 
@@ -69,7 +67,7 @@ export function PageHead({ title, sub, children }) {
   const home = S.role && NAVS[S.role] ? NAVS[S.role].items[0][0] : null;
   const el = (
     <div className="head">
-      <div>{home && S.view !== home ? <button type="button" className="backbtn" onClick={() => (canBack() ? goBack() : go(home))}><Ico n="back" s={16} /><span>Back</span></button> : null}<h1>{title}</h1>{sub ? <p>{sub}</p> : null}</div>
+      <div>{home && S.view !== home ? <Button className="backbtn" variant="outlined" size="sm" icon="arrow-left" onClick={() => (canBack() ? goBack() : go(home))}>Back</Button> : null}<h1>{title}</h1>{sub ? <p>{sub}</p> : null}</div>
       {children ? <div className="row">{children}</div> : null}
     </div>
   );
@@ -145,7 +143,7 @@ export function DT({ cols, rows, minWidth = 480, className }) {
 export function Modal({ open = true, title, onClose, children, actions = [], error, cancelLabel = 'Cancel', maxWidth = 'xs' }) {
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth={maxWidth} scroll="paper" aria-label={title}>
-      <DialogTitle sx={{ pr: 7 }}>{title}<IconButton className="xbtn xmodal" aria-label="Close" onClick={onClose}><Ico n="close" s={18} /></IconButton></DialogTitle>
+      <DialogTitle sx={{ pr: 7 }}>{title}<IconBtn size="sm" wrapClass="xmodal" icon="x" label="Close" onClick={onClose} /></DialogTitle>
       <DialogContent sx={{ pt: '10px !important' }}>
         {children}
         {error ? <div className="err" role="alert">{error}</div> : null}
@@ -153,7 +151,7 @@ export function Modal({ open = true, title, onClose, children, actions = [], err
       <DialogActions>
         <Button variant="outlined" onClick={onClose}>{cancelLabel}</Button>
         {actions.map((a, i) => (
-          <Button key={i} variant="contained" color={a.color || 'primary'} onClick={a.onClick} disabled={a.disabled}>{a.label}</Button>
+          <Button key={i} variant={a.color === 'error' ? 'danger' : a.color === 'success' ? 'success' : 'primary'} onClick={a.onClick} disabled={a.disabled}>{a.label}</Button>
         ))}
       </DialogActions>
     </Dialog>
@@ -173,7 +171,7 @@ export function PhotoField({ person, value, onChange, onError }) {
             const f = e.target.files && e.target.files[0]; if (!f) return;
             try { onChange(await readPhoto(f)); onError(''); } catch (x) { e.target.value = ''; onError(x.message || 'Could not use this image.'); }
           }} />
-        <Button size="small" variant="outlined" onClick={() => onChange('')}>Remove</Button>
+        <Button size="sm" variant="outlined" onClick={() => onChange('')}>Remove</Button>
       </div>
     </div>
   );

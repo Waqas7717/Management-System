@@ -1,9 +1,10 @@
-import { Button } from '@mui/material';
+
 import { DB, S, TYPEC, TYPEL, annVisible, cls, dayStatus, feed, tClasses, tStatus, latestExam, classAvg, classPass } from '../core/data';
 import { TODAY, addDays, fs, isSchool, pd, schoolDays } from '../core/dates';
 import { go } from '../core/actions';
 import { Av, Ico, Seg, Tag } from './index';
 import { Num } from './Num';
+import { Button } from './buttons';
 
 /* ---------- date range chips (Today, 7, 30, 90 days) ---------- */
 export const RANGES = [['1', 'Today'], ['7', '7 days'], ['30', '30 days'], ['90', '90 days']];
@@ -45,7 +46,7 @@ export function Ticker() {
       <span className="ab-pill">Latest announcement</span>
       <span className="ab-title" title={p ? p.title : ''}>{p ? p.title : 'Nothing posted yet'}</span>
       {p ? <span className="ab-date"><Ico n="cal" s={16} />{fs(p.ts.slice(0, 10))}</span> : null}
-      {to ? <Button className="ab-btn" variant="contained" size="small" endIcon={<Ico n="chev" s={16} />} onClick={() => go(to)}>View all</Button> : null}
+      {to ? <Button className="ab-btn" variant="secondary" size="sm" iconEnd="chevron-right" onClick={() => go(to)}>View all</Button> : null}
     </section>
   );
 }
@@ -69,7 +70,7 @@ export function KpiTile({ l, v, s, ico, tone = 'b', to, vs }) {
     : <div className="ktile" style={{ '--tc': c[0], '--tb': c[1] }}>{inner}</div>;
 }
 
-export const LinkBtn = ({ children, onClick }) => <button type="button" className="lnk" onClick={onClick}>{children}<Ico n="chev" s={16} /></button>;
+export const LinkBtn = ({ children, onClick }) => <Button variant="text" size="sm" iconEnd="chevron-right" onClick={onClick}>{children}</Button>;
 
 /* card with an icon chip, a title and an optional link or note on the right */
 export function DCard({ title, ico, right, children, className = '', style }) {
@@ -114,7 +115,7 @@ export const AttnRow = ({ n, t, sub, to, label = 'Open' }) => (
   <div className="ar">
     {n != null ? <span className="ar-n">{n}</span> : null}
     <div className="ar-t"><b>{t}</b>{sub ? <small>{sub}</small> : null}</div>
-    {to ? <Button size="small" variant="outlined" onClick={() => open(to)}>{label}</Button> : null}
+    {to ? <Button size="sm" variant="outlined" onClick={() => open(to)}>{label}</Button> : null}
   </div>
 );
 
