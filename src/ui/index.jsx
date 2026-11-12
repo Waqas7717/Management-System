@@ -28,7 +28,7 @@ export const StChip = ({ st }) => (st === 'P' ? <Tag c="ok">Present</Tag> : st =
 export const LeaveChip = ({ s }) => (s === 'approved' ? <Tag c="ok">Approved</Tag> : s === 'declined' ? <Tag c="bad">Declined</Tag> : s === 'cancelled' ? <Tag>Cancelled</Tag> : <Tag c="warn">Pending</Tag>);
 export const TypeTag = ({ t, fallback = 'Update' }) => <Tag c={TYPEC[t]}>{TYPEL[t] || fallback}</Tag>;
 export const Pill = ({ st }) => <span className={'pill ' + (st || '')}>{st || '-'}</span>;
-export const Empty = ({ t, s }) => <div className="empty"><b>{t}</b>{s}</div>;
+export const Empty = ({ t, s }) => <div className="empty"><span className="em-ic" aria-hidden="true"><Ico n="file" s={26} /></span><b>{t}</b>{s}</div>;
 export const Err = ({ children }) => <div className="err" role="alert">{children}</div>;
 const CARD_IC = [[/attend|present|today|marked/, 'check'], [/result|mark|performance|exam|grade|progress|trend/, 'chart'], [/leave|date sheet|calendar|timetable/, 'cal'], [/homework|add|subject/, 'book'], [/notif|notice|announce|sent|posted/, 'mega'], [/student|parent|teacher|user/, 'users'], [/lecture|clock/, 'clock']];
 export const Card = ({ title, children, style }) => {
