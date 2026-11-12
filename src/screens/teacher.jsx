@@ -1,11 +1,12 @@
-import { Ticker } from '../ui/dash';
+import { Ticker, dayCounts } from '../ui/dash';
+import { BarRows } from '../ui/Charts';
 import { useState } from 'react';
 import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import {
   CLASSES, DB, EXAMS, S, F, agg, audLabel, classTeacherOf, coversL, cls, effStatus, ev, feed, gcls, gradeOf, isPub, leaveDates, leaveLabel,
-  lecMarked, markWork, myLectures, myPendingLeaves, parentsOf, stu, subName, subjAt, tClasses, tStatus, ttCell, uid,
+  lecMarked, markWork, latestExam, classAvg, myLectures, myPendingLeaves, parentsOf, stu, subName, subjAt, tClasses, tStatus, ttCell, uid,
 } from '../core/data';
-import { ALLD, CM, PT, TODAY, addDays, fd, fs, isSchool, monthOptions, nextSchool, nowHM } from '../core/dates';
+import { ALLD, CM, PT, TODAY, addDays, fd, fs, isSchool, monthOptions, nextSchool, nowHM, schoolDays } from '../core/dates';
 import { go } from '../core/actions';
 import { ask, render, toast } from '../core/store';
 import { Card, CheckGroup, DT, DateF, Empty, Err, FSel, FileBox, Item, Kpi, LeaveChip, Modal, PageHead, Sel, Seg, StChip, TF, Tag, TypeTag, Av, Who, FDate } from '../ui';
@@ -18,6 +19,7 @@ const AsgSel = ({ k, i }) => <FSel k={k} def={i} list={asgList()} label="Class a
 function Home() {
   const t = S.user, lec = myLectures(t, TODAY), pl = myPendingLeaves(t).length, own = tStatus(t.id, TODAY), rec = DB.tatt[t.id + '|' + TODAY];
   const f = feed().filter((x) => x.type !== 'leave' && x.type !== 'homework').slice(0, 3);
+  const myCl = tClasses(t).map((c) => cls(c)).filter(Boolean), wkDays = schoolDays(addDays(TODAY, -6), TODAY), lx = latestExam();
   return (
     <>
       <PageHead title={'Good morning, ' + t.name.split(' ')[0]} sub={fd(TODAY)} />
@@ -44,9 +46,19 @@ function Home() {
             </div>
           </Card>
         </div>
+        <div className="stack">
+        {myCl.length ? (
+          <Card title="My classes">
+            <p className="mut" style={{ marginBottom: 6 }}>Attendance, last 7 days</p>
+            <BarRows items={myCl.map((c) => { const a = dayCounts(DB.students.filter((x) => x.cid === c.id && x.active).map((x) => x.id), wkDays); return { label: c.name, val: a.pct, cls: a.pct == null ? '' : a.pct >= 92 ? 'g' : a.pct >= 85 ? 'y' : 'r' }; })} />
+            {lx ? <><p className="mut" style={{ margin: '10px 0 6px' }}>Average result, latest exam</p>
+            <BarRows items={myCl.map((c) => { const v = classAvg(lx, c.id); return { label: c.name, val: v, cls: v == null ? '' : v >= 60 ? 'g' : v >= 45 ? 'y' : 'r' }; })} /></> : null}
+          </Card>
+        ) : null}
         <Card title="From the school">
           {f.length ? f.map((x) => <Item key={x.id}><div className="row"><TypeTag t={x.type} /><small>{fs(x.ts.slice(0, 10))}</small></div><h4>{x.title}</h4><p className="mut">{x.text}</p></Item>) : <Empty t="No announcements" />}
         </Card>
+        </div>
       </div>
     </>
   );

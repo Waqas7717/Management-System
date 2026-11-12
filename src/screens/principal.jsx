@@ -59,8 +59,8 @@ function Dash() {
           <p className="mut" style={{ marginBottom: 10 }}>{DEMO ? 'Since 1 October' : 'Last 5 weeks'}. Approved leave is not counted against attendance.</p>
           <BarRows items={attc.map((x) => ({ label: x.c.name, val: x.a.pct, cls: x.a.pct >= 92 ? 'g' : x.a.pct >= 85 ? 'y' : 'r' }))} />
           <div className="row" style={{ marginTop: 16, gap: 22 }}>
-            <Donut p={tod.pct} label={rng.today ? 'Students today' : 'Students, ' + rng.label.toLowerCase()} sub={tod.pct == null ? 'Not marked' : tod.P + ' present, ' + tod.A + ' absent, ' + tod.L + ' leave'} />
-            <Donut p={tp} label="Teachers today" sub={ts.P + ' present, ' + ts.L + ' leave'} />
+            <Donut p={tod.pct} label={rng.today ? 'Students today' : 'Students, ' + rng.label.toLowerCase()} sub={tod.pct == null ? 'Not marked' : tod.P + ' present, ' + tod.A + ' absent, ' + tod.L + ' leave'} parts={[{ label: 'Present', value: tod.P, color: '#1F8A55' }, { label: 'Absent', value: tod.A, color: '#C0392B' }, { label: 'Leave', value: tod.L, color: '#F7B500' }]} />
+            <Donut p={tp} label="Teachers today" sub={ts.P + ' present, ' + ts.L + ' leave'} parts={[{ label: 'Present', value: ts.P, color: '#1F8A55' }, { label: 'Not in yet', value: ts.N, color: '#93A2BE' }, { label: 'Leave', value: ts.L, color: '#F7B500' }]} />
           </div>
         </Card>
       </div>
