@@ -2,7 +2,8 @@
 // Needs env vars: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY (and optional VAPID_SUBJECT),
 // plus the same SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY as the other functions.
 // Does nothing until the keys are set and the push_subs table exists (see supabase/update_fees_alerts.sql).
-import webpush from 'web-push';
+import * as wp from 'web-push';
+const webpush = wp.default || wp;
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
