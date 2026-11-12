@@ -408,3 +408,19 @@ html[data-theme=dark] .attn .ar .MuiButton-root{background:transparent;color:#F7
   .MuiButton-root:active{transform:scale(.96)}
   .MuiButton-contained:hover{transform:translateY(-1px)}
 }
+
+/* ---------- extra polish: tile glow, role colors, sidebar, chart bars ---------- */
+.mainc.role-admin{--racc:#2F6FDE}.mainc.role-principal{--racc:#7C4DD6}.mainc.role-teacher{--racc:#17936A}.mainc.role-parent{--racc:#E08A00}
+.mainc.hero::after{content:"";position:absolute;top:0;left:0;right:0;height:300px;z-index:0;pointer-events:none;background:linear-gradient(180deg,color-mix(in srgb,var(--racc,#2F6FDE) 16%,transparent),transparent)}
+.mainc.hero .pghead .head h1{position:relative;padding-left:14px}
+.mainc.hero .pghead .head h1::before{content:"";position:absolute;left:0;top:.18em;bottom:.18em;width:5px;border-radius:4px;background:var(--racc,#2F6FDE)}
+.ktile{position:relative;overflow:hidden;background-image:radial-gradient(circle at 100% 100%,color-mix(in srgb,var(--tc,#2F6FDE) 16%,transparent) 0,transparent 62%)}
+.ktile::before{content:"";position:absolute;right:-22px;bottom:-22px;width:84px;height:84px;border-radius:50%;background:var(--tb,#E3EDFD);opacity:.7;pointer-events:none}
+.ktile>*{position:relative;z-index:1}
+html[data-theme=dark] .ktile{background-image:none}html[data-theme=dark] .ktile::before{opacity:.12;background:var(--tc)}
+.dcard .dc-ic{background:linear-gradient(135deg,#E3EDFD,#CFE0FB)}
+.side nav button{transition:background .18s,color .18s,transform .18s}
+.side nav button:hover{transform:translateX(4px)}
+.side nav button[aria-current="page"]{box-shadow:0 6px 18px rgba(36,71,174,.55),inset 0 1px 0 rgba(255,255,255,.18)}
+.side nav button[aria-current="page"] svg{filter:drop-shadow(0 0 6px rgba(255,255,255,.55))}
+.ktile>.kt-go{position:absolute;z-index:2}
