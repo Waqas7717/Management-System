@@ -1,4 +1,4 @@
-import { Ticker } from '../ui/dash';
+import { DCard, KpiTile, Ticker } from '../ui/dash';
 import { useState } from 'react';
 import { Button } from '@mui/material';
 import { DEMO } from '../core/config';
@@ -50,26 +50,24 @@ function Home() {
       <PageHead title={'Welcome, ' + S.user.name} sub={fd(TODAY) + '. ' + k.name + ', ' + c.name + ', roll ' + k.roll} />
       <KidSwitch />
       <Ticker />
-      <div className="g4" style={{ marginBottom: 14 }}>
-        <Kpi l="Attendance today" v={marked.length ? pres + ' of ' + marked.length : 'Not marked'} vs={22} s={marked.length ? 'lectures present' : 'Teachers are still marking'} />
-        <Kpi l="Homework pending" v={pend.length} s={newHw ? newHw + ' new today' : 'Nothing new today'} />
-        <Kpi l="Next paper" v={exam ? subName(exam.sub) : 'None yet'} vs={20} s={exam ? fd(exam.date) + ', ' + exam.time : 'No date sheet'} />
-        <Kpi l="Unread notices" v={unread()} s="Tap the bell to read" />
+      <div className="g4" style={{ marginBottom: 16 }}>
+        <KpiTile l="Attendance today" v={marked.length ? pres + ' of ' + marked.length : 'Not marked'} vs={22} s={marked.length ? 'lectures present' : 'Teachers are still marking'} ico="check" tone="g" to="att" />
+        <KpiTile l="Homework pending" v={pend.length} s={newHw ? newHw + ' new today' : 'Nothing new today'} ico="book" tone="p" to="hw" />
+        <KpiTile l="Next paper" v={exam ? subName(exam.sub) : 'None yet'} vs={19} s={exam ? fd(exam.date) + ', ' + exam.time : 'No date sheet'} ico="file" tone="o" to="sheet" />
+        <KpiTile l="Unread notices" v={unread()} s="Tap the bell to read" ico="mega" tone="b" to="notices" />
       </div>
-      <div className="two">
+      <div className="two st">
         <div className="stack">
-          <Card title="Today’s lectures">{lec.length ? <LecTable lec={lec} /> : <Empty t="No classes today" />}</Card>
-          <Card title="Homework to do">
+          <DCard title="Today’s lectures" ico="clock">{lec.length ? <LecTable lec={lec} /> : <Empty t="No classes today" />}</DCard>
+          <DCard title="Homework to do" ico="book" right={<Button size="small" onClick={() => go('hw')}>View all</Button>}>
             {pend.length ? pend.slice(0, 4).map((w) => <Item key={w.id}><div className="row sp"><b>{w.title}</b><Tag c="info">{subName(w.sub)}</Tag></div><div className="meta">Due {fd(w.due)}</div></Item>) : <Empty t="All caught up" s="No pending homework." />}
-            <div style={{ marginTop: 12 }}><Button size="small" variant="outlined" onClick={() => go('hw')}>See all homework</Button></div>
-          </Card>
+          </DCard>
         </div>
         <div className="stack">
-          <Card title="Fee voucher"><FeeBox k={k} /></Card>
-          <Card title="Latest from school">
+          <DCard title="Fee voucher" ico="file"><FeeBox k={k} /></DCard>
+          <DCard title="Latest from school" ico="mega" right={<Button size="small" onClick={() => go('notices')}>View all</Button>}>
             {f.length ? f.map((x) => <Item key={x.id} unread={!isRead(x.id)}><div className="row"><TypeTag t={x.type} /><small>{fs(x.ts.slice(0, 10))}</small></div><h4>{x.title}</h4><p className="mut">{x.text}</p></Item>) : <Empty t="No notices yet" />}
-            <div style={{ marginTop: 12 }}><Button size="small" variant="outlined" onClick={() => go('notices')}>All notices</Button></div>
-          </Card>
+          </DCard>
         </div>
       </div>
     </>

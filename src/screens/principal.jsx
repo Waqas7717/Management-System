@@ -7,11 +7,11 @@ import {
 } from '../core/data';
 import { ALLD, CM, WEEKS, TODAY, fd, fs, isSchool, monthOptions, schoolDays } from '../core/dates';
 import { render, toast } from '../core/store';
-import { BarRows, COLORS, Donut, LineChart } from '../ui/Charts';
+import { BarRows, COLORS, LineChart, Split } from '../ui/Charts';
 import { Av, Card, DT, DateF, Empty, FDate, FSel, Item, Kpi, LeaveChip, PageHead, Pill, Seg, StChip, TF, Tag, Who } from '../ui';
 import { AnnScreen } from './common';
 import { UsersList } from './admin/users';
-import { ClassCards, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../ui/dash';
+import { AttnRow, Attention, ClassCards, DCard, KpiTile, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../ui/dash';
 
 const dc = () => (CLASSES.length ? CLASSES[0].id : 'all');
 const lvOpts = [['all', 'All'], ['school', 'Schools'], ['college', 'College']];
@@ -32,6 +32,8 @@ function Dash() {
   const exs = EXAMS.filter((e) => cl.some((c) => classAvg(e.id, c.id) != null));
   const tr = cl.map((c, i) => ({ name: c.name, color: col(i), values: exs.map((e) => classAvg(e.id, c.id)) }));
   const nAct = DB.teachers.filter((t) => t.active).length;
+  const lowest = avgs.length > 1 ? avgs[avgs.length - 1] : null;
+  const unmarked = cl.filter((c) => { const a = dayCounts(DB.students.filter((x) => x.cid === c.id && x.active).map((x) => x.id), isSchool(TODAY) ? [TODAY] : []); return !(a.P + a.A + a.L); });
   return (
     <>
       <PageHead title="Principal’s dashboard" sub={fd(TODAY) + '. FG Public School and College' + (DEMO ? ' (demo)' : '')}>
@@ -39,16 +41,34 @@ function Dash() {
         <RangeChips />
       </PageHead>
       <Ticker />
-      <div className="g4" style={{ marginBottom: 14 }}>
-        <Kpi l="Total students" v={studs.length} s={cl.length + (cl.length > 1 ? ' classes' : ' class')} />
-        <Kpi l="Teachers" v={nAct} s={ts.L + ' on leave today'} />
-        <Kpi l={rng.today ? 'Student attendance today' : 'Student attendance, ' + rng.label.toLowerCase()} v={tod.pct == null ? '-' : Math.round(tod.pct) + '%'} s={tod.P + tod.A + tod.L ? tod.P + ' present, ' + tod.A + ' absent, ' + tod.L + ' leave' : 'Not marked yet'} />
-        <Kpi l="Teacher attendance today" v={tp == null ? '-' : Math.round(tp) + '%'} s={ts.P + ' in, ' + ts.N + ' not in yet, ' + ts.L + ' leave'} />
-        <Kpi l="Pending leave requests" v={pend} s="Students and teachers" />
+      <div className="g4" style={{ marginBottom: 16 }}>
+        <KpiTile l="Total students" v={studs.length} s={cl.length + (cl.length > 1 ? ' classes' : ' class')} ico="cap" tone="b" to={{ view: 'users', f: { utab: 'students' } }} />
+        <KpiTile l="Teachers" v={nAct} s={ts.L + ' on leave today'} ico="book" tone="p" to={{ view: 'users', f: { utab: 'teachers' } }} />
+        <KpiTile l={rng.today ? 'Student attendance today' : 'Student attendance, ' + rng.label.toLowerCase()} v={tod.pct == null ? '-' : Math.round(tod.pct) + '%'} s={tod.P + tod.A + tod.L ? tod.P + ' present, ' + tod.A + ' absent, ' + tod.L + ' leave' : 'Not marked yet'} ico="check" tone="g" to={{ view: 'att', f: { patab: 'students' } }} />
+        <KpiTile l="Teacher attendance today" v={tp == null ? '-' : Math.round(tp) + '%'} s={ts.P + ' in, ' + ts.N + ' not in yet, ' + ts.L + ' leave'} ico="clock" tone="o" to={{ view: 'att', f: { patab: 'teachers' } }} />
+        <KpiTile l="Pending leave requests" v={pend} s="Students and teachers" ico="cal" tone="r" to="leave" />
       </div>
-      <ClassCards classes={cl} range={rng} />
-      <StaffCheckin />
-      <div className="two eq" style={{ marginTop: 18 }}>
+      <div className="two st wide" style={{ marginBottom: 16 }}>
+        <ClassCards classes={cl} range={rng} />
+        <DCard title={rng.today ? 'Students today' : 'Students, ' + rng.label.toLowerCase()} ico="check">
+          <Split items={[{ label: 'Present', value: tod.P, color: '#1F8A55' }, { label: 'Absent', value: tod.A, color: '#C0392B' }, { label: 'Leave', value: tod.L, color: '#F7B500' }]}
+            centerTop={tod.pct == null ? 'None' : Math.round(tod.pct) + '%'} centerBottom={tod.pct == null ? 'not marked' : 'present'} />
+        </DCard>
+      </div>
+      <div className="two st" style={{ marginBottom: 16 }}>
+        <StaffCheckin to="users" tab="teachers" />
+        <Attention>
+          {pend || ts.N || lowest || unmarked.length ? (
+            <>
+              {pend ? <AttnRow n={pend} t="Leave requests waiting" sub="Students and teachers" to="leave" label="Review" /> : null}
+              {isSchool(TODAY) && ts.N ? <AttnRow n={ts.N} t="Teachers not in yet" sub="Check-in is still open today" to={{ view: 'att', f: { patab: 'teachers' } }} /> : null}
+              {isSchool(TODAY) && unmarked.length ? <AttnRow n={unmarked.length} t="Classes with attendance not marked" sub={unmarked.map((c) => c.name).join(', ')} to="att" /> : null}
+              {lowest ? <AttnRow t={'Needs support: ' + lowest.c.name} sub={'Average ' + lowest.a.toFixed(1) + '%, pass rate ' + Math.round(lowest.p) + '%'} to="res" label="Results" /> : null}
+            </>
+          ) : <p>All clear. Nothing is waiting for you right now.</p>}
+        </Attention>
+      </div>
+      <div className="two eq" style={{ marginTop: 14 }}>
         <Card title="Class-wise results">
           <p className="mut" style={{ marginBottom: 10 }}>{exn}, average percentage</p>
           {avgs.length ? <BarRows items={avgs.map((x) => ({ label: x.c.name, val: x.a, cls: x.a >= 60 ? 'g' : x.a >= 45 ? 'y' : 'r' }))} /> : <Empty t="No results yet" />}
@@ -58,10 +78,6 @@ function Dash() {
         <Card title="Class-wise attendance">
           <p className="mut" style={{ marginBottom: 10 }}>{DEMO ? 'Since 1 October' : 'Last 5 weeks'}. Approved leave is not counted against attendance.</p>
           <BarRows items={attc.map((x) => ({ label: x.c.name, val: x.a.pct, cls: x.a.pct >= 92 ? 'g' : x.a.pct >= 85 ? 'y' : 'r' }))} />
-          <div className="row" style={{ marginTop: 16, gap: 22 }}>
-            <Donut p={tod.pct} label={rng.today ? 'Students today' : 'Students, ' + rng.label.toLowerCase()} sub={tod.pct == null ? 'Not marked' : tod.P + ' present, ' + tod.A + ' absent, ' + tod.L + ' leave'} parts={[{ label: 'Present', value: tod.P, color: '#1F8A55' }, { label: 'Absent', value: tod.A, color: '#C0392B' }, { label: 'Leave', value: tod.L, color: '#F7B500' }]} />
-            <Donut p={tp} label="Teachers today" sub={ts.P + ' present, ' + ts.L + ' leave'} parts={[{ label: 'Present', value: ts.P, color: '#1F8A55' }, { label: 'Not in yet', value: ts.N, color: '#93A2BE' }, { label: 'Leave', value: ts.L, color: '#F7B500' }]} />
-          </div>
         </Card>
       </div>
       <div className="two eq" style={{ marginTop: 14 }}>

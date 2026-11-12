@@ -1,4 +1,4 @@
-import { Ticker, dayCounts } from '../ui/dash';
+import { AttnRow, Attention, DCard, KpiTile, Ticker, dayCounts } from '../ui/dash';
 import { BarRows } from '../ui/Charts';
 import { useState } from 'react';
 import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
@@ -19,46 +19,57 @@ const AsgSel = ({ k, i }) => <FSel k={k} def={i} list={asgList()} label="Class a
 function Home() {
   const t = S.user, lec = myLectures(t, TODAY), pl = myPendingLeaves(t).length, own = tStatus(t.id, TODAY), rec = DB.tatt[t.id + '|' + TODAY];
   const f = feed().filter((x) => x.type !== 'leave' && x.type !== 'homework').slice(0, 3);
-  const myCl = tClasses(t).map((c) => cls(c)).filter(Boolean), wkDays = schoolDays(addDays(TODAY, -6), TODAY), lx = latestExam();
+  const myCl = tClasses(t).map((c) => cls(c)).filter(Boolean), wkDays = schoolDays(addDays(TODAY, -6), TODAY), lx = latestExam(), todo = lec.filter((l) => !lecMarked(l));
   return (
     <>
       <PageHead title={'Good morning, ' + t.name.split(' ')[0]} sub={fd(TODAY)} />
       <Ticker />
-      <div className="g4" style={{ marginBottom: 14 }}>
-        <Kpi l="Classes and subjects" v={t.assign.length} s={tClasses(t).map((c) => cls(c).name).join(', ') || 'None'} />
-        <Kpi l="Lectures today" v={lec.length} s={lec.filter(lecMarked).length + ' attendance marked'} />
-        <Kpi l="Leave requests waiting" v={pl} s={classTeacherOf(t).length ? 'For your class' : 'You are not a class teacher'} />
-        <Kpi l="My attendance today" v={own === 'P' ? 'Checked in ' + rec.in : own === 'L' ? 'On leave' : 'Not checked in'} vs={20} s={own === 'P' || own === 'L' ? '' : 'Use My attendance to check in'} />
+      <div className="g4" style={{ marginBottom: 16 }}>
+        <KpiTile l="Classes and subjects" v={t.assign.length} s={tClasses(t).map((c) => cls(c).name).join(', ') || 'None'} ico="book" tone="p" to="att" />
+        <KpiTile l="Lectures today" v={lec.length} s={lec.filter(lecMarked).length + ' attendance marked'} ico="clock" tone="b" to="tt" />
+        <KpiTile l="Leave requests waiting" v={pl} s={classTeacherOf(t).length ? 'For your class' : 'You are not a class teacher'} ico="cal" tone="o" to="leave" />
+        <KpiTile l="My attendance today" v={own === 'P' ? 'Checked in ' + rec.in : own === 'L' ? 'On leave' : 'Not in yet'} vs={19} s={own === 'P' || own === 'L' ? '' : 'Use My attendance to check in'} ico="check" tone="g" to="me" />
       </div>
-      <div className="two">
+      <div className="two st" style={{ marginBottom: 16 }}>
+        <DCard title="Today’s timetable" ico="clock">
+          {lec.length ? <DT cols={['Lecture', 'Class', 'Subject', 'Attendance']} rows={lec.map((l) => [<>{l.p} <small>{PT[l.p - 1]}</small></>, cls(l.cid).name, subName(l.sub),
+            lecMarked(l) ? <Tag c="ok">Marked</Tag> : <Button size="small" variant="contained" onClick={() => { const i = t.assign.findIndex((a) => a[0] === l.cid && a[1] === l.sub); S.f.tasg = i < 0 ? 0 : i; S.f.tadate = TODAY; go('att'); }}>Mark now</Button>])} />
+            : <Empty t="No lectures today" />}
+        </DCard>
+        <DCard title="My classes" ico="chart">
+          {myCl.length ? (
+            <>
+              <p className="mut" style={{ marginBottom: 6 }}>Attendance, last 7 days</p>
+              <BarRows items={myCl.map((c) => { const a = dayCounts(DB.students.filter((x) => x.cid === c.id && x.active).map((x) => x.id), wkDays); return { label: c.name, val: a.pct, cls: a.pct == null ? '' : a.pct >= 92 ? 'g' : a.pct >= 85 ? 'y' : 'r' }; })} />
+              {lx ? <><p className="mut" style={{ margin: '10px 0 6px' }}>Average result, latest exam</p>
+              <BarRows items={myCl.map((c) => { const v = classAvg(lx, c.id); return { label: c.name, val: v, cls: v == null ? '' : v >= 60 ? 'g' : v >= 45 ? 'y' : 'r' }; })} /></> : null}
+            </>
+          ) : <Empty t="No classes assigned" />}
+        </DCard>
+      </div>
+      <div className="two st">
         <div className="stack">
-          <Card title="Today’s timetable">
-            {lec.length ? <DT cols={['Lecture', 'Class', 'Subject', 'Attendance']} rows={lec.map((l) => [<>{l.p} <small>{PT[l.p - 1]}</small></>, cls(l.cid).name, subName(l.sub),
-              lecMarked(l) ? <Tag c="ok">Marked</Tag> : <Button size="small" variant="contained" onClick={() => { const i = t.assign.findIndex((a) => a[0] === l.cid && a[1] === l.sub); S.f.tasg = i < 0 ? 0 : i; S.f.tadate = TODAY; go('att'); }}>Mark now</Button>])} />
-              : <Empty t="No lectures today" />}
-          </Card>
-          <Card title="Quick actions">
+          <DCard title="Quick actions" ico="plus">
             <div className="row">
               <Button variant="contained" onClick={() => go('att')}>Mark attendance</Button>
               <Button variant="outlined" onClick={() => go('hw')}>Add homework</Button>
               <Button variant="outlined" onClick={() => go('res')}>Upload results</Button>
               <Button variant="outlined" onClick={() => go('notify')}>Send notification</Button>
             </div>
-          </Card>
+          </DCard>
+          <DCard title="From the school" ico="mega">
+            {f.length ? f.map((x) => <Item key={x.id}><div className="row"><TypeTag t={x.type} /><small>{fs(x.ts.slice(0, 10))}</small></div><h4>{x.title}</h4><p className="mut">{x.text}</p></Item>) : <Empty t="No announcements" />}
+          </DCard>
         </div>
-        <div className="stack">
-        {myCl.length ? (
-          <Card title="My classes">
-            <p className="mut" style={{ marginBottom: 6 }}>Attendance, last 7 days</p>
-            <BarRows items={myCl.map((c) => { const a = dayCounts(DB.students.filter((x) => x.cid === c.id && x.active).map((x) => x.id), wkDays); return { label: c.name, val: a.pct, cls: a.pct == null ? '' : a.pct >= 92 ? 'g' : a.pct >= 85 ? 'y' : 'r' }; })} />
-            {lx ? <><p className="mut" style={{ margin: '10px 0 6px' }}>Average result, latest exam</p>
-            <BarRows items={myCl.map((c) => { const v = classAvg(lx, c.id); return { label: c.name, val: v, cls: v == null ? '' : v >= 60 ? 'g' : v >= 45 ? 'y' : 'r' }; })} /></> : null}
-          </Card>
-        ) : null}
-        <Card title="From the school">
-          {f.length ? f.map((x) => <Item key={x.id}><div className="row"><TypeTag t={x.type} /><small>{fs(x.ts.slice(0, 10))}</small></div><h4>{x.title}</h4><p className="mut">{x.text}</p></Item>) : <Empty t="No announcements" />}
-        </Card>
-        </div>
+        <Attention>
+          {pl || todo.length || (isSchool(TODAY) && own !== 'P' && own !== 'L') ? (
+            <>
+              {pl ? <AttnRow n={pl} t="Leave requests waiting" sub="From students in your class" to="leave" label="Review" /> : null}
+              {todo.length ? <AttnRow n={todo.length} t="Lectures without attendance" sub={todo.slice(0, 2).map((l) => cls(l.cid).name + ' ' + subName(l.sub)).join(', ')} to="att" label="Mark" /> : null}
+              {isSchool(TODAY) && own !== 'P' && own !== 'L' ? <AttnRow t="You have not checked in today" sub="Check in to record your attendance" to="me" label="Check in" /> : null}
+            </>
+          ) : <p>All clear. Nothing is waiting for you right now.</p>}
+        </Attention>
       </div>
     </>
   );
