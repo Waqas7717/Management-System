@@ -1,17 +1,17 @@
 import { DCard, KpiTile, Ticker } from '../ui/dash';
-import { Translate } from './aiparts';
+import { Translate, useAI } from './aiparts';
 import { ParentFees } from './fees';
 import { PushPrompt } from '../ui/PushPrompt';
 import { printReportCard, printDateSheet, printStudentAtt } from './printables';
-import { feeAmt, feeRec, feeMonths, dueMonths } from '../core/fees';
+import { feeAmt, feeFor, feeRec, feeMonths, dueMonths } from '../core/fees';
 import { useState } from 'react';
 
 import { DEMO } from '../core/config';
 import {
   CLASSES, DB, EXAMS, S, F, byName, cls, classAvg, agg, dayStatus, ev, feed, gcls, gradeOf, isPub, isRead, kidsOf, leaveDates, leaveLabel, lectures,
-  money, ord, ranks, stuResult, subName, teacherFor, uid, unread,
+  money, latestExam, ord, ranks, stuResult, subName, teacherFor, uid, unread,
 } from '../core/data';
-import { ALLD, CM, DAYN, PT, TODAY, addDays, dow, fd, fs, isSchool, monthLabel, monthOptions, nextSchool, nowHM, pad } from '../core/dates';
+import { ALLD, CM, DAYN, PT, TODAY, addDays, schoolDays, dow, fd, fs, isSchool, monthLabel, monthOptions, nextSchool, nowHM, pad } from '../core/dates';
 import { go, } from '../core/actions';
 import { render, toast } from '../core/store';
 import { saveReads } from '../core/sync';
@@ -36,8 +36,8 @@ function KidSwitch() {
 const NoKid = () => <><PageHead title="No child linked" /><Empty t="No child is linked to this account" s="Please contact the school office." /></>;
 
 function FeeBox({ k }) {
-  const amt = feeAmt(k.cid), n = dueMonths(k.id).length, cur = feeMonths().slice(-1)[0];
-  if (!amt) return <div className="row sp"><div><div className="mut">Monthly fee</div><b style={{ fontSize: 20 }}>Not set yet</b></div><Tag>Ask school office</Tag></div>;
+  const amt = feeFor(k.id), n = dueMonths(k.id).length, cur = feeMonths().slice(-1)[0];
+  if (!feeAmt(k.cid)) return <div className="row sp"><div><div className="mut">Monthly fee</div><b style={{ fontSize: 20 }}>Not set yet</b></div><Tag>Ask school office</Tag></div>;
   return <div className="row sp"><div><div className="mut">Monthly fee</div><b style={{ fontSize: 20 }}>{money(amt)}</b></div>{n ? <Tag c="warn">{n + (n === 1 ? ' month due' : ' months due')}</Tag> : <Tag c="ok">{feeRec(k.id, cur) ? 'Paid' : 'All clear'}</Tag>}</div>;
 }
 function Fees() {
@@ -48,6 +48,19 @@ const LecTable = ({ lec }) => (
   <DT cols={['Lecture', 'Subject', 'Teacher', 'Status']} rows={lec.map((x) => [<>{x.p} <small>{PT[x.p - 1]}</small></>, subName(x.sub), x.t.name, <StChip st={x.st} />])} />
 );
 
+function KidSummary({ k }) {
+  const [busy, run] = useAI(); const [t, setT] = useState(''), [lang, setLang] = useState('en');
+  const make = async (l) => {
+    const ds = schoolDays(addDays(TODAY, -30), TODAY).filter((d) => d < TODAY), a = agg([k.id], ds), ex = latestExam(), r = ex ? stuResult(ex, k) : null;
+    const facts = 'Child first name: ' + k.name.split(' ')[0] + '. Class: ' + cls(k.cid).name + '. Attendance over the last ' + ds.length + ' school days: ' + (a && a.pct != null ? Math.round(a.pct) + '%' : 'not available') + '. Latest exam average: ' + (r && r.pct != null ? Math.round(r.pct) + '%' : 'not available') + '. Subjects: ' + (r ? r.rows.filter((x) => x.m !== null).map((x) => subName(x.sub) + ' ' + x.m).join(', ') : '') + '.';
+    setLang(l); const x = await run('summary', { facts, lang: l }); if (x) setT(x);
+  };
+  return (
+    <DCard title="Progress summary" ico="chart" right={<><Button size="sm" variant="text" disabled={busy} onClick={() => make('en')}>{busy ? 'Writing...' : 'English'}</Button><Button size="sm" variant="text" disabled={busy} onClick={() => make('ur')}>اردو</Button></>}>
+      {t ? <p dir={lang === 'ur' ? 'rtl' : 'ltr'} style={{ margin: 0, fontSize: lang === 'ur' ? 17 : 14, lineHeight: 1.7 }}>{t}</p> : <p className="mut">Tap English or Urdu for a short note on attendance and marks.</p>}
+    </DCard>
+  );
+}
 function Home() {
   const k = curKid(); if (!k) return <NoKid />;
   const c = cls(k.cid), lec = lectures(k.id, TODAY), marked = lec.filter((x) => x.st), pres = marked.filter((x) => x.st === 'P').length;
@@ -75,6 +88,7 @@ function Home() {
           </DCard>
         </div>
         <div className="stack">
+          <KidSummary k={k} />
           <DCard title="Fee voucher" ico="file"><FeeBox k={k} /></DCard>
           <DCard title="Latest from school" ico="mega" right={<Button size="sm" variant="text" onClick={() => go('notices')}>View all</Button>}>
             {f.length ? f.map((x) => <Item key={x.id} unread={!isRead(x.id)}><div className="row"><TypeTag t={x.type} /><small>{fs(x.ts.slice(0, 10))}</small></div><h4>{x.title}</h4><p className="mut">{x.text}</p><Translate text={x.title + '. ' + x.text} /></Item>) : <Empty t="No notices yet" />}

@@ -3,7 +3,7 @@ import { sb } from './sync';
 
 /* calls the /api/ai server function. Returns { ok, text, error }. Nothing is sent unless a person clicks an AI button. */
 export async function askAI(action, body) {
-  if (!LIVE) return { ok: false, error: 'AI works on the live site once the AI key is added in Vercel.' };
+  if (!LIVE) return typeof window !== 'undefined' && window.__demoAI ? window.__demoAI(action, body) : { ok: false, error: 'AI works on the live site once the AI key is added in Vercel.' };
   try {
     const ss = await sb.auth.getSession();
     const token = ss.data && ss.data.session ? ss.data.session.access_token : '';

@@ -21,8 +21,24 @@ function dbErr(r, map) {
   throw new Error(m);
 }
 
+/* Photos live in Supabase Storage (public bucket "photos"); the row keeps only the web address. */
+async function photoRef(photo, key) {
+  if (!photo || photo.indexOf('data:') !== 0) return photo;
+  try {
+    const blob = await (await fetch(photo)).blob();
+    const path = key + '-' + Date.now().toString(36) + (blob.type === 'image/webp' ? '.webp' : '.jpg');
+    const r = await sb.storage.from('photos').upload(path, blob, { contentType: blob.type, upsert: false });
+    if (r.error) throw r.error;
+    return sb.storage.from('photos').getPublicUrl(path).data.publicUrl;
+  } catch (e) {
+    if (photo.length <= 2000) return photo; // small enough to keep in the row, as before
+    throw new Error('Photo storage is not set up yet. Ask the admin to run supabase/update_v3_free_features.sql.');
+  }
+}
+
 const liveStore = {
   async saveMyPhoto(photo) {
+    photo = await photoRef(photo, S.user.realId || S.user.id);
     const r = await sb.from('profiles').update({ photo }).eq('id', S.user.realId || S.user.id).select('id');
     dbErr(r);
     if (!r.data || !r.data.length) throw new Error('This account cannot change its photo. Ask the school admin.');
@@ -30,7 +46,7 @@ const liveStore = {
   },
   async saveStudent(id, v) {
     const row = { full_name: v.name, class_id: v.cid, roll: v.roll };
-    if (v.photo !== undefined) row.photo = v.photo;
+    if (v.photo !== undefined) row.photo = await photoRef(v.photo, 's-' + (id || 'new'));
     dbErr(id ? await sb.from('students').update(row).eq('id', id) : await sb.from('students').insert(row), { 23505: 'This roll number is already used in that class.' });
     await loadCore();
   },
@@ -45,14 +61,14 @@ const liveStore = {
     if (!id) {
       const j = await callAdmin('createUser', { role, username: v.username, password: v.password, full_name: v.name, phone: v.phone, relation: v.rel });
       let photoFailed = false;
-      if (v.photo) { const r = await sb.from('profiles').update({ photo: v.photo }).eq('id', j.id); if (r.error) photoFailed = true; }
+      if (v.photo) { const r = await sb.from('profiles').update({ photo: await photoRef(v.photo, 'a-' + j.id).catch(() => '') }).eq('id', j.id); if (r.error) photoFailed = true; }
       await loadCore(); return { id: j.id, photoFailed };
     }
     const cur = ROLE_LIST[role]().find((x) => x.id === id);
     const p = { id, full_name: v.name, phone: v.phone, relation: role === 'parent' ? v.rel : undefined };
     if (cur && cur.user !== v.username) p.username = v.username;
     await callAdmin('updateUser', p);
-    if (v.photo !== undefined) dbErr(await sb.from('profiles').update({ photo: v.photo }).eq('id', id));
+    if (v.photo !== undefined) dbErr(await sb.from('profiles').update({ photo: await photoRef(v.photo, 'a-' + id) }).eq('id', id));
     await loadCore(); return { id };
   },
   async setKids(pid, kids) {

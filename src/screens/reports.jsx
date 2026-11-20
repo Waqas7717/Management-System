@@ -1,9 +1,11 @@
 
-import { CLASSES, DB, EXAMS, F, agg, cls, classAvg, classPass, dayStatus, gradeOf, stuResult, latestExam } from '../core/data';
+import { CLASSES, DB, EXAMS, S, F, agg, cls, classAvg, classPass, dayStatus, gradeOf, stuResult, latestExam } from '../core/data';
 import { ALLD, TODAY, monthLabel, monthOptions, CM } from '../core/dates';
 import { printDoc, letterhead, esc, downloadCSV } from '../core/tools';
 import { Card, DT, Empty, FSel, PageHead, Seg, Tag, Who } from '../ui';
 import { Button } from '../ui/buttons';
+import { downloadBackup } from '../core/backup';
+import { AuditTab } from './audit';
 
 const LOW = 75;
 
@@ -97,13 +99,17 @@ export function Reports() {
   const tab = F('rtab', 'att'), cf = F('rcls', 'all'), m = F('rmon', CM()), ex = F('rexm', latestExam());
   return (
     <>
-      <PageHead title="Reports" sub="Monthly attendance and exam result reports. Print them or download for Excel." />
-      <Seg k="rtab" def="att" list={[['att', 'Attendance'], ['res', 'Results']]} />
+      <PageHead title="Reports" sub="Monthly attendance and exam result reports. Print them or download for Excel.">
+        {S.role === 'admin' && <Button variant="secondary" icon="download" onClick={downloadBackup}>Download backup</Button>}
+      </PageHead>
+      <Seg k="rtab" def="att" list={[['att', 'Attendance'], ['res', 'Results'], ...(S.role === 'admin' || S.role === 'principal' ? [['audit', 'Recent changes']] : [])]} />
+      {tab === 'audit' ? <AuditTab /> : <>
       <div className="g2" style={{ margin: '14px 0' }}>
         <FSel k="rcls" def="all" list={[['all', 'All classes'], ...CLASSES.map((c) => [c.id, c.name])]} label="Class" />
         {tab === 'att' ? <FSel k="rmon" def={m} list={monthOptions()} label="Month" /> : <FSel k="rexm" def={ex} list={EXAMS.map((e) => [e.id, e.name])} label="Exam" />}
       </div>
       {tab === 'att' ? <AttTab cf={cf} m={m} /> : <ResTab cf={cf} ex={ex} />}
+      </>}
     </>
   );
 }

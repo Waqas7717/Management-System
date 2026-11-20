@@ -2,16 +2,17 @@ import { useState } from 'react';
 import { TextField } from '@mui/material';
 import { DEMO } from '../core/config';
 import {
-  CLASSES, DB, EXAMS, S, F, SUBJ, agg, cls, classAvg, classPass, effStatus, ev, gcls, gradeOf, isPub, latestExam, leaveDates, ord, ranks, stuResult, subName, subjAt,
+  CLASSES, DB, EXAMS, S, F, SUBJ, myLectures, agg, cls, classAvg, classPass, effStatus, ev, gcls, gradeOf, isPub, latestExam, leaveDates, ord, ranks, stuResult, subName, subjAt,
   subjAvg, tStatus, tch,
 } from '../core/data';
 import { ALLD, CM, WEEKS, TODAY, fd, fs, isSchool, monthOptions, schoolDays } from '../core/dates';
 import { render, toast } from '../core/store';
 import { BarRows, COLORS, LineChart, Split } from '../ui/Charts';
-import { Av, Card, DT, DateF, SearchF, Empty, FDate, FSel, Item, Kpi, LeaveChip, PageHead, Pill, Seg, StChip, TF, Tag, Who } from '../ui';
+import { Av, Card, DT, DateF, SearchF, Empty, FDate, FSel, Item, Kpi, LeaveChip, Modal, PageHead, Pill, Seg, StChip, TF, Tag, Who } from '../ui';
 import { AnnScreen } from './common';
 import { UsersList } from './admin/users';
-import { InsightsCard } from './aiparts';
+import { InsightsCard, BriefCard } from './aiparts';
+import { FollowUpCard } from './followup';
 import { AttnRow, Attention, ClassCards, DCard, KpiTile, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../ui/dash';
 
 const dc = () => (CLASSES.length ? CLASSES[0].id : 'all');
@@ -70,6 +71,8 @@ function Dash() {
         </Attention>
       </div>
       <div style={{ marginBottom: 16 }}><InsightsCard /></div>
+      <div style={{ marginBottom: 16 }}><BriefCard />
+      <FollowUpCard /></div>
       <div className="two eq" style={{ marginTop: 14 }}>
         <Card title="Class-wise results">
           <p className="mut" style={{ marginBottom: 10 }}>{exn}, average percentage</p>
@@ -186,8 +189,33 @@ function Res() {
   );
 }
 
+function subsFor(l) {
+  const d = l.from <= TODAY && l.to >= TODAY ? TODAY : l.from, t = tch(l.tid);
+  if (!t || !t.assign) return { d, rows: [] };
+  const onLeave = (x, day) => DB.tleaves.some((y) => y.tid === x.id && y.status === 'approved' && y.from <= day && y.to >= day);
+  const rows = myLectures(t, d).map((lec) => {
+    const free = DB.teachers.filter((x) => x.active && x.id !== t.id && !onLeave(x, d) && !myLectures(x, d).some((y) => y.p === lec.p));
+    const score = (x) => (x.assign.some((a) => a[0] === lec.cid && a[1] === lec.sub) ? 0 : x.assign.some((a) => a[1] === lec.sub) ? 1 : x.assign.some((a) => a[0] === lec.cid) ? 2 : 3);
+    return { lec, picks: free.sort((a, b) => score(a) - score(b)).slice(0, 3).map((x) => ({ x, why: ['teaches this subject in this class', 'teaches this subject', 'teaches this class', 'free this period'][score(x)] })) };
+  });
+  return { d, rows };
+}
+function SubsDialog({ l, onClose }) {
+  const { d, rows } = subsFor(l);
+  return (
+    <Modal title={'Substitute teachers for ' + fs(d)} onClose={onClose} cancelLabel="Close">
+      {rows.length ? rows.map((r) => (
+        <div key={r.lec.p} style={{ marginBottom: 10 }}>
+          <b>Lecture {r.lec.p}: {subName(r.lec.sub)}, {cls(r.lec.cid).name}</b>
+          {r.picks.length ? r.picks.map((p) => <div key={p.x.id} className="mut">{p.x.name}: {p.why}</div>) : <div className="mut">No free teacher this period.</div>}
+        </div>
+      )) : <p className="mut">This teacher has no lectures on that day.</p>}
+      <p className="mut" style={{ fontSize: 13 }}>Suggestions only. Nothing is changed or sent.</p>
+    </Modal>
+  );
+}
 function TLeave({ l }) {
-  const [rm, setRm] = useState('');
+  const [rm, setRm] = useState(''), [sub, setSub] = useState(false);
   const decide = (v) => {
     l.status = v; l.remark = rm.trim() || (v === 'approved' ? 'Approved.' : 'Declined.');
     ev({ role: 'teacher', id: l.tid }, 'Leave ' + v, 'Your leave for ' + fs(l.from) + ' was ' + v + '. ' + l.remark, 'leave');
@@ -197,6 +225,8 @@ function TLeave({ l }) {
     <Item>
       <div className="row sp"><h4>{tch(l.tid).name}</h4><LeaveChip s={l.status} /></div>
       <div className="meta"><Tag c="info">{l.type}</Tag><span>{leaveDates(l)}</span></div><p>{l.reason}</p>
+      {l.status !== 'declined' && l.to >= TODAY ? <div style={{ margin: '4px 0 8px' }}><Button size="sm" variant="outlined" icon="users" onClick={() => setSub(true)}>Suggest substitutes</Button></div> : null}
+      {sub ? <SubsDialog l={l} onClose={() => setSub(false)} /> : null}
       {l.status === 'pending' ? (
         <>
           <TF id={'rm_' + l.id} label="Remark (optional)" value={rm} onChange={setRm} placeholder="For example, Approved. Please arrange a substitute." />
@@ -221,5 +251,6 @@ function Leave() {
 
 import { StaffFees } from './fees';
 import { Reports } from './reports';
+import { Enquiries } from './enquiries';
 import { Button } from '../ui/buttons';
-export const principalViews = { fees: StaffFees, rep: Reports, dash: Dash, att: Att, ann: () => <AnnScreen kind="announcement" />, notice: () => <AnnScreen kind="notice" />, users: Users, res: Res, leave: Leave };
+export const principalViews = { enq: Enquiries, fees: StaffFees, rep: Reports, dash: Dash, att: Att, ann: () => <AnnScreen kind="announcement" />, notice: () => <AnnScreen kind="notice" />, users: Users, res: Res, leave: Leave };

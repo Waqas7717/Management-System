@@ -2,7 +2,7 @@
 //
 // It does nothing unless the Vercel environment variable DEMO_LOGIN is set to "on".
 // When it is on, anyone who opens the site can pick a Principal, Teacher or Parent from a list
-// (and press one button for the Admin) and be signed in. Use it for demos only, with demo data.
+// (the Admin included) and be signed in. Use it for demos only, with demo data.
 // To switch it off again: delete DEMO_LOGIN in Vercel (or set it to anything else) and redeploy.
 //
 // Other environment variables it needs (already set for the Admin tools):

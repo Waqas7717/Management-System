@@ -144,7 +144,7 @@ export function Modal({ open = true, title, onClose, children, actions = [], err
   );
 }
 
-/* A picture chooser that shrinks the photo to under 2 KB. value: undefined = unchanged, '' = removed */
+/* A picture chooser that resizes the photo. value: undefined = unchanged, '' = removed */
 export function PhotoField({ person, value, onChange, onError }) {
   const shown = value !== undefined ? { name: person ? person.name : '', photo: value } : person;
   return (

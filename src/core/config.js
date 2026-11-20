@@ -11,3 +11,6 @@ export const SUPABASE_URL = env.VITE_SUPABASE_URL ?? 'https://jbxmptfzwlqtbrmbuc
 export const SUPABASE_KEY = env.VITE_SUPABASE_ANON_KEY ?? 'sb_publishable_bNLvkCllBp4F0mfgCdj1oA_zXdFx43v';
 export const LIVE = !forceDemo && !!(SUPABASE_URL && SUPABASE_KEY);
 export const DEMO = !LIVE;
+
+// Name shown in messages that leave the app (WhatsApp texts). Override with VITE_SCHOOL_NAME.
+export const SCHOOL_NAME = env.VITE_SCHOOL_NAME || 'FG Public School and College';

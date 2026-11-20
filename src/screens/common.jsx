@@ -1,4 +1,7 @@
+import { WaBtn } from '../ui/WaBtn';
 import { useState } from 'react';
+import { openWA } from '../core/share';
+import { SCHOOL_NAME } from '../core/config';
 
 import { CLASSES, DB, S, audLabel, byName, uid } from '../core/data';
 import { DAYN, PT, TODAY, dow, fd, fs, isSchool, nowHM } from '../core/dates';
@@ -85,6 +88,7 @@ export function AnnScreen({ kind }) {
           <h4>{a.title}</h4><p>{a.body}</p>
           <div className="meta"><span>To {audLabel(a.aud)}</span><span>From {byName(a.by)}</span></div>
           <div className="row">
+            <WaBtn text={a.title + '\n\n' + a.body + '\n\n' + SCHOOL_NAME} label="Share on WhatsApp" />
             <RowActions onEdit={(S.role === 'admin' ? a.by === S.user.id : a.by === 'p0') ? () => setDlg({ kind: a.kind, ann: a }) : undefined} onDelete={() => ask('Delete this item?', 'Delete', () => { DB.anns = DB.anns.filter((x) => x.id !== a.id); render(); toast('Deleted.'); })} />
           </div>
         </Item>

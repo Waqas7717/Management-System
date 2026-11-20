@@ -11,9 +11,11 @@ import { scheduleSync } from '../../core/sync';
 import { store } from '../../core/stores';
 import { Card, DT, Empty, FSel, Item, Kpi, PageHead, Tag, TypeTag } from '../../ui';
 import { BarRows, Split } from '../../ui/Charts';
-import { InsightsCard } from '../aiparts';
+import { InsightsCard, BriefCard } from '../aiparts';
+import { FollowUpCard } from '../followup';
 import { AttnRow, Attention, ClassCards, DCard, KpiTile, RangeChips, StaffCheckin, Ticker, dayCounts, rangeInfo } from '../../ui/dash';
 import { AnnScreen, TtGrid } from '../common';
+import { Enquiries } from '../enquiries';
 import { UsersList } from './users';
 import { AccountDialog, ClassDialog, CredsDialog, DsDialog, EvDialog, PwDialog, StudentDialog, SubjectDialog } from './dialogs';
 
@@ -125,6 +127,8 @@ function Dash() {
         </Attention>
       </div>
       <div style={{ marginBottom: 16 }}><InsightsCard /></div>
+      <div style={{ marginBottom: 16 }}><BriefCard />
+      <FollowUpCard /></div>
       {CLASSES.length ? (
         <DCard title="Attendance by class" ico="check" right={<span>{rng.label}. Hover a bar for details.</span>}>
           <BarRows items={CLASSES.map((c) => { const a = dayCounts(act.filter((s) => s.cid === c.id).map((s) => s.id), rng.dates); return { label: c.name, val: a.pct, cls: a.pct == null ? '' : a.pct >= 92 ? 'g' : a.pct >= 85 ? 'y' : 'r' }; })} />
@@ -292,7 +296,7 @@ import { printDateSheet } from '../printables';
 import { Reports } from '../reports';
 import { Button, RowActions, FormActions } from '../../ui/buttons';
 export const adminViews = {
-  fees: StaffFees, rep: Reports,
+  fees: StaffFees, rep: Reports, enq: Enquiries,
   dash: Dash, classes: Classes, tt: Tt, ds: Ds, evt: Evt,
   students: () => <Accounts tab="students" />, parents: () => <Accounts tab="parents" />,
   teachers: () => <Accounts tab="teachers" />, principals: () => <Accounts tab="principals" />,

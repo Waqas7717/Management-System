@@ -21,9 +21,13 @@ const ROLES = {
   homework: ['teacher', 'admin', 'principal'],
   ask: ['admin', 'principal'],
   help: ['teacher', 'admin', 'principal'],
+  brief: ['admin', 'principal'],
+  summary: ['parent'],
 };
 
 const SYS = {
+  brief: 'You write a short weekly briefing for a school principal in Pakistan. Use ONLY the school facts provided. Write 5 to 7 short lines in plain words: attendance, results, fees, staff, then 2 suggested actions. No markdown symbols, no invented numbers. If a fact is missing, skip it.',
+  summary: 'You write a short, kind progress note for a parent about their child, using ONLY the facts given. Write 3 to 4 simple sentences: attendance, marks, then one gentle suggestion. Never compare with other children. Plain text, no markdown. If asked for Urdu, write simple Urdu.',
   notice: 'You write short, clear school notices for F.G Public School and College, Sakesar, Pakistan. Turn the rough note into a polite, professional notice of 2 to 4 sentences. Keep every fact, date and time from the note and never invent new ones. Output only the notice text, no title, no markdown.',
   translate: 'You translate school messages between English and Urdu for parents. Keep the meaning, names, dates and numbers exactly. Use simple, polite Urdu (Nastaliq script) or simple English. Output only the translation.',
   comments: 'You help teachers write report card comments. For each student write one kind, specific, professional sentence (max 25 words) based on the marks given. Be encouraging for low marks and never harsh. Output exactly one line per student in the form: number|comment. No other text.',
@@ -56,7 +60,9 @@ function buildPrompt(action, b) {
   if (action === 'translate') return 'Translate into ' + (b.to === 'ur' ? 'Urdu' : 'English') + ':\n' + clip(b.text, 2000);
   if (action === 'homework') return clip(b.request, 800);
   if (action === 'help') return clip(b.request, 800);
-  if (action === 'ask') return 'School facts:\n' + clip(b.facts, 6000) + '\n\nQuestion: ' + clip(b.question, 300);
+  if (action === 'brief') return 'School facts:\n' + clip(b.facts, 14000) + '\n\nWrite the weekly briefing.';
+  if (action === 'summary') return 'Language: ' + (b.lang === 'ur' ? 'Urdu' : 'English') + '\nChild facts:\n' + clip(b.facts, 2500);
+  if (action === 'ask') return 'School facts:\n' + clip(b.facts, 14000) + '\n\nQuestion: ' + clip(b.question, 300);
   if (action === 'comments') {
     const list = Array.isArray(b.students) ? b.students.slice(0, 60) : [];
     return 'Subject: ' + clip(b.subject, 60) + '. Exam: ' + clip(b.exam, 60) + '. Class average: ' + clip(b.avg, 10) + '.\nStudents (number, first name, marks out of 100):\n' +
@@ -89,7 +95,7 @@ export default async (req, res) => {
       contents: [{ role: 'user', parts: [{ text: buildPrompt(action, b) }] }],
       generationConfig: {
         temperature: action === 'ask' ? 0.2 : 0.6,
-        maxOutputTokens: action === 'comments' ? 2200 : action === 'notice' ? 500 : 900,
+        maxOutputTokens: action === 'comments' ? 2200 : action === 'brief' ? 1200 : action === 'notice' ? 500 : 900,
         ...(think ? { thinkingConfig: { thinkingBudget: 0 } } : {}), // no "thinking" pause: much faster for short tasks
       },
     });

@@ -33,7 +33,18 @@ function findHits(q) {
   if (S.role === 'admin') { add(DB.students, 'students', 'Student', 'cap'); add(DB.parents, 'parents', 'Parent', 'users'); add(DB.teachers, 'teachers', 'Teacher', 'book'); add(DB.principals, 'principals', 'Principal', 'award'); }
   else if (S.role === 'principal') { add(DB.teachers, 'users', 'Teacher', 'book', 'teachers'); add(DB.parents, 'users', 'Parent', 'users', 'parents'); add(DB.students, 'users', 'Student', 'cap', 'students'); }
   else if (S.role === 'teacher') { const cl = S.user && S.user.assign ? tClasses(S.user) : []; add((DB.students || []).filter((s) => cl.includes(s.cid)), 'att', 'Student', 'cap'); }
+  // plain-language shortcuts: typing "fee due" or "absent" opens the right page
+  const have = (v) => NAVS[S.role].items.some((i) => i[0] === v);
+  [[/absent|follow|attendance|streak/, 'Attendance and follow-up list', 'att', 'check'], [/fee|due|arrear|unpaid|defaulter|receipt/, 'Fees, dues and receipts', 'fees', 'cash'],
+    [/result|marks|grade|rank|exam/, 'Results', 'res', 'award'], [/homework|assignment/, 'Homework', 'hw', 'book'], [/leave|substitute|replace/, 'Leave and substitutes', 'leave', 'cal'],
+    [/timetable|period|lecture/, 'Timetable', 'tt', 'clock'], [/notice|announce|holiday|event/, 'Notices and announcements', S.role === 'parent' ? 'notices' : 'ann', 'mega'],
+    [/report|download|csv|excel|backup/, 'Reports and downloads', 'rep', 'file']].forEach(([re, t, v, ic]) => { if (re.test(q) && have(v) && !out.some((o) => o.v === v)) out.push({ t, s: 'Shortcut', v, ic }); });
   return out;
+}
+function OfflineBar() {
+  const [off, setOff] = useState(typeof navigator !== 'undefined' && navigator.onLine === false);
+  useEffect(() => { const a = () => setOff(true), b = () => setOff(false); window.addEventListener('offline', a); window.addEventListener('online', b); return () => { window.removeEventListener('offline', a); window.removeEventListener('online', b); }; }, []);
+  return off ? <div role="status" style={{ background: '#B45309', color: '#fff', padding: '6px 12px', fontSize: 13, textAlign: 'center' }}>You are offline. Changes may not save until the internet is back.</div> : null;
 }
 function GlobalSearch() {
   const [q, setQ] = useState(''), [open, setOpen] = useState(false), [hits, setHits] = useState([]);
@@ -139,6 +150,7 @@ export default function Shell({ dark, toggleDark }) {
             )}
             <IconBtn variant="toolbar" className="toplo" icon="log-out" label="Log out" onClick={out} />
           </header>
+          <OfflineBar />
           <div className="pghead" id="pghead" ref={setSlot} />
           <main className="view" id="view">
             <ViewBoundary k={S.role + cur[0]}><View /></ViewBoundary>

@@ -744,3 +744,23 @@ input.uploadbox{display:block;padding:8px 12px;min-height:var(--h-ctl);height:au
 .field+.fld,.fld+.field,div+.fld.fld-up{margin-top:16px}
 .field>.flabel:first-child{margin-top:0}
 .fld .fopt:first-child{margin-left:-8px!important}
+
+.wa-btn, .wa-btn svg { color: #1FA855 !important; }
+.wa-btn:hover { background: rgba(31,168,85,.12) !important; }
+
+/* v3 polish: no cut-off names, calmer card decoration, room for the Ask AI button */
+.cc-top{flex-wrap:wrap;align-items:flex-start}
+.cc-top h4{white-space:normal;overflow:visible;text-overflow:clip;flex:1 1 auto;overflow-wrap:anywhere}
+.cc-dl dd{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+.ccard::after{width:70px;height:70px;right:-22px;top:-22px;opacity:.55}
+.cc-pct{flex-basis:100%;margin-left:0;text-align:right}
+.view{padding-bottom:96px}
+@media (max-width:760px){.view{padding-bottom:150px}}
+.row .wa-btn{flex:0 0 auto}
+.cc-dl dd{overflow-wrap:break-word;word-break:normal;min-width:0}
+.cc-dl{grid-template-columns:auto 1fr}
+.cc-top h4{overflow-wrap:break-word}
+
+/* class cards: wrap teacher names on word boundaries only */
+.cc-dl dd{overflow-wrap:normal !important;word-break:normal !important;hyphens:none}
+.cc-dl{grid-template-columns:auto minmax(0,1fr) !important}

@@ -1,5 +1,6 @@
 // Lucide icons (ISC license, https://lucide.dev), inner SVG markup only. Drawn by <Ico n="name" /> with a 1.8px stroke.
 export const LU = {
+  "wa": "<path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\" /><path d=\"M9.2 8.3c.2 2.4 2.9 5.4 6.3 6.3l1.3-1.3a.8.8 0 0 1 .8-.2l1.4.5a.8.8 0 0 1 .5.8v1.2a1 1 0 0 1-1 1C11.7 16.9 7.2 12.4 7.2 7.5a1 1 0 0 1 1-1h1.2a.8.8 0 0 1 .8.5l.5 1.4a.8.8 0 0 1-.2.8z\" />",
   "plus": "<path d=\"M5 12h14\" /><path d=\"M12 5v14\" />",
   "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\" /><path d=\"m15 5 4 4\" />",
   "trash-2": "<path d=\"M10 11v6\" /><path d=\"M14 11v6\" /><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\" /><path d=\"M3 6h18\" /><path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\" />",

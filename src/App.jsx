@@ -6,6 +6,7 @@ import { bus, getVersion, subscribe } from './core/store';
 import { init } from './core/sync';
 import Login from './Login';
 import Shell from './Shell';
+import { EnquiryPage } from './screens/enquiries';
 import { Button } from './ui/buttons';
 
 const initialDark = () => {
@@ -31,7 +32,7 @@ export default function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {S.user ? <Shell dark={dark} toggleDark={() => setDark((d) => !d)} /> : <Login />}
+      {!S.user && typeof window !== 'undefined' && /[?&]enquiry=1/.test(window.location.search) ? <EnquiryPage /> : S.user ? <Shell dark={dark} toggleDark={() => setDark((d) => !d)} /> : <Login />}
       <Snackbar open={snack.open} autoHideDuration={3200} onClose={() => setSnack((s) => ({ ...s, open: false }))} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert severity="info" variant="filled" icon={false} onClose={() => setSnack((s) => ({ ...s, open: false }))} sx={{ bgcolor: '#0B1F4D', color: '#fff', fontWeight: 600 }}>{snack.msg}</Alert>
       </Snackbar>

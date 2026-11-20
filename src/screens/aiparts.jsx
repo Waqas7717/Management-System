@@ -1,7 +1,12 @@
+import { WaBtn } from '../ui/WaBtn';
 import { useEffect, useState } from 'react';
 import { CLASSES, DB, EXAMS, S, feed, classAvg, classPass, dayStatus, latestExam, tStatus, cls, gradeOf } from '../core/data';
 import { TODAY, addDays, schoolDays } from '../core/dates';
 import { useAI } from './useai';
+import { feeAmt, feeFor, feeMonths, feeRec, dueAmount, dueMonths, ymLabel } from '../core/fees';
+import { followUps } from './followup';
+import { openWA } from '../core/share';
+import { money } from '../core/data';
 import { AnnDialog } from './common';
 import { go } from '../core/actions';
 import { toast } from '../core/store';
@@ -76,7 +81,7 @@ export function InsightsCard() {
 }
 
 /* facts sent with a question: totals only, no student names */
-function facts() {
+export function facts() {
   const ex = latestExam(), days = schoolDays(addDays(TODAY, -6), TODAY), L = [];
   L.push('Date today: ' + TODAY + '. Latest exam: ' + EXAMS.find((e) => e.id === ex).name + '.');
   CLASSES.forEach((c) => {
@@ -85,10 +90,27 @@ function facts() {
   });
   const tc = { in: 0, out: 0, leave: 0 };
   DB.teachers.forEach((t) => { const s = tStatus(t.id, TODAY); if (s === 'P') tc.in++; else if (s === 'L') tc.leave++; else tc.out++; });
+  // Fees and follow-up: totals per class only, no student names.
+  const ym = feeMonths().slice(-1)[0];
+  if (ym) {
+    let col = 0, colN = 0, pend = 0, pendN = 0, arr = 0, arrN = 0;
+    CLASSES.forEach((c) => {
+      let cc = 0, cn = 0, pa = 0, pn = 0, ar = 0, an = 0;
+      DB.students.filter((s) => s.cid === c.id && s.active && feeAmt(c.id) > 0).forEach((s) => {
+        const r = feeRec(s.id, ym); if (r) { cc += r.amt; cn++; } else { pa += feeFor(s.id); pn++; }
+        if (dueMonths(s.id).length) { ar += dueAmount(s.id); an++; }
+      });
+      L.push('Fees ' + c.name + ' (' + ymLabel(ym) + '): collected ' + money(cc) + ' from ' + cn + ' students, not paid ' + pn + ' students (' + money(pa) + '); total arrears ' + money(ar) + ' from ' + an + ' students.');
+      col += cc; colN += cn; pend += pa; pendN += pn; arr += ar; arrN += an;
+    });
+    L.push('Fees whole school (' + ymLabel(ym) + '): collected ' + money(col) + ' from ' + colN + ' students, not paid ' + pendN + ' students (' + money(pend) + '); total arrears ' + money(arr) + ' from ' + arrN + ' students.');
+  }
+  const fu = followUps();
+  L.push('Attendance follow-up: ' + fu.length + ' students are absent 3 days in a row or under 75% attendance.');
   L.push('Teachers today: ' + tc.in + ' checked in, ' + tc.out + ' not in yet, ' + tc.leave + ' on leave. Total teachers ' + DB.teachers.length + '.');
   return L.join('\n');
 }
-const SAMPLES = ['Which class has the lowest results?', 'Which class has the best attendance this week?', 'How many teachers are not in yet?'];
+const SAMPLES = ['Which class has the lowest results?', 'Which class has the best attendance this week?', 'How many teachers are not in yet?', 'How much fee is still unpaid this month?', 'Which class has the highest fee arrears?'];
 const TCHIPS = ['Write a short lesson plan on fractions for Class 6', 'Write a polite message to parents about a class test', 'Make 5 quiz questions on photosynthesis'];
 
 /* floating AI button on every page. It opens a small panel with tools for the signed-in role. */
@@ -149,5 +171,25 @@ export function AiFab() {
       )}
       {dlg ? <AnnDialog kind={dlg} onClose={() => setDlg(null)} /> : null}
     </>
+  );
+}
+
+/* Weekly brief (F12): one click, built from the same totals as the Ask box. No names are sent. */
+export function BriefCard() {
+  const [busy, run] = useAI(); const [t, setT] = useState('');
+  const make = async () => { const x = await run('brief', { facts: facts() }); if (x) setT(x); };
+  const msg = 'Weekly school brief (' + TODAY + ')\n' + t;
+  return (
+    <DCard title="Weekly brief" ico="chart" right={<Button size="sm" variant="text" disabled={busy} onClick={make}>{busy ? 'Writing...' : t ? 'Write again' : 'Write this week\u2019s brief'}</Button>}>
+      {t ? (
+        <>
+          <p style={{ whiteSpace: 'pre-line', margin: '0 0 8px' }}>{t}</p>
+          <div className="row">
+            <Button size="sm" variant="outlined" onClick={() => { try { navigator.clipboard.writeText(msg); toast('Copied'); } catch (e) { toast('Could not copy'); } }}>Copy</Button>
+            <WaBtn text={msg} short="Share" variant="outlined" />
+          </div>
+        </>
+      ) : <p className="mut">One tap writes a short summary of attendance, results, fees and staff for the week.</p>}
+    </DCard>
   );
 }

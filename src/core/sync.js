@@ -6,7 +6,8 @@ import { paint, render, setSyncHook, toast } from './store';
 
 export const sb = LIVE ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-export const SYNC = { last: {}, busy: false, again: false, failed: false, timer: null, poll: null, refreshing: false };
+export const SYNC = { last: {}, busy: false, again: false, failed: false, timer: null, poll: null, refreshing: false, since: '', sinceDel: '', incr: true, coreAt: 0, refAt: 0 };
+const CORE_EVERY = 30 * 60 * 1000, REFRESH_EVERY = 3 * 60 * 1000, MIN_GAP = 60 * 1000, OVERLAP_MS = 60 * 1000;
 export const DICT = ['att', 'tatt', 'res', 'pub', 'hwSub', 'tt', 'fees', 'feeCfg'];
 export const LISTS = ['leaves', 'tleaves', 'hw', 'datesheet', 'anns', 'events'];
 const sigOf = (v) => JSON.stringify(v);
@@ -42,6 +43,7 @@ export function pickUser(me) {
 }
 
 export async function loadCore() {
+  SYNC.coreAt = Date.now();
   const all = await Promise.all([
     fetchAll('subjects', 'code,name', ['code']),
     fetchAll('classes', 'id,name,level,room,class_teacher,subjects', ['id']),
@@ -65,14 +67,50 @@ export async function loadCore() {
   if (S.me) { const u = pickUser(S.me.profile); if (u) S.user = u; }
 }
 export async function loadRecords() {
-  const rows = await fetchAll('records', 'collection,id,data', ['collection', 'id']);
+  const rows = await fetchAll('records', 'collection,id,data,updated_at', ['collection', 'id']);
+  let maxTs = '';
   DICT.forEach((c) => { DB[c] = {}; }); LISTS.forEach((c) => { DB[c] = []; });
   rows.forEach((r) => {
+    if (r.updated_at && r.updated_at > maxTs) maxTs = r.updated_at;
     if (DICT.indexOf(r.collection) > -1) DB[r.collection][r.id] = r.data;
     else if (LISTS.indexOf(r.collection) > -1) DB[r.collection].push(r.data);
   });
   LISTS.forEach((c) => DB[c].sort((a, b) => { const x = a.ts || '', y = b.ts || ''; return x < y ? 1 : x > y ? -1 : 0; }));
   SYNC.last = {}; DICT.concat(LISTS).forEach((c) => { SYNC.last[c] = recMap(c); });
+  SYNC.since = maxTs || new Date(Date.now() - OVERLAP_MS).toISOString(); SYNC.sinceDel = new Date(Date.now() - OVERLAP_MS).toISOString(); SYNC.refAt = Date.now();
+}
+
+/* Incremental refresh: fetch only records changed (and records deleted) since the last look.
+   Returns false when it cannot (for example the deleted_records table is not set up yet), so the caller can do a full reload. */
+export async function loadChanges() {
+  const from = new Date(Date.parse(SYNC.since) - OVERLAP_MS).toISOString();
+  const delFrom = SYNC.sinceDel;
+  const now = new Date().toISOString();
+  let maxTs = SYNC.since; const lists = {};
+  for (let off = 0; ; off += 1000) {
+    const r = await sb.from('records').select('collection,id,data,updated_at').gt('updated_at', from).order('updated_at').order('id').range(off, off + 999);
+    if (r.error) return false;
+    r.data.forEach((x) => {
+      if (x.updated_at > maxTs) maxTs = x.updated_at;
+      if (DICT.indexOf(x.collection) > -1) { DB[x.collection][x.id] = x.data; (SYNC.last[x.collection] = SYNC.last[x.collection] || {})[x.id] = sigOf(x.data); }
+      else if (LISTS.indexOf(x.collection) > -1) {
+        const arr = DB[x.collection], i = arr.findIndex((it) => String(it.id) === x.id);
+        if (i > -1) arr[i] = x.data; else arr.push(x.data);
+        lists[x.collection] = 1; (SYNC.last[x.collection] = SYNC.last[x.collection] || {})[x.id] = sigOf(x.data);
+      }
+    });
+    if (r.data.length < 1000) break;
+  }
+  const d = await sb.from('deleted_records').select('collection,rid,deleted_at').gt('deleted_at', delFrom).order('deleted_at').limit(1000);
+  if (d.error) return false;
+  d.data.forEach((x) => {
+    if (DICT.indexOf(x.collection) > -1) { delete DB[x.collection][x.rid]; if (SYNC.last[x.collection]) delete SYNC.last[x.collection][x.rid]; }
+    else if (LISTS.indexOf(x.collection) > -1) { DB[x.collection] = DB[x.collection].filter((it) => String(it.id) !== x.rid); if (SYNC.last[x.collection]) delete SYNC.last[x.collection][x.rid]; }
+  });
+  Object.keys(lists).forEach((c) => DB[c].sort((a, b) => { const x = a.ts || '', y = b.ts || ''; return x < y ? 1 : x > y ? -1 : 0; }));
+  SYNC.since = maxTs; SYNC.sinceDel = d.data.length ? d.data[d.data.length - 1].deleted_at : now; SYNC.refAt = Date.now();
+  if (d.data.length >= 1000) return false; // a very long list of deletions: do one full reload to be safe
+  return true;
 }
 
 export async function sync() {
@@ -130,19 +168,25 @@ export function hasPending() {
   }
   return false;
 }
-export async function refresh() {
+export async function refresh(force) {
   if (!LIVE || !S.user || document.hidden || SYNC.busy || SYNC.refreshing) return;
   if (iso(new Date()) !== TODAY) { location.reload(); return; }
+  if (!force && Date.now() - SYNC.refAt < MIN_GAP) return;
   SYNC.refreshing = true;
   try {
     await sync(); if (SYNC.failed || hasPending()) return;
-    await loadRecords(); await loadCore(); paint();
+    let ok = false;
+    if (SYNC.incr) { ok = await loadChanges(); if (!ok) SYNC.incr = false; } // no deleted_records table yet: use full reloads, now every 3 minutes
+    if (!ok) await loadRecords();
+    if (Date.now() - SYNC.coreAt > CORE_EVERY) await loadCore();
+    paint();
   } catch (e) { console.error('Refresh failed', e); }
   finally { SYNC.refreshing = false; }
 }
-export const startPolling = () => { stopPolling(); SYNC.poll = setInterval(refresh, 45000); };
+export const startPolling = () => { stopPolling(); SYNC.poll = setInterval(() => refresh(), REFRESH_EVERY); };
 export const stopPolling = () => { if (SYNC.poll) { clearInterval(SYNC.poll); SYNC.poll = null; } };
 if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => { if (!document.hidden) refresh(); });
+if (typeof window !== 'undefined') window.addEventListener('online', () => { refresh(true); sync(); });
 
 /* ---------- read marks (notification bell) ---------- */
 const readsKey = (id) => 'fgc.reads.' + id;

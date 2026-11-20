@@ -1,4 +1,6 @@
-// Turns a chosen picture into a small square thumbnail (under 2 KB) saved with the record.
+// Turns a chosen picture into a small square thumbnail. Live mode: up to about 24 KB, uploaded to
+// Supabase Storage by the store. Demo mode: under 2 KB, kept with the record.
+import { LIVE } from './config';
 export function readPhoto(file) {
   return new Promise((res, rej) => {
     if (!file || !/^image\//.test(file.type)) return rej(new Error('Choose an image file (JPG or PNG).'));
@@ -10,9 +12,9 @@ export function readPhoto(file) {
       im.onerror = () => rej(new Error('This image could not be opened.'));
       im.onload = () => {
         const m = Math.min(im.width, im.height), sx = (im.width - m) / 2, sy = (im.height - m) / 2;
-        const MAX = 1900;
+        const MAX = LIVE ? 24000 : 1900, SIZES = LIVE ? [160, 128, 96, 72, 56] : [72, 64, 56, 48, 40, 32];
         for (const fmt of ['image/webp', 'image/jpeg']) {
-          for (const Z of [72, 64, 56, 48, 40, 32]) {
+          for (const Z of SIZES) {
             const cv = document.createElement('canvas'); cv.width = cv.height = Z;
             const x = cv.getContext('2d'); x.imageSmoothingQuality = 'high';
             x.fillStyle = '#fff'; x.fillRect(0, 0, Z, Z);

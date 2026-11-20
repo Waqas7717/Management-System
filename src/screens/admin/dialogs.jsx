@@ -22,7 +22,7 @@ export function ProfileDialog({ onClose }) {
     <Modal title="My profile" onClose={onClose} error={err} actions={[{ label: 'Save photo', onClick: save, disabled: busy }]}>
       <p className="mut" style={{ marginBottom: 10 }}><b>{S.user.name}</b> ({cap(S.role)})</p>
       <PhotoField person={S.user} value={photo} onChange={setPhoto} onError={setErr} />
-      <p className="mut" style={{ fontSize: 13, marginTop: 8 }}>Your photo is shrunk automatically to under 2 KB.</p>
+      <p className="mut" style={{ fontSize: 13, marginTop: 8 }}>Your photo is resized automatically before it is saved.</p>
     </Modal>
   );
 }
